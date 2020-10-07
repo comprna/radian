@@ -1,7 +1,7 @@
 import tensorflow as tf
-from tf.keras.layers import Dense, Activation, Lambda
-from tf.keras import Input, Model
-from tf.keras.backend import ctc_batch_cost
+from tensorflow.keras.layers import Dense, Activation, Lambda
+from tensorflow.keras import Input, Model
+from tensorflow.keras.backend import ctc_batch_cost
 from tcn import TCN, tcn_full_summary
 import functools
 
@@ -60,5 +60,24 @@ def main():
     tcn_full_summary(model, expand_residual_blocks=False)
     model.fit(train_x, train_y, epochs=10, validation_split=0.2)
 
+def test_csv():
+    hek293_test_file_path = '/mnt/sda/singleton-dataset-generation/dRNA/1_11_NNInputs/hek293_test_partial.csv'
+    hek293_csv_ds = tf.data.experimental.make_csv_dataset(
+        hek293_test_file_path,
+        field_delim = "\t",
+        batch_size = 10,
+        column_names = ["read", "signal", "sequence"],
+        label_name = "sequence",
+        num_epochs = 1
+    )
+    for batch, label in hek293_csv_ds.take(3):
+        print(label)
+        for key, value in batch.items():
+            # print(f"{key:20s}: {value}")
+            print(key)
+        # print()
+        # print(f"{'label':20s}: {label}")
+
 if __name__ == "__main__":
-    main()
+    #main()
+    test_csv()
