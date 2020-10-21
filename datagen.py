@@ -31,12 +31,9 @@ class DataGenerator:
                             break
                     
                     # Extract signal and label
-                    signal, label = line.split('\t')
-                    signal = ast.literal_eval(signal)
-                    label = ast.literal_eval(label)
-
+                    signal, label = self._extract_signal_label(line)
                     signals[i] = signal
-                    labels[i] = label
+                    labels[i][:len(label)] = label
                     label_length[i] = len(label)
 
                 inputs = {
@@ -45,5 +42,26 @@ class DataGenerator:
                     'input_length': signal_length,
                     'label_length': label_length
                 }
-                outputs = {'ctc': np.zeros((self.batch_size))}
+                out = np.zeros([self.batch_size])
+                outputs = {'ctc': out}
+                
+                print("Shape of input: {0}".format(signals.shape))
+                print("Shape of labels: {0}".format(labels.shape))
+                print("Shape of input_length: {0}".format(signal_length.shape))
+                print("Shape of label_length: {0}".format(label_length.shape))
+                print("Shape of output: {0}".format(out.shape))
                 yield(inputs, outputs)
+    
+    def _extract_signal_label(self, line):
+        signal, sequence = line.split('\t')
+        signal = ast.literal_eval(signal)
+        signal = np.expand_dims(signal, -1)
+
+        sequence = ast.literal_eval(sequence)
+        label = self._sequence_to_label(sequence)
+
+        return signal, label
+
+    def _sequence_to_label(self, sequence):
+        bases = ['A', 'C', 'G', 'T']
+        return list(map(lambda b: bases.index(b), sequence))

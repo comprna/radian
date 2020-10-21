@@ -24,19 +24,27 @@ def ctc_loss_lambda(args):
         for each batch item in y_true.
     """
     labels, y_pred, input_length, label_length = args
+    print("\n\nIN CTC LOSS LAMBDA")
+    print("Shape of labels: {0}".format(labels.shape))
+    print("Shape of input_length: {0}".format(input_length.shape))
+    print("Shape of label_length: {0}".format(label_length.shape))
+    print("Shape of y_pred: {0}".format(y_pred.shape))
     return tf.keras.backend.ctc_batch_cost(labels, y_pred, input_length, label_length)
 
 def build_model(batch_size, timesteps, max_label_len, num_classes):
-    # TODO(alex) tf.keras.Input vs tf.keras.layers.Input???
-    inputs = tf.keras.Input(batch_shape=(batch_size, timesteps, 1), name="signal_input")
-    labels = tf.keras.layers.Input((max_label_len,), name="labels")
-    input_length = tf.keras.layers.Input((1,),name="input_length")
-    label_length = tf.keras.layers.Input((1,),name="label_length")
+    # TODO(alex): tf.keras.Input vs tf.keras.layers.Input???
+    input_shape = (timesteps, 1)
+    
+    inputs = tf.keras.Input(shape=input_shape, name="signal_input") # (None, 512, 1)
 
-    outputs = tcn.TCN(return_sequences=False)(inputs)
-    outputs = tf.keras.layers.Dense(num_classes)(outputs)
-    y_pred = tf.keras.layers.Activation('softmax')(outputs)
-    print(y_pred.shape)
+    inner = tcn.TCN(return_sequences=True)(inputs) # (None, 512, 64)
+    inner = tf.keras.layers.Dense(num_classes)(inner) # (None, 512, 5)
+    y_pred = tf.keras.layers.Activation('softmax')(inner) # (None, 512, 5)
+
+    labels = tf.keras.Input(shape=[max_label_len], name="labels") # (None, 100)
+    input_length = tf.keras.layers.Input(shape=[1],name="input_length") # (None, 1)
+    label_length = tf.keras.layers.Input(shape=[1],name="label_length") # (None, 1)
+
     loss_out = tf.keras.layers.Lambda(ctc_loss_lambda, output_shape=(1,), name='ctc')([labels, y_pred, input_length, label_length])
     
     return  tf.keras.Model(inputs=[inputs, labels, input_length, label_length], outputs=[loss_out])
