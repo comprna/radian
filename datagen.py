@@ -37,19 +37,14 @@ class DataGenerator:
                     label_length[i] = len(label)
 
                 inputs = {
-                    'input': signals,
+                    'inputs': signals,
                     'labels': labels,
                     'input_length': signal_length,
                     'label_length': label_length
                 }
                 out = np.zeros([self.batch_size])
                 outputs = {'ctc': out}
-                
-                print("Shape of input: {0}".format(signals.shape))
-                print("Shape of labels: {0}".format(labels.shape))
-                print("Shape of input_length: {0}".format(signal_length.shape))
-                print("Shape of label_length: {0}".format(label_length.shape))
-                print("Shape of output: {0}".format(out.shape))
+
                 yield(inputs, outputs)
     
     def _extract_signal_label(self, line):
