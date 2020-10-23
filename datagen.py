@@ -1,4 +1,5 @@
 import ast
+import h5py
 import numpy as np
 from tensorflow import keras
 
@@ -45,16 +46,16 @@ class DataGenerator(keras.utils.Sequence):
         label_length = np.zeros((self.batch_size, 1))
 
         # Generate data
-        for i, data_id in enumerate(list_ids_temp):
-            signal = np.load('data2/data/' + data_id + '.npy')
-            signal = np.expand_dims(signal, -1)
-            # signals[i,] = signal
-            signals[i] = signal
+        with h5py.File('/home/alex/Documents/rnabasecaller/data3/data.h5', 'r') as h5:
+            for i, data_id in enumerate(list_ids_temp):
+                signal = h5[data_id]['signal'][()]
+                signal = np.expand_dims(signal, -1)
+                signals[i] = signal
 
-            sequence = self.labels[data_id]
-            label = self._sequence_to_label(sequence)
-            labels[i][:len(label)] = label
-            label_length[i] = len(label)
+                sequence = self.labels[data_id]
+                label = self._sequence_to_label(sequence)
+                labels[i][:len(label)] = label
+                label_length[i] = len(label)
         
         inputs = {
             'inputs': signals,

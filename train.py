@@ -6,8 +6,8 @@ from datagen import DataGenerator
 from model import build_model
 
 def main():
-    partitions_dir = sys.argv[1]
-    labels_file = sys.argv[2]
+    partitions_dir = '/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs'
+    labels_file = '/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/labels.json'
 
     # Data info
     max_label_length = 39   # Computed during data preparation
@@ -37,7 +37,7 @@ def main():
     # labels = {'HEK-1-1': ['A', 'C'], 'HEK-1-2': ['A', 'C', 'G'], 'HEK-1-3': ['T', 'C', 'G'], 'HEK-1-4': ['C', 'C', 'T']}
 
     training_generator = DataGenerator(partitions[0]['train'], labels, **params)
-    validation_generator = DataGenerator(partitions[0]['validation'], labels, **params)
+    validation_generator = DataGenerator(partitions[0]['val'], labels, **params)
 
     model = build_model(batch_size, timesteps, max_label_length, num_classes)
     model.compile(optimizer='adam', loss={'ctc': lambda labels, y_pred: y_pred}, run_eagerly=True)
