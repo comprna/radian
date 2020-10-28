@@ -87,5 +87,7 @@ def train():
         cv_scores.append(score)
     print(cv_scores)
 
+    # TODO(save model)
+
 if __name__ == "__main__":
     train()
