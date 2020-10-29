@@ -42,9 +42,9 @@ def train_on_partition(model, partition, init_epoch, labels, gen_params,
 
     checkpoint_path = "model-{epoch:02d}-{val_loss:.2f}.h5"
     checkpoint = ModelCheckpoint(checkpoint_path, 
-                                    monitor="val_loss",
-                                    verbose=1,
-                                    mode="min")
+                                 monitor="val_loss",
+                                 verbose=1,
+                                 mode="min")
     callbacks_list = [checkpoint]
 
     model.summary()
@@ -56,10 +56,12 @@ def train_on_partition(model, partition, init_epoch, labels, gen_params,
         steps_per_epoch = n_train_signals // c.train.batch_size,
         epochs = c.train.n_epochs,
         initial_epoch = init_epoch,
+        verbose = 1, # Dev
+        # verbose = 2, # Testing
         callbacks = callbacks_list)
         # use_multiprocessing = True,
         # workers = 2)
-    
+
     return model.evaluate(
         x = val_generator, 
         steps = n_val_signals // c.train.batch_size)
@@ -83,7 +85,7 @@ def train(checkpoint, epoch_to_resume, partition_to_resume):
     # Train using k-fold CV
     cv_scores = []
     for i, partition in enumerate(partitions):
-        if i < partition_to_resume - 1:
+        if partition_to_resume is not None and i < partition_to_resume - 1:
             continue
 
         print("Training model with partition {0}...".format(i))
@@ -91,6 +93,7 @@ def train(checkpoint, epoch_to_resume, partition_to_resume):
         if checkpoint is not None:
             model = load_model(checkpoint)
             initial_epoch = epoch_to_resume
+            print("Loaded checkpoint {0}".format(checkpoint))
         else:
             model = initialise_model(c.model, c.train.opt, max_label_length)
             initial_epoch = 0
