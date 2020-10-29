@@ -30,40 +30,6 @@ def get_labels(labels_file):
     with open(labels_file, 'r') as labels_f:
         return json.load(labels_f)
 
-def train(checkpoint, epoch_to_resume, partition):
-    partitions_dir = '/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/test'
-    labels_file = '/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/test/labels.json'
-
-    # Load params
-    c = get_config('config.yaml')
-
-    # Prepare data generators
-    labels = get_labels(labels_file)
-    max_label_length = compute_max_length(labels.values())
-    partitions = get_partitions(c, partitions_dir)
-    params = {'batch_size': c.train.batch_size,
-              'window_size': c.data.window_size,
-              'max_label_len': max_label_length,
-              'shuffle': True}
-
-    # Train using k-fold CV
-    cv_scores = []
-    for i, partition in enumerate(partitions):
-        print("Training model {0}...".format(i))
-
-        if checkpoint is not None:
-            model = load_model(checkpoint)
-            initial_epoch = epoch_to_resume
-        else:
-            model = initialise_model(c.model, c.train.opt, max_label_length)
-            initial_epoch = 0
-
-        val_score = train_on_partition(model, partition, initial_epoch,
-            labels, params, c)
-        print("Model {0} scores: Loss = {1}".format(i, val_score))
-        cv_scores.append(val_score)
-    print(cv_scores)
-
 def train_on_partition(model, partition, init_epoch, labels, gen_params, 
     config):
     c = config
@@ -97,6 +63,43 @@ def train_on_partition(model, partition, init_epoch, labels, gen_params,
     return model.evaluate(
         x = val_generator, 
         steps = n_val_signals // c.train.batch_size)
+
+def train(checkpoint, epoch_to_resume, partition_to_resume):
+    partitions_dir = '/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/test'
+    labels_file = '/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/test/labels.json'
+
+    # Load params
+    c = get_config('config.yaml')
+
+    # Prepare data generators
+    labels = get_labels(labels_file)
+    max_label_length = compute_max_length(labels.values())
+    partitions = get_partitions(c, partitions_dir)
+    params = {'batch_size': c.train.batch_size,
+              'window_size': c.data.window_size,
+              'max_label_len': max_label_length,
+              'shuffle': True}
+
+    # Train using k-fold CV
+    cv_scores = []
+    for i, partition in enumerate(partitions):
+        if i < partition_to_resume - 1:
+            continue
+
+        print("Training model with partition {0}...".format(i))
+
+        if checkpoint is not None:
+            model = load_model(checkpoint)
+            initial_epoch = epoch_to_resume
+        else:
+            model = initialise_model(c.model, c.train.opt, max_label_length)
+            initial_epoch = 0
+
+        val_score = train_on_partition(model, partition, initial_epoch,
+            labels, params, c)
+        print("Model {0} scores: Loss = {1}".format(i, val_score))
+        cv_scores.append(val_score)
+    print(cv_scores)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
