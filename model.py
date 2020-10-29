@@ -1,6 +1,9 @@
 from tcn import TCN
 from tensorflow.keras.layers import Dense, Activation, Lambda
 from tensorflow.keras import Input, Model, backend
+from tensorflow import Variable
+from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
+from tensorflow.keras.optimizers import Adam
 
 def ctc_loss_lambda(args):
     """
@@ -11,10 +14,24 @@ def ctc_loss_lambda(args):
     y_pred, labels, input_length, label_length = args
     return backend.ctc_batch_cost(labels, y_pred, input_length, label_length)
 
+def get_optimizer(config):
+    step = Variable(0, trainable = False)
+    boundaries = [int(config.max_steps * bound) for bound in config.boundaries]
+    values = [config.init_rate * decay for decay in config.decays]
+    learning_rate_fn = PiecewiseConstantDecay(boundaries, values)
+    return Adam(learning_rate=learning_rate_fn(step))
+
+def initialise_model(model, opt, max_label_len):
+    model = build_model(model, max_label_len)
+    optimizer = get_optimizer(opt)
+    model.compile(optimizer = optimizer,
+                  loss = {'ctc': lambda labels, y_pred: y_pred})
+    return model
+
 def build_model(config, max_label_len):
     c = config
     input_shape = (c.timesteps, 1)
-    
+
     inputs = Input(shape=input_shape, name="inputs") # (None, 512, 1)
 
     params = {'nb_filters': c.tcn.nb_filters,
@@ -40,5 +57,5 @@ def build_model(config, max_label_len):
     label_length = Input(shape=[1],name="label_length") # (None, 1)
 
     loss_out = Lambda(ctc_loss_lambda, output_shape=(1,), name='ctc')((y_pred, labels, input_length, label_length))
-    
+
     return  Model(inputs=[inputs, labels, input_length, label_length], outputs=[loss_out])
