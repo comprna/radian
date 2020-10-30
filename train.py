@@ -1,6 +1,8 @@
 import argparse
+import h5py
 import json
 import sys
+import tensorflow as tf
 import yaml
 from attrdict import AttrDict
 from datagen import DataGenerator
@@ -8,12 +10,7 @@ from model import initialise_model
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.models import load_model
 
-def compute_max_length(labels):
-    max_len = 0
-    for label in labels:
-        if len(label) > max_len:
-            max_len = len(label)
-    return max_len
+MAX_LABEL_LEN = 46
 
 def get_config(filepath):
     with open(filepath) as config_file:
@@ -26,16 +23,12 @@ def get_partitions(config, dir):
             partitions.append(json.load(f))
     return partitions
 
-def get_labels(labels_file):
-    with open(labels_file, 'r') as labels_f:
-        return json.load(labels_f)
-
-def train_on_partition(model, partition, init_epoch, labels, gen_params, 
+def train_on_partition(model, partition, init_epoch, data_file, gen_params, 
     config):
     c = config
 
-    train_generator = DataGenerator(partition['train'], labels, **gen_params)
-    val_generator = DataGenerator(partition['val'], labels, **gen_params)
+    train_generator = DataGenerator(partition['train'], data_file, **gen_params)
+    val_generator = DataGenerator(partition['val'], data_file, **gen_params)
 
     n_train_signals = len(partition['train'])
     n_val_signals = len(partition['val'])
@@ -56,30 +49,23 @@ def train_on_partition(model, partition, init_epoch, labels, gen_params,
         steps_per_epoch = n_train_signals // c.train.batch_size,
         epochs = c.train.n_epochs,
         initial_epoch = init_epoch,
-        verbose = 1, # Dev
+        verbose = 1,   # Dev
         # verbose = 2, # Testing
         callbacks = callbacks_list)
-        # use_multiprocessing = True,
-        # workers = 2)
 
     return model.evaluate(
         x = val_generator, 
         steps = n_val_signals // c.train.batch_size)
 
-def train(checkpoint, epoch_to_resume, partition_to_resume):
-    partitions_dir = '/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/test'
-    labels_file = '/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/test/labels.json'
-
+def train(checkpoint, epoch_to_resume, partition_to_resume, partitions_dir, data_file):
     # Load params
     c = get_config('config.yaml')
 
     # Prepare data generators
-    labels = get_labels(labels_file)
-    max_label_length = compute_max_length(labels.values())
     partitions = get_partitions(c, partitions_dir)
     params = {'batch_size': c.train.batch_size,
               'window_size': c.data.window_size,
-              'max_label_len': max_label_length,
+              'max_label_len': MAX_LABEL_LEN,
               'shuffle': True}
 
     # Train using k-fold CV
@@ -95,11 +81,11 @@ def train(checkpoint, epoch_to_resume, partition_to_resume):
             initial_epoch = epoch_to_resume
             print("Loaded checkpoint {0}".format(checkpoint))
         else:
-            model = initialise_model(c.model, c.train.opt, max_label_length)
+            model = initialise_model(c.model, c.train.opt, MAX_LABEL_LEN)
             initial_epoch = 0
 
         val_score = train_on_partition(model, partition, initial_epoch,
-            labels, params, c)
+            data_file, params, c)
         print("Model {0} scores: Loss = {1}".format(i, val_score))
         cv_scores.append(val_score)
     print(cv_scores)
@@ -109,11 +95,17 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--checkpoint", help="path to weights checkpoint to load")
     parser.add_argument("-e", "--initial_epoch", help="epoch to resume training at")
     parser.add_argument("-p", "--partition", help="partition to resume training with")
+    parser.add_argument("-d", "--partitions-dir", help="directory containing partitions")
+    parser.add_argument("-f", "--data-file", help="h5 file containing training data")
     args = parser.parse_args()
 
     if args.checkpoint is not None:
         assert args.initial_epoch is not None
         assert args.partition is not None
 
-    # train(args.checkpoint, args.initial_epoch, args.partition)
-    train(None, None, None)
+    # physical_devices = tf.config.experimental.list_physical_devices('GPU')
+    # assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
+    # config = tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
+    train(args.checkpoint, args.epoch_to_resume, 
+        args.partition_to_resume, args.partitions_dir, args.data_file)

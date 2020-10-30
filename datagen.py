@@ -4,10 +4,10 @@ import numpy as np
 from tensorflow import keras
 
 class DataGenerator(keras.utils.Sequence):
-    def __init__(self, list_ids, labels, batch_size, window_size, 
+    def __init__(self, list_ids, data_file, batch_size, window_size, 
         max_label_len, shuffle=True):
         self.list_ids = list_ids
-        self.labels = labels
+        self.data_file = data_file
         self.batch_size = batch_size
         self.window_size = window_size
         self.max_label_len = max_label_len
@@ -46,13 +46,14 @@ class DataGenerator(keras.utils.Sequence):
         label_length = np.zeros((self.batch_size, 1))
 
         # Generate data
-        with h5py.File('/home/alex/Documents/rnabasecaller/data3/data.h5', 'r') as h5:
+        with h5py.File(self.data_file, 'r') as h5:
             for i, data_id in enumerate(list_ids_temp):
                 signal = h5[data_id]['signal'][()]
                 signal = np.expand_dims(signal, -1)
                 signals[i] = signal
 
-                sequence = self.labels[data_id]
+                sequence = h5[data_id]['label'][()]
+                sequence = [x.decode("utf-8") for x in sequence]
                 label = self._sequence_to_label(sequence)
                 labels[i][:len(label)] = label
                 label_length[i] = len(label)
