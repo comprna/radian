@@ -57,9 +57,10 @@ def train_on_partition(model, partition, init_epoch, data_file, gen_params,
         x = val_generator, 
         steps = n_val_signals // c.train.batch_size)
 
-def train(checkpoint, epoch_to_resume, partition_to_resume, partitions_dir, data_file):
+def train(checkpoint, epoch_to_resume, partition_to_resume, 
+    partitions_dir, data_file, config_file):
     # Load params
-    c = get_config('config.yaml')
+    c = get_config(config_file)
 
     # Prepare data generators
     partitions = get_partitions(c, partitions_dir)
@@ -97,6 +98,7 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--partition", help="partition to resume training with")
     parser.add_argument("-d", "--partitions-dir", help="directory containing partitions")
     parser.add_argument("-f", "--data-file", help="h5 file containing training data")
+    parser.add_argument("-g", "--config-file", help="file containing model config params")
     args = parser.parse_args()
 
     if args.checkpoint is not None:
@@ -107,5 +109,9 @@ if __name__ == "__main__":
     # assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
     # config = tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
-    train(args.checkpoint, args.epoch_to_resume, 
-        args.partition_to_resume, args.partitions_dir, args.data_file)
+    train(args.checkpoint, 
+          args.initial_epoch, 
+          args.partition, 
+          args.partitions_dir, 
+          args.data_file, 
+          args.config_file)
