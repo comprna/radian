@@ -105,12 +105,18 @@ if __name__ == "__main__":
         assert args.initial_epoch is not None
         assert args.partition is not None
 
+    print("SETTING CONFIG....")
+
     config = tf.compat.v1.ConfigProto(device_count = {'GPU': 1 , 'CPU': 8}) 
     sess = tf.compat.v1.Session(config=config) 
     tf.compat.v1.keras.backend.set_session(sess)
 
+    print("GETTING LOCAL DEVICES...")
+
     from tensorflow.python.client import device_lib
     print("Local devices: {0}".format(device_lib.list_local_devices()))
+
+    print("STARTING TRAINING...")
 
     train(args.checkpoint, 
           args.initial_epoch, 
