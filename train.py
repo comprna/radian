@@ -49,8 +49,8 @@ def train_on_partition(model, partition, init_epoch, data_file, gen_params,
         steps_per_epoch = n_train_signals // c.train.batch_size,
         epochs = c.train.n_epochs,
         initial_epoch = init_epoch,
-        # verbose = 1,   # Dev
-        verbose = 2, # Testing
+        verbose = 1,   # Dev
+        # verbose = 2, # Testing
         callbacks = callbacks_list)
 
     return model.evaluate(
