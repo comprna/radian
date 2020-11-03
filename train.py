@@ -49,8 +49,8 @@ def train_on_partition(model, partition, init_epoch, data_file, gen_params,
         steps_per_epoch = n_train_signals // c.train.batch_size,
         epochs = c.train.n_epochs,
         initial_epoch = init_epoch,
-        verbose = 1,   # Dev
-        # verbose = 2, # Testing
+        # verbose = 1,   # Dev
+        verbose = 2, # Testing
         callbacks = callbacks_list)
 
     return model.evaluate(
@@ -105,9 +105,12 @@ if __name__ == "__main__":
         assert args.initial_epoch is not None
         assert args.partition is not None
 
-    physical_devices = tf.config.experimental.list_physical_devices('GPU')
-    assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
-    config = tf.config.experimental.set_memory_growth(physical_devices[0], True)
+    config = tf.compat.v1.ConfigProto(device_count = {'GPU': 1 , 'CPU': 12}) 
+    sess = tf.compat.v1.Session(config=config) 
+    tf.compat.v1.keras.backend.set_session(sess)
+
+    from tensorflow.python.client import device_lib
+    print("Local devices: {0}".format(device_lib.list_local_devices()))
 
     train(args.checkpoint, 
           args.initial_epoch, 
