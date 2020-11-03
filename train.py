@@ -109,8 +109,8 @@ if __name__ == "__main__":
     sess = tf.compat.v1.Session(config=config) 
     tf.compat.v1.keras.backend.set_session(sess)
 
-    # from tensorflow.python.client import device_lib
-    # print("Local devices: {0}".format(device_lib.list_local_devices()))
+    from tensorflow.python.client import device_lib
+    print("Local devices: {0}".format(device_lib.list_local_devices()))
 
     train(args.checkpoint, 
           args.initial_epoch, 
