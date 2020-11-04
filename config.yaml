@@ -3,7 +3,7 @@ data:
   window_size: 512                        # Causalcall
 
 train:
-  batch_size: 256                         # Causalcall
+  batch_size: 25                         # Causalcall
   n_epochs: 100                           # Experimental
   n_folds: 10                             # Experimental
   val_freq: 10                            # Causalcall
@@ -18,7 +18,7 @@ model:
   softmax_units: 5                        # Causalcall
   timesteps: 512                          # Causalcall (size of window)
   tcn:
-    nb_filters: 256                       # Causalcall
+    nb_filters: 25                       # Causalcall
     kernel_size: 3                        # Causalcall
     nb_stacks: 1                          # Default
     dilations: [1,2,4,8,16]               # Causalcall

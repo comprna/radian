@@ -1,6 +1,7 @@
 import argparse
 import h5py
 import json
+import numpy as np
 import sys
 import tensorflow as tf
 import yaml
@@ -57,7 +58,7 @@ def train_on_partition(model, partition, init_epoch, data_file, gen_params,
         x = val_generator, 
         steps = n_val_signals // c.train.batch_size)
 
-def train(checkpoint, epoch_to_resume, partition_to_resume, 
+def train_with_cv(checkpoint, epoch_to_resume, partition_to_resume, 
     partitions_dir, data_file, config_file):
     # Load params
     c = get_config(config_file)
@@ -91,6 +92,68 @@ def train(checkpoint, epoch_to_resume, partition_to_resume,
         cv_scores.append(val_score)
     print(cv_scores)
 
+
+def read_tfrecord(example):
+    # TODO: Get 512 from config file
+    features = {
+        'signal': tf.io.FixedLenFeature([512], tf.float32),
+        'label': tf.io.VarLenFeature(tf.float32),
+        'signal_length': tf.io.FixedLenFeature([], tf.int64), # shape [] means scalar
+        'label_length': tf.io.FixedLenFeature([], tf.int64)
+    }
+
+    tf_record = tf.io.parse_single_example(example, features)
+    
+    signal = tf_record['signal']
+    label = tf.sparse.to_dense(tf_record['label']) # VarLenFeature decoding required
+    signal_length = tf_record['signal_length']
+    label_length = tf_record['label_length']
+
+    print(signal)
+    print(label)
+    print(signal_length)
+    print(label_length)
+
+    # TODO: Remove plural
+    inputs = {
+            'inputs': signal,
+            'labels': label,
+            'input_length': signal_length,
+            'label_length': label_length
+    }
+    outputs = {'ctc': 0}
+
+    return inputs, outputs
+
+def get_batched_dataset(filenames):
+    dataset = tf.data.TFRecordDataset(filenames)
+    dataset = dataset.map(read_tfrecord)
+    return dataset
+
+def train():
+    filenames = tf.io.gfile.glob('*.tfrecords')
+    dataset = get_batched_dataset(filenames)
+    AUTOTUNE = tf.data.experimental.AUTOTUNE
+    dataset = dataset.prefetch(buffer_size=AUTOTUNE)
+    dataset = dataset.batch(25)
+    # batch = next(iter(dataset))
+    # print(batch)
+
+    c = get_config('config.yaml')
+
+    model = initialise_model(c.model, c.train.opt, MAX_LABEL_LEN)
+
+    model.summary()
+    model.fit(dataset,
+        validation_data=dataset,
+        validation_steps = 10,
+        steps_per_epoch = 2,
+        epochs = 1,
+        initial_epoch = 0,
+        verbose = 1,   # Dev
+        # verbose = 2, # Testing
+        )
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--checkpoint", help="path to weights checkpoint to load")
@@ -105,9 +168,18 @@ if __name__ == "__main__":
         assert args.initial_epoch is not None
         assert args.partition is not None
 
-    train(args.checkpoint, 
-          args.initial_epoch, 
-          args.partition, 
-          args.partitions_dir, 
-          args.data_file, 
-          args.config_file)
+    config = tf.compat.v1.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.log_device_placement = True
+
+    sess = tf.compat.v1.Session(config=config)
+    tf.compat.v1.keras.backend.set_session(sess)
+
+    train()
+
+    # train(args.checkpoint, 
+    #       args.initial_epoch, 
+    #       args.partition, 
+    #       args.partitions_dir, 
+    #       args.data_file, 
+    #       args.config_file)
