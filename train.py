@@ -87,7 +87,6 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
     train_filenames = tf.io.gfile.glob("{0}/train/*.tfrecords".format(shards_dir))
     train_dataset = get_batched_dataset(train_filenames, c, val=True)
-    count_training_size(train_dataset)
 
     val_filenames = tf.io.gfile.glob("{0}/val/*.tfrecords".format(shards_dir))
     val_dataset = get_batched_dataset(val_filenames, c, val=True)
