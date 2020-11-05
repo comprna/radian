@@ -134,6 +134,8 @@ if __name__ == "__main__":
     # sess = tf.compat.v1.Session(config=config)
     # tf.compat.v1.keras.backend.set_session(sess)
 
+    tf.compat.v1.disable_eager_execution()
+
     train(args.shards_dir,
           args.checkpoint, 
           args.initial_epoch, 
