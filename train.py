@@ -14,7 +14,7 @@ from tensorflow.keras.models import load_model
 
 # Computed elsewhere
 MAX_LABEL_LEN = 46
-WINDOWS_PER_SHARD = 50000
+STEPS_PER_EPOCH = 41407
 
 def get_config(filepath):
     with open(filepath) as config_file:
@@ -76,12 +76,18 @@ def get_batched_dataset(shard_files, config, val = False):
 #         print("Sample {0}".format(i))
 #     tf.print("execution time: {0}".format(time.perf_counter() - start_time))
 
+# def count_training_size(dataset):
+#     n = 0
+#     for sample in dataset:
+#         n += 1
+#     print(n)
+
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     c = get_config(config_file)
 
     train_filenames = tf.io.gfile.glob("{0}/train/*.tfrecords".format(shards_dir))
-    train_dataset = get_batched_dataset(train_filenames, c, val=False)
-    n_train_signals = len(train_filenames) * WINDOWS_PER_SHARD
+    train_dataset = get_batched_dataset(train_filenames, c, val=True)
+    count_training_size(train_dataset)
 
     val_filenames = tf.io.gfile.glob("{0}/val/*.tfrecords".format(shards_dir))
     val_dataset = get_batched_dataset(val_filenames, c, val=True)
@@ -103,7 +109,7 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
     model.summary()
     model.fit(train_dataset,
-        steps_per_epoch = n_train_signals // c.train.batch_size,
+        steps_per_epoch = STEPS_PER_EPOCH,
         epochs = c.train.n_epochs,
         initial_epoch = initial_epoch,
         validation_data = val_dataset,
