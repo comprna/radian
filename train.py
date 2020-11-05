@@ -12,6 +12,11 @@ from model import initialise_model
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.models import load_model
 
+# Profiling
+from datetime import datetime
+from packaging import version
+import os
+
 # Computed elsewhere
 MAX_LABEL_LEN = 46
 STEPS_PER_EPOCH = 41407
@@ -99,12 +104,17 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
         model = initialise_model(c.model, c.train.opt, MAX_LABEL_LEN)
         initial_epoch = 0
 
+    logs = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
+    tboard_callback = tf.keras.callbacks.TensorBoard(log_dir = logs,
+                                                 histogram_freq = 1,
+                                                 profile_batch = '500,520')
+
     checkpoint_path = "model-{epoch:02d}-{val_loss:.2f}.h5"
     checkpoint = ModelCheckpoint(checkpoint_path, 
                                  monitor="val_loss",
                                  verbose=1,
                                  mode="min")
-    callbacks_list = [checkpoint]
+    callbacks_list = [checkpoint, tboard_callback]
 
     model.summary()
     model.fit(train_dataset,
