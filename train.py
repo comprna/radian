@@ -20,12 +20,13 @@ import os
 # Computed elsewhere
 MAX_LABEL_LEN = 46
 STEPS_PER_EPOCH = 41407
+WINDOWS_PER_SHARD = 50000
 
 def get_config(filepath):
     with open(filepath) as config_file:
         return AttrDict(yaml.load(config_file, Loader=yaml.Loader))
 
-def read_tfrecord(example):
+def read_tfrecord(example_batch):
     features = {
         'signal': tf.io.FixedLenFeature([512], tf.float32), # TODO: Remove hardcoding
         'label': tf.io.VarLenFeature(tf.float32),
@@ -33,7 +34,7 @@ def read_tfrecord(example):
         'label_length': tf.io.FixedLenFeature([], tf.int64)
     }
 
-    tf_record = tf.io.parse_single_example(example, features)
+    tf_record = tf.io.parse_example(example_batch, features)
     
     signal = tf_record['signal']
     label = tf.sparse.to_dense(tf_record['label']) # VarLenFeature decoding required
@@ -41,12 +42,12 @@ def read_tfrecord(example):
     label_length = tf_record['label_length']
 
     inputs = {
-            'inputs': signal,
-            'labels': label,
-            'input_length': signal_length,
-            'label_length': label_length
+        'inputs': signal,
+        'labels': label,
+        'input_length': signal_length,
+        'label_length': label_length
     }
-    outputs = {'ctc': 0}
+    outputs = {'ctc': np.zeros([256])} # TODO: Remove hardcoding
 
     return inputs, outputs
 
@@ -58,7 +59,7 @@ def get_batched_dataset(shard_files, config, val = False):
     option_no_order.experimental_deterministic = False
     shards = tf.data.Dataset.from_tensor_slices(shard_files)
     shards = shards.with_options(option_no_order)
-    shards = shards.shuffle(buffer_size = tf.cast(tf.shape(shard_files)[0], tf.int64)) # TODO: Is this redundant?
+    shards = shards.shuffle(buffer_size = tf.cast(tf.shape(shard_files)[0], tf.int64))
     if val == False:
         shards = shards.repeat()
 
@@ -66,32 +67,37 @@ def get_batched_dataset(shard_files, config, val = False):
     dataset = shards.interleave(tf.data.TFRecordDataset,
                                 cycle_length=4, 
                                 num_parallel_calls=AUTO)
-    dataset = dataset.shuffle(buffer_size=100000)
+    dataset = dataset.shuffle(buffer_size=WINDOWS_PER_SHARD+1)
+    dataset = dataset.batch(config.train.batch_size)
     dataset = dataset.map(map_func = read_tfrecord,
                           num_parallel_calls = AUTO)
     dataset = dataset.cache() # Cache after map
-    dataset = dataset.batch(config.train.batch_size) # TODO: Improvement: Batch before map, vectorize map_func
     dataset = dataset.prefetch(AUTO)
     return dataset
 
-# def benchmark(dataset, num_epochs=1):
-#     start_time = time.perf_counter()
-#     # for epoch_num in range(num_epochs):
-#     for i, sample in enumerate(dataset):
-#         print("Sample {0}".format(i))
-#     tf.print("execution time: {0}".format(time.perf_counter() - start_time))
+def benchmark(dataset, num_epochs=1):
+    start_time = time.perf_counter()
+    # for epoch_num in range(num_epochs):
+    for s in dataset:
+        pass
+    tf.print("execution time: {0}".format(time.perf_counter() - start_time))
 
-# def count_training_size(dataset):
-#     n = 0
-#     for sample in dataset:
-#         n += 1
-#     print(n)
+def count_training_size(dataset):
+    n = 0
+    for sample in dataset:
+        n += 1
+    print(n)
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     c = get_config(config_file)
 
+    # # Benchmarking
+    # train_filenames = tf.io.gfile.glob("{0}/*.tfrecords".format(shards_dir))
+    # train_dataset = get_batched_dataset(train_filenames, c, val=True)
+    # benchmark(train_dataset)
+
     train_filenames = tf.io.gfile.glob("{0}/train/*.tfrecords".format(shards_dir))
-    train_dataset = get_batched_dataset(train_filenames, c, val=True)
+    train_dataset = get_batched_dataset(train_filenames, c, val=False)
 
     val_filenames = tf.io.gfile.glob("{0}/val/*.tfrecords".format(shards_dir))
     val_dataset = get_batched_dataset(val_filenames, c, val=True)
@@ -142,12 +148,12 @@ if __name__ == "__main__":
         assert args.initial_epoch is not None
 
     # Running locally:
-    # config = tf.compat.v1.ConfigProto()
-    # config.gpu_options.allow_growth = True
-    # config.log_device_placement = True
+    config = tf.compat.v1.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.log_device_placement = True
 
-    # sess = tf.compat.v1.Session(config=config)
-    # tf.compat.v1.keras.backend.set_session(sess)
+    sess = tf.compat.v1.Session(config=config)
+    tf.compat.v1.keras.backend.set_session(sess)
 
     # tf.compat.v1.disable_eager_execution()
 
