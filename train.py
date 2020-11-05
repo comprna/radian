@@ -134,9 +134,10 @@ if __name__ == "__main__":
     # sess = tf.compat.v1.Session(config=config)
     # tf.compat.v1.keras.backend.set_session(sess)
 
-    tf.compat.v1.disable_eager_execution()
+    # tf.compat.v1.disable_eager_execution()
 
     train(args.shards_dir,
           args.checkpoint, 
           args.initial_epoch, 
           args.config_file)
+    # train('/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards', None, None, 'config.yaml')
