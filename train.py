@@ -54,24 +54,20 @@ def read_tfrecord(example_batch):
 def get_batched_dataset(shard_files, config, val = False):
     AUTO = tf.data.experimental.AUTOTUNE
 
-    # Create a dataset that is made of shuffled shards
     option_no_order = tf.data.Options()
     option_no_order.experimental_deterministic = False
-    shards = tf.data.Dataset.from_tensor_slices(shard_files)
-    shards = shards.with_options(option_no_order)
-    shards = shards.shuffle(buffer_size = tf.cast(tf.shape(shard_files)[0], tf.int64))
-    if val == False:
-        shards = shards.repeat()
-
-    # Create a TFRecordsDataset that reads shard files in random order
-    dataset = shards.interleave(tf.data.TFRecordDataset,
+    dataset = tf.data.Dataset.from_tensor_slices(shard_files)
+    dataset = dataset.with_options(option_no_order)
+    dataset = dataset.interleave(tf.data.TFRecordDataset,
                                 cycle_length=32, 
                                 num_parallel_calls=AUTO)
+    dataset = dataset.cache()
     dataset = dataset.shuffle(buffer_size=WINDOWS_PER_SHARD+1)
+    if val == False:
+        dataset = dataset.repeat()
     dataset = dataset.batch(config.train.batch_size)
     dataset = dataset.map(map_func = read_tfrecord,
                           num_parallel_calls = AUTO)
-    dataset = dataset.cache() # Cache after map
     dataset = dataset.prefetch(AUTO)
     return dataset
 
