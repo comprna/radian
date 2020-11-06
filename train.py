@@ -47,13 +47,12 @@ def read_tfrecord(example_batch):
         'input_length': signal_length,
         'label_length': label_length
     }
-    outputs = {'ctc': np.zeros([512])} # TODO: Remove hardcoding
+    outputs = {'ctc': np.zeros([256])} # TODO: Remove hardcoding
 
     return inputs, outputs
 
 def get_batched_dataset(shard_files, config, val = False):
-    # AUTO = tf.data.experimental.AUTOTUNE
-    AUTO = 48
+    AUTO = tf.data.experimental.AUTOTUNE
 
     # Create a dataset that is made of shuffled shards
     option_no_order = tf.data.Options()
@@ -66,7 +65,7 @@ def get_batched_dataset(shard_files, config, val = False):
 
     # Create a TFRecordsDataset that reads shard files in random order
     dataset = shards.interleave(tf.data.TFRecordDataset,
-                                cycle_length=48, 
+                                cycle_length=32, 
                                 num_parallel_calls=AUTO)
     dataset = dataset.shuffle(buffer_size=WINDOWS_PER_SHARD+1)
     dataset = dataset.batch(config.train.batch_size)
