@@ -151,6 +151,7 @@ if __name__ == "__main__":
 
     if args.checkpoint is not None:
         assert args.initial_epoch is not None
+        args.initial_epoch = int(args.initial_epoch)
 
     # Running locally:
     # config = tf.compat.v1.ConfigProto()
@@ -162,6 +163,6 @@ if __name__ == "__main__":
 
     train(args.shards_dir,
           args.checkpoint, 
-          int(args.initial_epoch), 
+          args.initial_epoch, 
           args.config_file)
     # train('/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards', 'model-06-27.38.h5', 7, 'config.yaml')
