@@ -102,13 +102,17 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     val_filenames = tf.io.gfile.glob("{0}/val/*.tfrecords".format(shards_dir))
     val_dataset = get_batched_dataset(val_filenames, c, val=True)
 
-    if checkpoint is not None:
-        model = load_model(checkpoint)
-        initial_epoch = epoch_to_resume
-        print("Loaded checkpoint {0}".format(checkpoint))
-    else:
-        model = initialise_model(c.model, c.train.opt, MAX_LABEL_LEN)
-        initial_epoch = 0
+    strategy = tf.distribute.MirroredStrategy()
+    print("Number of devices: {}".format(strategy.num_replicas_in_sync))
+
+    with strategy.scope():
+        if checkpoint is not None:
+            model = load_model(checkpoint)
+            initial_epoch = epoch_to_resume
+            print("Loaded checkpoint {0}".format(checkpoint))
+        else:
+            model = initialise_model(c.model, c.train.opt, MAX_LABEL_LEN)
+            initial_epoch = 0
 
     logs = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
     tboard_callback = tf.keras.callbacks.TensorBoard(log_dir = logs,
