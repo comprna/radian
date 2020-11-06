@@ -103,7 +103,7 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
     with strategy.scope():
         if checkpoint is not None:
-            model = load_model(checkpoint, custom_objects={'TCN': TCN, 'ctc': lambda labels, y_pred: y_pred})
+            model = load_model(checkpoint, custom_objects={'TCN': TCN, '<lambda>': lambda y_true, y_pred: y_pred})
             initial_epoch = epoch_to_resume
             print("Loaded checkpoint {0}".format(checkpoint))
         else:
@@ -155,8 +155,8 @@ if __name__ == "__main__":
     # sess = tf.compat.v1.Session(config=config)
     # tf.compat.v1.keras.backend.set_session(sess)
 
-    train(args.shards_dir,
-          args.checkpoint, 
-          int(args.initial_epoch), 
-          args.config_file)
-    # train('/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards', None, None, 'config.yaml')
+    # train(args.shards_dir,
+    #       args.checkpoint, 
+    #       int(args.initial_epoch), 
+    #       args.config_file)
+    train('/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards', 'model-06-27.38.h5', 7, 'config.yaml')
