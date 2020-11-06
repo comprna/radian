@@ -128,14 +128,14 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
     model.summary()
     model.fit(train_dataset,
-        steps_per_epoch = STEPS_PER_EPOCH,
-        epochs = c.train.n_epochs,
-        initial_epoch = initial_epoch,
-        validation_data = val_dataset,
-        validation_freq = c.train.val_freq,
-        verbose = 1,   # Dev
-        # verbose = 2, # Testing
-        callbacks = callbacks_list)
+              steps_per_epoch = STEPS_PER_EPOCH,
+              epochs = c.train.n_epochs,
+              initial_epoch = initial_epoch,
+              validation_data = val_dataset,
+              validation_freq = c.train.val_freq,
+              verbose = 1,   # Dev
+              # verbose = 2, # Testing
+              callbacks = callbacks_list)
     
     score = model.evaluate(x = val_dataset)
     print(score)
