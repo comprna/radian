@@ -23,7 +23,8 @@ def get_optimizer(config):
 
 def initialise_model(model, opt, max_label_len):
     model = build_model(model, max_label_len)
-    optimizer = get_optimizer(opt)
+    # optimizer = get_optimizer(opt)
+    optimizer = Adam(learning_rate=0.01)
     model.compile(optimizer = optimizer,
                   loss = {'ctc': lambda labels, y_pred: y_pred})
     return model
