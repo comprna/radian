@@ -103,7 +103,7 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     val_dataset = get_batched_dataset(val_filenames, c, val=True)
 
     strategy = tf.distribute.MirroredStrategy()
-    print("Number of devices: {}".format(strategy.num_replicas_in_sync))
+    print("\n\n\n\n\nNumber of devices: {}\n\n\n\n\n".format(strategy.num_replicas_in_sync))
 
     with strategy.scope():
         if checkpoint is not None:
