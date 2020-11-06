@@ -20,7 +20,7 @@ import os
 
 # Computed elsewhere
 MAX_LABEL_LEN = 46
-STEPS_PER_EPOCH = 414
+STEPS_PER_EPOCH = 41407
 WINDOWS_PER_SHARD = 50000
 
 def get_config(filepath):
