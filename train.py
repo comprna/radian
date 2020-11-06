@@ -99,7 +99,6 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     val_dataset = get_batched_dataset(val_filenames, c, val=True)
 
     strategy = tf.distribute.MirroredStrategy()
-    print("\n\n\n\n\nNumber of devices: {}\n\n\n\n\n".format(strategy.num_replicas_in_sync))
 
     with strategy.scope():
         if checkpoint is not None:
@@ -148,17 +147,15 @@ if __name__ == "__main__":
         assert args.initial_epoch is not None
 
     # Running locally:
-    config = tf.compat.v1.ConfigProto()
-    config.gpu_options.allow_growth = True
-    config.log_device_placement = True
+    # config = tf.compat.v1.ConfigProto()
+    # config.gpu_options.allow_growth = True
+    # config.log_device_placement = True
 
-    sess = tf.compat.v1.Session(config=config)
-    tf.compat.v1.keras.backend.set_session(sess)
-
-    # tf.compat.v1.disable_eager_execution()
+    # sess = tf.compat.v1.Session(config=config)
+    # tf.compat.v1.keras.backend.set_session(sess)
 
     train(args.shards_dir,
           args.checkpoint, 
-          args.initial_epoch, 
+          int(args.initial_epoch), 
           args.config_file)
     # train('/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards', None, None, 'config.yaml')
