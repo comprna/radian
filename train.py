@@ -9,6 +9,7 @@ import yaml
 from attrdict import AttrDict
 from datagen import DataGenerator
 from model import initialise_model
+from tcn import TCN
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.models import load_model
 
@@ -19,7 +20,7 @@ import os
 
 # Computed elsewhere
 MAX_LABEL_LEN = 46
-STEPS_PER_EPOCH = 41407
+STEPS_PER_EPOCH = 414
 WINDOWS_PER_SHARD = 50000
 
 def get_config(filepath):
@@ -102,7 +103,7 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
     with strategy.scope():
         if checkpoint is not None:
-            model = load_model(checkpoint)
+            model = load_model(checkpoint, custom_objects={'TCN': TCN, 'ctc': lambda labels, y_pred: y_pred})
             initial_epoch = epoch_to_resume
             print("Loaded checkpoint {0}".format(checkpoint))
         else:
