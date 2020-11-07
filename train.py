@@ -107,9 +107,9 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
             print("Loaded checkpoint {0}".format(checkpoint))
             initial_epoch = epoch_to_resume
             # update the learning rate
-            print("Old learning rate: {}".format(tf.keras.get_value(model.optimizer.lr)))
-            tf.keras.set_value(model.optimizer.lr, 0.004)
-            print("New learning rate: {}".format(tf.keras.get_value(model.optimizer.lr)))
+            print("Old learning rate: {}".format(tf.keras.backend.get_value(model.optimizer.lr)))
+            tf.keras.backend.set_value(model.optimizer.lr, 0.004)
+            print("New learning rate: {}".format(tf.keras.backend.get_value(model.optimizer.lr)))
             
         else:
             model = initialise_model(c.model, c.train.opt, MAX_LABEL_LEN)
