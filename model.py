@@ -1,9 +1,14 @@
+import tensorflow as tf
 from tcn import TCN
 from tensorflow.keras.layers import Dense, Activation, Lambda
 from tensorflow.keras import Input, Model, backend
 from tensorflow import Variable
+from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 from tensorflow.keras.optimizers import Adam
+
+# Computed elsewhere
+MAX_LABEL_LEN = 46
 
 def ctc_loss_lambda(args):
     """
@@ -20,6 +25,20 @@ def get_optimizer(config):
     values = [config.init_rate * decay for decay in config.decays]
     learning_rate_fn = PiecewiseConstantDecay(boundaries, values)
     return Adam(learning_rate=learning_rate_fn(step))
+
+def initialise_or_load_model(checkpoint, epoch_to_resume, config):
+    if checkpoint is not None:
+        model = load_model(checkpoint, custom_objects={'TCN': TCN, '<lambda>': lambda y_true, y_pred: y_pred})
+        print("Loaded checkpoint {0}".format(checkpoint))
+        initial_epoch = epoch_to_resume
+        # Update the learning rate
+        print("Old learning rate: {}".format(tf.keras.backend.get_value(model.optimizer.lr)))
+        tf.keras.backend.set_value(model.optimizer.lr, 0.004)
+        print("New learning rate: {}".format(tf.keras.backend.get_value(model.optimizer.lr)))
+    else:
+        model = initialise_model(config.model, config.train.opt, MAX_LABEL_LEN)
+        initial_epoch = 0
+    return model, initial_epoch
 
 def initialise_model(model, opt, max_label_len):
     model = build_model(model, max_label_len)

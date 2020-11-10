@@ -1,75 +1,19 @@
 import argparse
-import h5py
-import json
-import numpy as np
 import sys
 import tensorflow as tf
 import yaml
 from attrdict import AttrDict
-from datagen import DataGenerator
-from model import initialise_model
-from tcn import TCN
-from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.models import load_model
-
-# Profiling
+from data import get_batched_dataset
 from datetime import datetime
-from packaging import version
-import os
+from model import initialise_or_load_model
+from tensorflow.keras.callbacks import ModelCheckpoint
 
 # Computed elsewhere
-MAX_LABEL_LEN = 46
 STEPS_PER_EPOCH = 41407
-WINDOWS_PER_SHARD = 50000
 
 def get_config(filepath):
     with open(filepath) as config_file:
         return AttrDict(yaml.load(config_file, Loader=yaml.Loader))
-
-def read_tfrecord(example_batch):
-    features = {
-        'signal': tf.io.FixedLenFeature([512], tf.float32), # TODO: Remove hardcoding
-        'label': tf.io.VarLenFeature(tf.float32),
-        'signal_length': tf.io.FixedLenFeature([], tf.int64), # shape [] means scalar
-        'label_length': tf.io.FixedLenFeature([], tf.int64)
-    }
-
-    tf_record = tf.io.parse_example(example_batch, features)
-    
-    signal = tf_record['signal']
-    label = tf.sparse.to_dense(tf_record['label']) # VarLenFeature decoding required
-    signal_length = tf_record['signal_length']
-    label_length = tf_record['label_length']
-
-    inputs = {
-        'inputs': signal,
-        'labels': label,
-        'input_length': signal_length,
-        'label_length': label_length
-    }
-    outputs = {'ctc': np.zeros([256])} # TODO: Remove hardcoding
-
-    return inputs, outputs
-
-def get_batched_dataset(shard_files, config, val = False):
-    AUTO = tf.data.experimental.AUTOTUNE
-
-    option_no_order = tf.data.Options()
-    option_no_order.experimental_deterministic = False
-    dataset = tf.data.Dataset.from_tensor_slices(shard_files)
-    dataset = dataset.with_options(option_no_order)
-    dataset = dataset.interleave(tf.data.TFRecordDataset,
-                                cycle_length=32, 
-                                num_parallel_calls=AUTO)
-    dataset = dataset.cache()
-    dataset = dataset.shuffle(buffer_size=WINDOWS_PER_SHARD+1)
-    if val == False:
-        dataset = dataset.repeat()
-    dataset = dataset.batch(config.train.batch_size)
-    dataset = dataset.map(map_func = read_tfrecord,
-                          num_parallel_calls = AUTO)
-    dataset = dataset.prefetch(AUTO)
-    return dataset
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     c = get_config(config_file)
@@ -82,18 +26,9 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
     strategy = tf.distribute.MirroredStrategy()
     with strategy.scope():
-        if checkpoint is not None:
-            model = load_model(checkpoint, custom_objects={'TCN': TCN, '<lambda>': lambda y_true, y_pred: y_pred})
-            print("Loaded checkpoint {0}".format(checkpoint))
-            initial_epoch = epoch_to_resume
-            # update the learning rate
-            print("Old learning rate: {}".format(tf.keras.backend.get_value(model.optimizer.lr)))
-            tf.keras.backend.set_value(model.optimizer.lr, 0.004)
-            print("New learning rate: {}".format(tf.keras.backend.get_value(model.optimizer.lr)))
-            
-        else:
-            model = initialise_model(c.model, c.train.opt, MAX_LABEL_LEN)
-            initial_epoch = 0
+        model, initial_epoch = initialise_or_load_model(checkpoint, 
+                                                        epoch_to_resume, 
+                                                        c)
 
     logs = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
     tboard_callback = tf.keras.callbacks.TensorBoard(log_dir = logs,
@@ -120,6 +55,14 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     score = model.evaluate(x = val_dataset)
     print(score)
 
+def train_local():
+    config = tf.compat.v1.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.log_device_placement = True
+    sess = tf.compat.v1.Session(config=config)
+    tf.compat.v1.keras.backend.set_session(sess)
+    train('/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards', None, None, 'config.yaml')
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--checkpoint", help="path to weights checkpoint to load")
@@ -132,13 +75,7 @@ if __name__ == "__main__":
         assert args.initial_epoch is not None
         args.initial_epoch = int(args.initial_epoch)
 
-    # Running locally:
-    config = tf.compat.v1.ConfigProto()
-    config.gpu_options.allow_growth = True
-    config.log_device_placement = True
-    sess = tf.compat.v1.Session(config=config)
-    tf.compat.v1.keras.backend.set_session(sess)
-    train('/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards', None, None, 'config.yaml')
+    train_local()
 
     # train(args.shards_dir,
     #       args.checkpoint, 
