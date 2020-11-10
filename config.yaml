@@ -26,6 +26,6 @@ model:
     use_skip_connections: False           # Default
     dropout_rate: 0.0                     # Default
     return_sequences: True                # Default
-    activation: 'relu'                    # Default
+    activation: 'sigmoid'                 # CausalCall
     kernel_initializer: 'he_normal'       # Default
     use_batch_norm: False                 # Default
