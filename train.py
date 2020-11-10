@@ -4,7 +4,6 @@ import json
 import numpy as np
 import sys
 import tensorflow as tf
-import time
 import yaml
 from attrdict import AttrDict
 from datagen import DataGenerator
@@ -72,26 +71,8 @@ def get_batched_dataset(shard_files, config, val = False):
     dataset = dataset.prefetch(AUTO)
     return dataset
 
-def benchmark(dataset, num_epochs=1):
-    start_time = time.perf_counter()
-    # for epoch_num in range(num_epochs):
-    for s in dataset:
-        pass
-    tf.print("execution time: {0}".format(time.perf_counter() - start_time))
-
-def count_training_size(dataset):
-    n = 0
-    for sample in dataset:
-        n += 1
-    print(n)
-
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     c = get_config(config_file)
-
-    # # Benchmarking
-    # train_filenames = tf.io.gfile.glob("{0}/*.tfrecords".format(shards_dir))
-    # train_dataset = get_batched_dataset(train_filenames, c, val=True)
-    # benchmark(train_dataset)
 
     train_filenames = tf.io.gfile.glob("{0}/train/*.tfrecords".format(shards_dir))
     train_dataset = get_batched_dataset(train_filenames, c, val=False)
@@ -100,7 +81,6 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     val_dataset = get_batched_dataset(val_filenames, c, val=True)
 
     strategy = tf.distribute.MirroredStrategy()
-
     with strategy.scope():
         if checkpoint is not None:
             model = load_model(checkpoint, custom_objects={'TCN': TCN, '<lambda>': lambda y_true, y_pred: y_pred})
@@ -134,8 +114,7 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
               initial_epoch = initial_epoch,
               validation_data = val_dataset,
               validation_freq = c.train.val_freq,
-              verbose = 1,   # Dev
-              # verbose = 2, # Testing
+              verbose = 1,
               callbacks = callbacks_list)
     
     score = model.evaluate(x = val_dataset)
@@ -154,15 +133,14 @@ if __name__ == "__main__":
         args.initial_epoch = int(args.initial_epoch)
 
     # Running locally:
-    # config = tf.compat.v1.ConfigProto()
-    # config.gpu_options.allow_growth = True
-    # config.log_device_placement = True
+    config = tf.compat.v1.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.log_device_placement = True
+    sess = tf.compat.v1.Session(config=config)
+    tf.compat.v1.keras.backend.set_session(sess)
+    train('/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards', None, None, 'config.yaml')
 
-    # sess = tf.compat.v1.Session(config=config)
-    # tf.compat.v1.keras.backend.set_session(sess)
-
-    train(args.shards_dir,
-          args.checkpoint, 
-          args.initial_epoch, 
-          args.config_file)
-    # train('/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards', 'model-06-27.38.h5', 7, 'config.yaml')
+    # train(args.shards_dir,
+    #       args.checkpoint, 
+    #       args.initial_epoch, 
+    #       args.config_file)
