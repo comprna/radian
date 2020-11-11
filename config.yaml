@@ -3,15 +3,19 @@ data:
   window_size: 512                        # Causalcall
 
 train:
-  batch_size: 256                         # Causalcall
-  n_epochs: 100                           # Experimental
-  n_folds: 10                             # Experimental
-  val_freq: 1                             # Experimental
+  batch_size: 256                            # Causalcall
+  n_epochs: 100                             # Experimental
+  n_folds: 10                               # Experimental
+  val_freq: 1                               # Experimental
   opt:
-    max_steps: 200000                       # Causalcall
-    boundaries: [0.03,0.07,0.25,0.5,0.7]    # Causalcall
-    init_rate: 0.004                        # Causalcall
-    decays: [0.4,0.2,0.1,0.06,0.03,0.01]    # Causalcall
+    use_cc_opt: False                         # Use CausalCall opt
+    cc_opt:
+      max_steps: 200000                       # Causalcall
+      boundaries: [0.03,0.07,0.25,0.5,0.7]    # Causalcall
+      init_rate: 0.004                        # Causalcall
+      decays: [0.4,0.2,0.1,0.06,0.03,0.01]    # Causalcall
+    lr: 0.004                                 # Experimental
+  
 
 model:
   relu_units: 128                         # Causalcall

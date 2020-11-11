@@ -2,7 +2,7 @@ from tcn import TCN
 
 import tensorflow as tf
 from tensorflow import Variable
-from tensorflow.keras import Input, Model
+from tensorflow.keras import Input, Model, backend
 from tensorflow.keras.backend import ctc_batch_cost, get_value, set_value
 from tensorflow.keras.layers import Dense, Activation, Lambda
 from tensorflow.keras.models import load_model
@@ -13,20 +13,18 @@ from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 MAX_LABEL_LEN = 46
 
 def initialise_or_load_model(checkpoint, epoch_to_resume, config):
-    c = config
     if checkpoint is not None:
         model = load_checkpoint(checkpoint)
-        update_learning_rate(0.004, model)
+        update_learning_rate(model, config.train.opt.lr)
         initial_epoch = epoch_to_resume
     else:
-        model = initialise_model(c.model, c.train.opt, MAX_LABEL_LEN)
+        model = initialise_model(config, MAX_LABEL_LEN)
         initial_epoch = 0
     return model, initial_epoch
 
-def initialise_model(model, opt, max_label_len):
-    model = build_model(model, max_label_len)
-    # optimizer = get_optimizer(opt)
-    optimizer = Adam(learning_rate=0.004)
+def initialise_model(config, max_label_len):
+    model = build_model(config.model, max_label_len)
+    optimizer = get_optimizer(config.train.opt)
     model.compile(optimizer = optimizer,
                   loss = {'ctc': lambda labels, y_pred: y_pred})
     return model
@@ -77,6 +75,12 @@ def ctc_loss_lambda(args):
     return ctc_batch_cost(labels, y_pred, input_length, label_length)
 
 def get_optimizer(config):
+    if config.use_cc_opt == True:
+        return get_causalcall_optimizer(config.cc_opt)
+    else:
+        return Adam(learning_rate=config.lr)
+
+def get_causalcall_optimizer(config):
     c = config
     step = Variable(0, trainable = False)
     boundaries = [int(c.max_steps * bound) for bound in c.boundaries]
@@ -90,8 +94,7 @@ def update_learning_rate(model, new_rate):
     print("New learning rate: {}".format(get_value(model.optimizer.lr)))
 
 def load_checkpoint(checkpoint):
-    custom_objects = {'TCN': TCN,
-                      '<lambda>': lambda y_true,y_pred: y_pred}
+    custom_objects = {'TCN': TCN,'<lambda>': lambda y_true,y_pred: y_pred}
     model = load_model(checkpoint, custom_objects=custom_objects)
     print("Loaded checkpoint {0}".format(checkpoint))
     return model
