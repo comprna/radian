@@ -7,6 +7,7 @@ from data import get_batched_dataset
 from datetime import datetime
 from model import initialise_or_load_model
 from tensorflow.keras.callbacks import ModelCheckpoint
+from utilities import setup_local
 
 # Computed elsewhere
 STEPS_PER_EPOCH = 41407
@@ -55,13 +56,10 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     score = model.evaluate(x = val_dataset)
     print(score)
 
-def train_local():
-    config = tf.compat.v1.ConfigProto()
-    config.gpu_options.allow_growth = True
-    config.log_device_placement = True
-    sess = tf.compat.v1.Session(config=config)
-    tf.compat.v1.keras.backend.set_session(sess)
-    train('/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards', None, None, 'config.yaml')
+def train_local(checkpoint = None, initial_epoch = None):
+    setup_local()
+    data = '/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards'
+    train(data, checkpoint, initial_epoch, 'config.yaml')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -75,7 +73,8 @@ if __name__ == "__main__":
         assert args.initial_epoch is not None
         args.initial_epoch = int(args.initial_epoch)
 
-    train_local()
+    # train_local()
+    train_local('test-checkpoint/model-06-27.44.h5', 6)
 
     # train(args.shards_dir,
     #       args.checkpoint, 
