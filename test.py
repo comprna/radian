@@ -6,19 +6,24 @@ from tensorflow.keras import backend as K
 
 from data import get_dataset
 from model import load_checkpoint
-from utilities import get_config
+from utilities import get_config, setup_local
 
 def main():
+    setup_local()
+
     config = get_config('config.yaml')
     shards_dir = '/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards'
 
     # Get test data
     test_files = glob("{0}/debug/*.tfrecords".format(shards_dir))
-    test_dataset = get_dataset(test_files, config, val=False)
+    test_dataset = get_dataset(test_files, config, val=True)
 
     # Load finalized model
     saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-4/model-04-27.29.h5'
     model = load_checkpoint(saved_filepath)
+
+    softmax_out = model.predict(test_dataset, steps=1)
+    print(softmax_out.shape)
 
     # Pass test data into network
     for sample in test_dataset:
@@ -32,7 +37,6 @@ def main():
             print(signal)
             print(label)
 
-            softmax_out = model.predict(np.array([signal]))
 
             # CTC decoding of network outputs
             prediction = K.ctc_decode(softmax_out, signal_length, greedy=True, beam_width=100, top_paths=1)
