@@ -14,7 +14,7 @@ MAX_LABEL_LEN = 46
 
 def initialise_or_load_model(checkpoint, epoch_to_resume, config):
     if checkpoint is not None:
-        model = load_checkpoint(checkpoint)
+        model = restore_checkpoint(checkpoint, config, MAX_LABEL_LEN)
         update_learning_rate(model, config.train.opt.lr)
         initial_epoch = epoch_to_resume
     else:
@@ -23,13 +23,19 @@ def initialise_or_load_model(checkpoint, epoch_to_resume, config):
     return model, initial_epoch
 
 def initialise_model(config, max_label_len):
-    model = build_model(config.model, max_label_len)
+    model = build_model(config.model, max_label_len, train=True)
     optimizer = get_optimizer(config.train.opt)
     model.compile(optimizer = optimizer,
                   loss = {'ctc': lambda labels, y_pred: y_pred})
     return model
 
-def build_model(config, max_label_len):
+def restore_checkpoint(checkpoint, config, max_label_len):
+    model = build_model(config.model, max_label_len, train=True)
+    model.load_weights(checkpoint)
+    print("Loaded checkpoint {0}".format(checkpoint))
+    return model
+
+def build_model(config, max_label_len, train=True):
     c = config
     input_shape = (c.timesteps, 1)
 
@@ -62,8 +68,11 @@ def build_model(config, max_label_len):
         ctc_loss_lambda, output_shape=(1,), name='ctc')((
             y_pred, labels, input_length, label_length))
 
-    return  Model(inputs=[inputs, labels, input_length, label_length],
-                  outputs=[loss_out])
+    if train == True:
+        return Model(inputs=[inputs, labels, input_length, label_length],
+                     outputs=[loss_out])
+    else:
+        return Model(inputs=[inputs], outputs=y_pred)  
 
 def ctc_loss_lambda(args):
     """
@@ -92,9 +101,3 @@ def update_learning_rate(model, new_rate):
     print("Old learning rate: {}".format(get_value(model.optimizer.lr)))
     set_value(model.optimizer.lr, new_rate)
     print("New learning rate: {}".format(get_value(model.optimizer.lr)))
-
-def load_checkpoint(checkpoint):
-    custom_objects = {'TCN': TCN,'<lambda>': lambda y_true,y_pred: y_pred}
-    model = load_model(checkpoint, custom_objects=custom_objects)
-    print("Loaded checkpoint {0}".format(checkpoint))
-    return model

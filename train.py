@@ -35,8 +35,12 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
         log_dir=logs_path, histogram_freq=1, profile_batch='500,520')
 
     checkpoint_path = "model-{epoch:02d}-{val_loss:.2f}.h5"
-    checkpoint = ModelCheckpoint(
-        checkpoint_path, monitor="val_loss", verbose=1, mode="min")
+    checkpoint = ModelCheckpoint(checkpoint_path,
+                                 monitor="val_loss", 
+                                 verbose=1, 
+                                 mode="min",
+                                 save_weights_only=True,
+                                 )
     callbacks_list = [checkpoint, tensorboard]
 
     model.summary()
