@@ -1,6 +1,5 @@
 import argparse
 import sys
-import yaml
 from datetime import datetime
 
 import tensorflow as tf
@@ -82,10 +81,10 @@ if __name__ == "__main__":
         assert args.initial_epoch is not None
         args.initial_epoch = int(args.initial_epoch)
 
-    train_local()
+    # train_local()
     # train_local('test-checkpoint/model-06-27.44.h5', 6)
 
-    # train(args.shards_dir,
-    #       args.checkpoint, 
-    #       args.initial_epoch, 
-    #       args.config_file)
+    train(args.shards_dir,
+          args.checkpoint, 
+          args.initial_epoch, 
+          args.config_file)
