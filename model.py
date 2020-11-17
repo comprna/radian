@@ -12,30 +12,35 @@ from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 # Computed elsewhere
 MAX_LABEL_LEN = 46
 
-def initialise_or_load_model(checkpoint, epoch_to_resume, config):
+def get_training_model(checkpoint, epoch_to_resume, config):
     if checkpoint is not None:
-        model = restore_checkpoint(checkpoint, config, MAX_LABEL_LEN)
+        model = restore_checkpoint(checkpoint, config)
         update_learning_rate(model, config.train.opt.lr)
         initial_epoch = epoch_to_resume
     else:
-        model = initialise_model(config, MAX_LABEL_LEN)
+        model = initialise_model(config)
         initial_epoch = 0
     return model, initial_epoch
 
-def initialise_model(config, max_label_len):
-    model = build_model(config.model, max_label_len, train=True)
+def initialise_model(config):
+    model = build_model(config.model, train=True)
     optimizer = get_optimizer(config.train.opt)
     model.compile(optimizer = optimizer,
                   loss = {'ctc': lambda labels, y_pred: y_pred})
     return model
 
-def restore_checkpoint(checkpoint, config, max_label_len):
-    model = build_model(config.model, max_label_len, train=True)
+def restore_checkpoint(checkpoint, config):
+    model = build_model(config.model, train=True)
     model.load_weights(checkpoint)
     print("Loaded checkpoint {0}".format(checkpoint))
     return model
 
-def build_model(config, max_label_len, train=True):
+def get_prediction_model(checkpoint, config):
+    model = build_model(config.model, train=False)
+    model.load_weights(checkpoint)
+    return model
+
+def build_model(config, train=True):
     c = config
     input_shape = (c.timesteps, 1)
 
@@ -60,7 +65,7 @@ def build_model(config, max_label_len, train=True):
     inner = Dense(c.softmax_units)(inner) # (None, 512, 5)
     y_pred = Activation('softmax')(inner) # (None, 512, 5)
 
-    labels = Input(shape=(max_label_len,), name="labels") # (None, 39)
+    labels = Input(shape=(MAX_LABEL_LEN,), name="labels") # (None, 39)
     input_length = Input(shape=[1],name="input_length") # (None, 1)
     label_length = Input(shape=[1],name="label_length") # (None, 1)
 

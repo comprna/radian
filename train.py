@@ -9,7 +9,7 @@ from tensorflow.io.gfile import glob
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
 from data import get_dataset
-from model import initialise_or_load_model
+from model import get_training_model
 from utilities import setup_local, get_config
 
 
@@ -27,7 +27,7 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
     strategy = MirroredStrategy()
     with strategy.scope():
-        model, initial_epoch = initialise_or_load_model(
+        model, initial_epoch = get_training_model(
             checkpoint, epoch_to_resume, config)
 
     logs_path = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
