@@ -10,6 +10,10 @@ from tensorflow.io.gfile import glob
 
 from data import get_dataset
 
+def get_config(filepath):
+    with open(filepath) as config_file:
+        return AttrDict(yaml.load(config_file, Loader=yaml.Loader))
+
 def benchmark(dataset, num_epochs=1):
     start_time = time.perf_counter()
     # for epoch_num in range(num_epochs):

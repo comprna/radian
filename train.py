@@ -1,7 +1,6 @@
 import argparse
 import sys
 import yaml
-from attrdict import AttrDict
 from datetime import datetime
 
 import tensorflow as tf
@@ -11,7 +10,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
 from data import get_dataset
 from model import initialise_or_load_model
-from utilities import setup_local
+from utilities import setup_local, get_config
 
 
 # Computed elsewhere
@@ -53,10 +52,6 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     
     score = model.evaluate(x=val_dataset)
     print(score)
-
-def get_config(filepath):
-    with open(filepath) as config_file:
-        return AttrDict(yaml.load(config_file, Loader=yaml.Loader))
 
 def train_local(checkpoint=None, initial_epoch=None):
     setup_local()
