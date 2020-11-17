@@ -5,7 +5,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras import backend as K
 
 from data import get_dataset
-from model import load_checkpoint
+from model import get_prediction_model
 from utilities import get_config, setup_local
 
 def main():
@@ -20,7 +20,7 @@ def main():
 
     # Load finalized model
     saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-4/model-04-27.29.h5'
-    model = load_checkpoint(saved_filepath)
+    model = get_prediction_model(saved_filepath, config)
 
     softmax_out = model.predict(test_dataset, steps=1)
     print(softmax_out.shape)
