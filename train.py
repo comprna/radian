@@ -18,10 +18,12 @@ STEPS_PER_EPOCH = 41407
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
 
-    train_files = glob("{0}/train/*.tfrecords".format(shards_dir))
+    # train_files = glob("{0}/train/*.tfrecords".format(shards_dir))
+    train_files = glob("/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/shards/*.tfrecords")
     train_dataset = get_dataset(train_files, config, val=False)
 
-    val_files = glob("{0}/val/*.tfrecords".format(shards_dir))
+    # val_files = glob("{0}/val/*.tfrecords".format(shards_dir))
+    val_files = glob("/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/shards/*.tfrecords")
     val_dataset = get_dataset(val_files, config, val=True)
 
     strategy = MirroredStrategy()
@@ -33,7 +35,8 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     tensorboard = TensorBoard(
         log_dir=logs_path, histogram_freq=1, profile_batch='500,520')
 
-    checkpoint_path = "model-{epoch:02d}-{val_loss:.2f}.h5"
+    # checkpoint_path = "model-{epoch:02d}-{val_loss:.2f}.h5"
+    checkpoint_path = "model-{epoch:02d}.h5"
     checkpoint = ModelCheckpoint(checkpoint_path,
                                  monitor="val_loss", 
                                  verbose=1, 
@@ -44,16 +47,16 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
     model.summary()
     model.fit(train_dataset,
-              steps_per_epoch=STEPS_PER_EPOCH,
+              steps_per_epoch=2621 // config.train.batch_size,
               epochs=config.train.n_epochs,
               initial_epoch=initial_epoch,
-              validation_data=val_dataset,
-              validation_freq=config.train.val_freq,
+            #   validation_data=val_dataset,
+            #   validation_freq=config.train.val_freq,
               verbose=1,
               callbacks=callbacks_list,
               )
     
-    score = model.evaluate(x=val_dataset)
+    score = model.evaluate(x=train_dataset)
     print(score)
 
 def train_local(checkpoint=None, initial_epoch=None):
@@ -81,10 +84,10 @@ if __name__ == "__main__":
         assert args.initial_epoch is not None
         args.initial_epoch = int(args.initial_epoch)
 
-    # train_local()
+    train_local()
     # train_local('test-checkpoint/model-06-27.44.h5', 6)
 
-    train(args.shards_dir,
-          args.checkpoint, 
-          args.initial_epoch, 
-          args.config_file)
+    # train(args.shards_dir,
+    #       args.checkpoint, 
+    #       args.initial_epoch, 
+    #       args.config_file)
