@@ -20,7 +20,7 @@ def main():
     test_dataset = get_dataset(test_files, config, val=True)
 
     # Load finalized model
-    saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-7-local/model-211.h5'
+    saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-7-local/model-300.h5'
     model = get_prediction_model(saved_filepath, config)
 
     for batch in test_dataset:
