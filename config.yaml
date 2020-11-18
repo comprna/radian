@@ -4,7 +4,7 @@ data:
 
 train:
   batch_size: 25                            # Local experiment
-  n_epochs: 100                             # Experimental
+  n_epochs: 300                             # Experimental
   n_folds: 10                               # Experimental
   val_freq: 1                               # Experimental
   opt:
