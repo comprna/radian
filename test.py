@@ -12,7 +12,7 @@ from utilities import get_config, setup_local
 def main():
     setup_local()
 
-    config = get_config('config.yaml')
+    config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
     # shards_dir = '/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/single-label/CATTTTATCTCTGGGTCATT/1000-instances'
     shards_dir = '/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/single-label/CATTTTATCTCTGGGTCATT/1000-instances'
 
