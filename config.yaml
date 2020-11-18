@@ -3,7 +3,7 @@ data:
   window_size: 512                        # Causalcall
 
 train:
-  batch_size: 256                           # Causalcall
+  batch_size: 25                           # Experimental
   n_epochs: 500                             # Experimental
   n_folds: 10                               # Experimental
   val_freq: 1                               # Experimental
