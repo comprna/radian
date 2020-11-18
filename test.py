@@ -19,30 +19,34 @@ def main():
     test_dataset = get_dataset(test_files, config, val=True)
 
     # Load finalized model
-    saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-4/model-04-27.29.h5'
+    saved_filepath = 'test-checkpoint/model-02-202.53.h5'
     model = get_prediction_model(saved_filepath, config)
 
-    softmax_out = model.predict(test_dataset, steps=1)
-    print(softmax_out.shape)
+    for batch in test_dataset:
+        inputs = batch[0]["inputs"]
+        labels = batch[0]["labels"]
+        input_length = batch[0]["input_length"]
+        print(inputs)
+        print(inputs.shape) # (256, 512)
 
-    # Pass test data into network
-    for sample in test_dataset:
-        inputs = sample[0]['inputs']
-        labels = sample[0]['labels']
-        input_lengths = sample[0]['input_length']
-        for i, _ in enumerate(inputs):
+        # Pass test data into network
+        softmax_out = model.predict(inputs)
+        print(softmax_out.shape) # (256, 512, 5)
+
+        # CTC decoding of network outputs
+        prediction = K.ctc_decode(softmax_out, input_length, greedy=False, beam_width=100, top_paths=1)
+        print(prediction)
+        prediction = K.get_value(prediction[0][0])
+        print(prediction)
+
+        for i, p in enumerate(prediction):
             signal = inputs[i]
-            signal_length = input_lengths[i]
             label = labels[i]
+            y_pred = softmax_out[i]
+            print(p)
             print(signal)
             print(label)
-
-
-            # CTC decoding of network outputs
-            prediction = K.ctc_decode(softmax_out, signal_length, greedy=True, beam_width=100, top_paths=1)
-            print(prediction)
-            prediction = K.get_value(prediction[0][0])
-            print(prediction)
+            print(y_pred)
 
     # [OPTIONAL] Assemble into reads
 
