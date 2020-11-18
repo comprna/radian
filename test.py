@@ -13,14 +13,14 @@ def main():
     setup_local()
 
     config = get_config('config.yaml')
-    shards_dir = '/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/single-label/TAAGC'
+    shards_dir = '/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/single-label/CATTTTATCTCTGGGTCATT/1000-instances'
 
     # Get test data
     test_files = glob("{0}/*.tfrecords".format(shards_dir))
     test_dataset = get_dataset(test_files, config, val=True)
 
     # Load finalized model
-    saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-6-local/model-21.h5'
+    saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-7-local/model-211.h5'
     model = get_prediction_model(saved_filepath, config)
 
     for batch in test_dataset:
@@ -44,11 +44,9 @@ def main():
             signal = inputs[i]
             label = labels[i]
             y_pred = softmax_out[i]
-            plt.plot(signal)
-            plt.show()
+            # plt.plot(signal)
+            # plt.show()
             print(p)
-            print(signal)
-            print(label)
             print(y_pred)
 
     # [OPTIONAL] Assemble into reads
