@@ -84,8 +84,8 @@ if __name__ == "__main__":
         assert args.initial_epoch is not None
         args.initial_epoch = int(args.initial_epoch)
 
-    train_local()
-    # train_local('test-checkpoint/model-06-27.44.h5', 6)
+    # train_local()
+    train_local('/home/alex/OneDrive/phd-project/rna-basecaller/train-7-local/model-57.h5', 57)
 
     # train(args.shards_dir,
     #       args.checkpoint, 

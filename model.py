@@ -15,7 +15,7 @@ MAX_LABEL_LEN = 46
 def get_training_model(checkpoint, epoch_to_resume, config):
     if checkpoint is not None:
         model = restore_checkpoint(checkpoint, config)
-        update_learning_rate(model, config.train.opt.lr)
+        # update_learning_rate(model, config.train.opt.lr)
         initial_epoch = epoch_to_resume
     else:
         model = initialise_model(config)
@@ -33,6 +33,9 @@ def restore_checkpoint(checkpoint, config):
     model = build_model(config.model, train=True)
     model.load_weights(checkpoint)
     print("Loaded checkpoint {0}".format(checkpoint))
+    optimizer = get_optimizer(config.train.opt)
+    model.compile(optimizer = optimizer,
+                  loss = {'ctc': lambda labels, y_pred: y_pred})
     return model
 
 def get_prediction_model(checkpoint, config):
