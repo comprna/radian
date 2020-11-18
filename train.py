@@ -19,11 +19,11 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
 
     # train_files = glob("{0}/train/*.tfrecords".format(shards_dir))
-    train_files = glob("/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/shards/*.tfrecords")
+    train_files = glob("/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/single-label/TAAGC/*.tfrecords")
     train_dataset = get_dataset(train_files, config, val=False)
 
     # val_files = glob("{0}/val/*.tfrecords".format(shards_dir))
-    val_files = glob("/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/shards/*.tfrecords")
+    val_files = glob("/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/single-label/TAAGC/*.tfrecords")
     val_dataset = get_dataset(val_files, config, val=True)
 
     strategy = MirroredStrategy()
