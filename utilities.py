@@ -55,25 +55,26 @@ def setup_local():
     sess = tf.compat.v1.Session(config=config)
     tf.compat.v1.keras.backend.set_session(sess)
 
-def print_dataset():
-    shards_dir = '/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards'
-    train_files = glob("{0}/train/*.tfrecords".format(shards_dir))
+def print_dataset(shards_dir):
+    data_files = glob("{0}/*.tfrecords".format(shards_dir))
 
     with open('config.yaml') as config_file:
         config = AttrDict(yaml.load(config_file, Loader=yaml.Loader))
 
-    dataset = get_dataset(train_files, config, val=False)
+    dataset = get_dataset(data_files, config, val=False)
 
     for batch in dataset:
         # print(batch)
         inputs = batch[0]
         signal_batch = inputs['inputs']
+        label_batch = inputs['labels']
         signal = signal_batch[0]
         print(signal_batch)
         print(signal)
 
         fig, axs = plt.subplots(10, 2, sharey='all')
         for i in range(20):
+            print(label_batch[i])
             # print("i: {0}, i/10: {1}, i%10: {2}".format(i, int(i/10), i%10))
             axs[i%10, int(i/10)].plot(signal_batch[i])
 
@@ -81,4 +82,5 @@ def print_dataset():
         plt.show()
 
 if __name__ == "__main__":
-    print_dataset()
+    shards_dir = "/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/single-label/CATTTTATCTCTGGGTCATT"
+    print_dataset(shards_dir)
