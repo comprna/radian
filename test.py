@@ -12,17 +12,18 @@ from utilities import get_config, setup_local
 def main():
     setup_local()
 
-    config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
-    # shards_dir = '/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/single-label/CATTTTATCTCTGGGTCATT/1000-instances'
-    shards_dir = '/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/single-label/CATTTTATCTCTGGGTCATT/1000-instances'
+    # config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
+    config = get_config('config.yaml')
+    shards_dir = "/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/two-labels/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT"
+    # shards_dir = '/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/single-label/CATTTTATCTCTGGGTCATT/1000-instances'
 
     # Get test data
     test_files = glob("{0}/*.tfrecords".format(shards_dir))
     test_dataset = get_dataset(test_files, config, val=True)
 
     # Load finalized model
-    # saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-7-local/model-500.h5'
-    saved_filepath = '/g/data/xc17/Eyras/alex/rna-basecaller/train-8/model-1000.h5'
+    saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-9-local/model-775.h5'
+    # saved_filepath = '/g/data/xc17/Eyras/alex/rna-basecaller/train-8/model-1000.h5'
     model = get_prediction_model(saved_filepath, config)
 
     i = 1
@@ -51,6 +52,7 @@ def main():
             y_pred = softmax_out[i]
             # plt.plot(signal)
             # plt.show()
+            print(label)
             print(p)
             print(y_pred)
         
