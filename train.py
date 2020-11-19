@@ -5,7 +5,7 @@ from datetime import datetime
 import tensorflow as tf
 from tensorflow.distribute import MirroredStrategy
 from tensorflow.io.gfile import glob
-from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
+from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, Callback
 
 from data import get_dataset
 from model import get_training_model
@@ -14,6 +14,42 @@ from utilities import setup_local, get_config
 
 # Computed elsewhere
 STEPS_PER_EPOCH = 41407
+
+class CustomCallback(Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        config = get_config('config.yaml')
+        
+        val_files = glob("/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/two-labels/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/*.tfrecords")
+        val_dataset = get_dataset(val_files, config, val=True)
+
+        for batch in val_dataset:
+            if i > 10:
+                break # Just go through 10 batches
+            inputs = batch[0]["inputs"]
+            labels = batch[0]["labels"]
+            input_length = batch[0]["input_length"]
+            print(inputs)
+            print(inputs.shape) # (256, 512)
+
+            # Pass test data into network
+            softmax_out = self.model.predict(inputs)
+            print(softmax_out.shape) # (256, 512, 5)
+
+            # CTC decoding of network outputs
+            prediction = K.ctc_decode(softmax_out, input_length, greedy=False, beam_width=100, top_paths=1)
+            print(prediction)
+            prediction = K.get_value(prediction[0][0])
+            print(prediction)
+
+            for i, p in enumerate(prediction):
+                signal = inputs[i]
+                label = labels[i]
+                y_pred = softmax_out[i]
+                # plt.plot(signal)
+                # plt.show()
+                print(label)
+                print(p)
+                print(y_pred)
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
