@@ -87,7 +87,7 @@ if __name__ == "__main__":
         args.initial_epoch = int(args.initial_epoch)
 
     # train_local()
-    train_local('/home/alex/OneDrive/phd-project/rna-basecaller/train-10-local/model-58.h5', 19)
+    train_local('/home/alex/OneDrive/phd-project/rna-basecaller/train-10-local/model-57.h5', 57)
 
     # train(args.shards_dir,
     #       args.checkpoint, 
