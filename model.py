@@ -63,8 +63,8 @@ def build_model(config, train=True):
               }
 
     inner = TCN(**params)(inputs)   # (None, 512, 64)
-    # inner = Dense(c.relu_units)(inner) # (None, 512, 5)
-    # inner = Activation('relu')(inner)
+    inner = Dense(c.relu_units)(inner) # (None, 512, 5)
+    inner = Activation('relu')(inner)
     inner = Dense(c.softmax_units)(inner) # (None, 512, 5)
     y_pred = Activation('softmax')(inner) # (None, 512, 5)
 
