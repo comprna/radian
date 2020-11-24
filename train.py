@@ -20,8 +20,8 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     train_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/*.tfrecords")
     train_dataset = get_dataset(train_files, config, val=False)
 
-    val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/*.tfrecords")
-    val_dataset = get_dataset(val_files, config, val=True)
+    # val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/*.tfrecords")
+    # val_dataset = get_dataset(val_files, config, val=True)
 
     strategy = MirroredStrategy()
     with strategy.scope():
