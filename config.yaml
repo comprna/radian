@@ -18,7 +18,7 @@ train:
       lr: 0.004                                 # Causalcall
       beta_1: 0.9                               # Experimental
       beta_2: 0.999                             # Experimental
-      epsilon: 1e-7                             # Experimental
+      epsilon: 0.0000001                        # Experimental
       amsgrad: False                            # Experimental
 
 model:
