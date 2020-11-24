@@ -15,7 +15,7 @@ train:
       init_rate: 0.004                        # Causalcall
       decays: [0.4,0.2,0.1,0.06,0.03,0.01]    # Causalcall
     adam:
-      lr: 0.02                                 # Causalcall
+      lr: 0.01                                 # Causalcall
       beta_1: 0.9                               # Experimental
       beta_2: 0.999                             # Experimental
       epsilon: 0.0000001                        # Experimental
@@ -26,7 +26,7 @@ model:
   softmax_units: 5                        # Causalcall
   timesteps: 512                          # Causalcall (size of window)
   tcn:
-    nb_filters: 512                       # Causalcall
+    nb_filters: 256                       # Causalcall
     kernel_size: 3                        # Causalcall
     nb_stacks: 1                          # Default
     dilations: [1,2,4,8,16]               # Causalcall
@@ -34,6 +34,6 @@ model:
     use_skip_connections: False           # Default
     dropout_rate: 0.0                     # Default
     return_sequences: True                # Default
-    activation: 'sigmoid'                 # CausalCall
+    activation: 'relu'                 # CausalCall
     kernel_initializer: 'he_normal'       # Default
     use_batch_norm: False                 # Default
