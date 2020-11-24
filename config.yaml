@@ -14,8 +14,12 @@ train:
       boundaries: [0.03,0.07,0.25,0.5,0.7]    # Causalcall
       init_rate: 0.004                        # Causalcall
       decays: [0.4,0.2,0.1,0.06,0.03,0.01]    # Causalcall
-    lr: 0.004                                 # Experimental
-  
+    adam:
+      lr: 0.004                                 # Causalcall
+      beta_1: 0.9                               # Experimental
+      beta_2: 0.999                             # Experimental
+      epsilon: 1e-7                             # Experimental
+      amsgrad: False                            # Experimental
 
 model:
   relu_units: 128                         # Causalcall

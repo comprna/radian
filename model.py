@@ -95,7 +95,12 @@ def get_optimizer(config):
     if config.use_cc_opt == True:
         return get_causalcall_optimizer(config.cc_opt)
     else:
-        return Adam(learning_rate=config.lr)
+        return Adam(learning_rate=config.adam.lr,
+                    beta_1=config.adam.beta_1,
+                    beta_2=config.adam.beta_2,
+                    epsilon=config.adam.epsilon,
+                    amsgrad=config.adam.amsgrad
+                    )
 
 def get_causalcall_optimizer(config):
     c = config
