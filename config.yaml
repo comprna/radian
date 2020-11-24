@@ -15,7 +15,7 @@ train:
       init_rate: 0.004                        # Causalcall
       decays: [0.4,0.2,0.1,0.06,0.03,0.01]    # Causalcall
     adam:
-      lr: 0.01                                 # Causalcall
+      lr: 0.004                                 # Causalcall
       beta_1: 0.9                               # Experimental
       beta_2: 0.999                             # Experimental
       epsilon: 0.0000001                        # Experimental
@@ -34,6 +34,6 @@ model:
     use_skip_connections: False           # Default
     dropout_rate: 0.0                     # Default
     return_sequences: True                # Default
-    activation: 'relu'                 # CausalCall
+    activation: 'sigmoid'                 # CausalCall
     kernel_initializer: 'he_normal'       # Default
     use_batch_norm: False                 # Default
