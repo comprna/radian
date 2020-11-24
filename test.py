@@ -14,7 +14,7 @@ def main():
 
     # config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
     config = get_config('config.yaml')
-    shards_dir = "/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/two-labels/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT"
+    shards_dir = "/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/single-label/CATTTTATCTCTGGGTCATT/1000-instances"
     # shards_dir = '/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/single-label/CATTTTATCTCTGGGTCATT/1000-instances'
 
     # Get test data
@@ -22,7 +22,7 @@ def main():
     test_dataset = get_dataset(test_files, config, val=True)
 
     # Load finalized model
-    saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-9-local/model-775.h5'
+    saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-7-local/model-500.h5'
     # saved_filepath = '/g/data/xc17/Eyras/alex/rna-basecaller/train-8/model-1000.h5'
     model = get_prediction_model(saved_filepath, config)
 
@@ -41,7 +41,7 @@ def main():
         print(softmax_out.shape) # (256, 512, 5)
 
         # CTC decoding of network outputs
-        prediction = K.ctc_decode(softmax_out, input_length, greedy=False, beam_width=100, top_paths=1)
+        prediction = K.ctc_decode(softmax_out, input_length, greedy=True, beam_width=100, top_paths=1)
         print(prediction)
         prediction = K.get_value(prediction[0][0])
         print(prediction)
