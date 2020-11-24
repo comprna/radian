@@ -47,9 +47,10 @@ def main():
             y_pred = softmax_out[i]
             # plt.plot(signal)
             # plt.show()
-            print(label)
-            print(p)
-            print(y_pred)
+            print("Label: {0}".format(label))
+            print("Predicted sequence: {0}".format(p))
+            print("Softmax output: {0}".format(y_pred))
+            print("\n\n\n")
         
         i += 1
 
