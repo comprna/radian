@@ -11,21 +11,16 @@ from data import get_dataset
 from model import get_training_model
 from utilities import setup_local, get_config
 
-
 # Computed elsewhere
-STEPS_PER_EPOCH = 41407
+# STEPS_PER_EPOCH = 41407
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
 
-    # train_files = glob("{0}/train/*.tfrecords".format(shards_dir))
-    train_files = glob("/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/two-labels/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/*.tfrecords")
-    # train_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/single-label/CATTTTATCTCTGGGTCATT/1000-instances/*.tfrecords")
+    train_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/*.tfrecords")
     train_dataset = get_dataset(train_files, config, val=False)
 
-    # val_files = glob("{0}/val/*.tfrecords".format(shards_dir))
-    val_files = glob("/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/two-labels/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/*.tfrecords")
-    # val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/single-label/CATTTTATCTCTGGGTCATT/1000-instances/*.tfrecords")
+    val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/*.tfrecords")
     val_dataset = get_dataset(val_files, config, val=True)
 
     strategy = MirroredStrategy()
@@ -87,9 +82,9 @@ if __name__ == "__main__":
         args.initial_epoch = int(args.initial_epoch)
 
     # train_local()
-    train_local('/home/alex/OneDrive/phd-project/rna-basecaller/train-10-local/model-57.h5', 57)
+    # train_local('/home/alex/OneDrive/phd-project/rna-basecaller/train-10-local/model-57.h5', 57)
 
-    # train(args.shards_dir,
-    #       args.checkpoint, 
-    #       args.initial_epoch, 
-    #       args.config_file)
+    train(args.shards_dir,
+          args.checkpoint, 
+          args.initial_epoch, 
+          args.config_file)
