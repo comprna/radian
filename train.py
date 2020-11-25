@@ -1,14 +1,11 @@
 import argparse
 from datetime import datetime
-from statistics import mean
 import sys
 
 import tensorflow as tf
 from tensorflow.distribute import MirroredStrategy
 from tensorflow.io.gfile import glob
-from tensorflow.keras import backend as K
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, Callback
-from textdistance import levenshtein
 
 from data import get_dataset
 from edit_distance import compute_mean_edit_distance
