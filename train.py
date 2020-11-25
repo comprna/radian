@@ -22,7 +22,7 @@ class EditDistanceCallback(Callback):
         self.config = config
         self.val_dataset = val_dataset
 
-    def on_epoch_end(self, logs=None):
+    def on_epoch_end(self, epoch, logs=None):
         eval_model = get_evaluation_model(self.config, self.model.get_weights())
 
         distances = []
