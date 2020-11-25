@@ -22,6 +22,7 @@ def create_sparse(ten):
     indices = tf.where(where)
     values = tf.gather_nd(ten, indices)
     sparse = tf.compat.v1.SparseTensorValue(indices, values, ten.shape)
+    print(sparse)
     return sparse
 
 def ed(y_true,y_pred):
