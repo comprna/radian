@@ -35,31 +35,39 @@ def main():
         prediction = K.ctc_decode(softmax_out, input_lengths, greedy=True, beam_width=100, top_paths=1)
         prediction = K.get_value(prediction[0][0])
 
-        for i, p in enumerate(prediction):
+        for i, pred_label in enumerate(prediction):
             signal = inputs[i]
             label = labels[i]
             label_length = label_lengths[i]
             y_pred = softmax_out[i]
             print("Label: {0}".format(label))
             print("Label length: {0}".format(label_length))
+            label = _to_int_list(label)
             label = _label_to_sequence(label, label_length)
             print("Label after format: {0}".format(label))
 
-            print("Predicted sequence: {0}".format(p))
-            p = _label_to_sequence(p, label_length)
-            print("Predicted sequence after format: {0}".format(p))
+            print("Predicted sequence: {0}".format(pred_label))
+            pred_label = _to_int_list(pred_label)
+            pred_label_len = _calculate_len_pred(pred_label)
+            pred_label = _label_to_sequence(pred_label, pred_label_len)
+            print("Predicted sequence after format: {0}".format(pred_label))
 
-            print("Softmax output: {0}".format(y_pred))
-            print("\n\n\n")
-            edit_dist = levenshtein.normalized_distance(label, p)
+            edit_dist = levenshtein.normalized_distance(label, pred_label)
             print("Edit distance: {0}".format(edit_dist))
+            print("\n\n\n")
             break
 
+def _to_int_list(float_tensor):
+    return K.cast(float_tensor, "int32").numpy()
+
+def _calculate_len_pred(pred):
+    for i, x in enumerate(pred):
+        if x == -1:
+            return i
+    print("ERROR IN LENGTH PREDICTION")
+    return -1
+
 def _label_to_sequence(label, label_length):
-    print(label)
-    label = K.cast(label, "int32")
-    print(label)
-    label = label.numpy()
     print(label)
     label = label[:label_length]
     print(label)
