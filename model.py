@@ -18,10 +18,10 @@ def create_sparse(ten):
     # chars = list(''.join(ten))
     # return tf.SparseTensorValue(ind, chars, [n,1,1])
     zero = tf.constant(0, dtype=tf.float32)
-    where = tf.not_equal(dense, zero)
+    where = tf.not_equal(ten, zero)
     indices = tf.where(where)
-    values = tf.gather_nd(dense, indices)
-    sparse = tf.SparseTensor(indices, values, dense.shape)
+    values = tf.gather_nd(ten, indices)
+    sparse = tf.SparseTensor(indices, values, ten.shape)
     return sparse
 
 def ed(y_true,y_pred):
