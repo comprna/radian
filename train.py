@@ -19,13 +19,15 @@ from utilities import setup_local, get_config
 # STEPS_PER_EPOCH = 41407
 
 class EditDistanceCallback(Callback):
-    def __init__(self, config, val_dataset):
+    def __init__(self, config, val_dataset, interval=10):
         self.config = config
         self.val_dataset = val_dataset
+        self.interval = interval
 
     def on_epoch_end(self, epoch, logs=None):
-        eval_model = get_evaluation_model(self.config, self.model.get_weights())
-        compute_mean_edit_distance(eval_model, self.val_dataset)
+        if epoch % self.interval == 0:
+            eval_model = get_evaluation_model(self.config, self.model.get_weights())
+            compute_mean_edit_distance(eval_model, self.val_dataset)
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
