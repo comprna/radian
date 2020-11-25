@@ -13,10 +13,16 @@ from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 MAX_LABEL_LEN = 46
 
 def create_sparse(ten):
-    n = len(ten)
-    ind = [[xi, 0, yi] for xi,x in enumerate(ten) for yi,y in enumerate(x)]
-    chars = list(''.join(ten))
-    return tf.SparseTensorValue(ind, chars, [n,1,1])
+    # n = len(ten)
+    # ind = [[xi, 0, yi] for xi,x in enumerate(ten) for yi,y in enumerate(x)]
+    # chars = list(''.join(ten))
+    # return tf.SparseTensorValue(ind, chars, [n,1,1])
+    zero = tf.constant(0, dtype=tf.float32)
+    where = tf.not_equal(dense, zero)
+    indices = tf.where(where)
+    values = tf.gather_nd(dense, indices)
+    sparse = tf.SparseTensor(indices, values, dense.shape)
+    return sparse
 
 def ed(y_true,y_pred):
     print("Y_pred:")
