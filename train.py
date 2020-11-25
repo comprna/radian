@@ -45,13 +45,13 @@ class EditDistanceCallback(Callback):
                 label_length = label_lengths[i]
                 y_pred = softmax_out[i]
 
-                label = _to_int_list(label)
-                label = _label_to_sequence(label, label_length)
+                label = self._to_int_list(label)
+                label = self._label_to_sequence(label, label_length)
                 print("True label: {0}".format(label))
 
-                pred_label = _to_int_list(pred_label)
-                pred_label_len = _calculate_len_pred(pred_label)
-                pred_label = _label_to_sequence(pred_label, pred_label_len)
+                pred_label = self._to_int_list(pred_label)
+                pred_label_len = self._calculate_len_pred(pred_label)
+                pred_label = self._label_to_sequence(pred_label, pred_label_len)
                 print("Predicted label: {0}".format(pred_label))
 
                 edit_dist = levenshtein.normalized_distance(label, pred_label)
@@ -61,6 +61,22 @@ class EditDistanceCallback(Callback):
                 break
         
         print("Average edit distance across test dataset: {0}".format(mean(distances)))
+    
+    def _to_int_list(self, float_tensor):
+        return K.cast(float_tensor, "int32").numpy()
+
+    def _calculate_len_pred(self, pred):
+        for i, x in enumerate(pred):
+            if x == -1:
+                return i
+        print("ERROR IN LENGTH PREDICTION")
+        return -1
+
+    def _label_to_sequence(self, label, label_length):
+        label = label[:label_length]
+        bases = ['A', 'C', 'G', 'T']
+        label = list(map(lambda b: bases[b], label))
+        return "".join(label)
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
@@ -144,19 +160,3 @@ if __name__ == "__main__":
     # https://github.com/cyprienruffino/CTCModel/blob/151ca5a8116ccac4a6b452e05267f9977ed76fd9/keras_ctcmodel/CTCModel.py
     # https://www.endpoint.com/blog/2019/01/08/speech-recognition-with-tensorflow
     # https://github.com/keras-team/keras/issues/7445
-
-def _to_int_list(float_tensor):
-    return K.cast(float_tensor, "int32").numpy()
-
-def _calculate_len_pred(pred):
-    for i, x in enumerate(pred):
-        if x == -1:
-            return i
-    print("ERROR IN LENGTH PREDICTION")
-    return -1
-
-def _label_to_sequence(label, label_length):
-    label = label[:label_length]
-    bases = ['A', 'C', 'G', 'T']
-    label = list(map(lambda b: bases[b], label))
-    return "".join(label)
