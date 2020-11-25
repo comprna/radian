@@ -69,6 +69,12 @@ def get_prediction_model(checkpoint, config):
     model.load_weights(checkpoint)
     return model
 
+def get_evaluation_model(config, weights):
+    model = build_model(config.model, train=False)
+    model.set_weights(weights)
+    return model
+
+
 def build_model(config, train=True):
     c = config
     input_shape = (c.timesteps, 1)
