@@ -36,7 +36,7 @@ def initialise_model(config):
     optimizer = get_optimizer(config.train.opt)
     model.compile(optimizer = optimizer,
                   loss = {'ctc': lambda labels, y_pred: y_pred},
-                  metrics = ['loss', ed])
+                  metrics = [ed])
     return model
 
 def restore_checkpoint(checkpoint, config):
