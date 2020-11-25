@@ -1,6 +1,7 @@
 import argparse
-import sys
 from datetime import datetime
+from statistics import mean
+import sys
 
 import tensorflow as tf
 from tensorflow.distribute import MirroredStrategy
