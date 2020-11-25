@@ -18,7 +18,7 @@ def main():
     test_dataset = get_dataset(test_files, config, val=True)
 
     # Load finalized model
-    saved_filepath = '/g/data/xc17/Eyras/alex/rna-basecaller/train-16/model-389.h5'
+    saved_filepath = '/g/data/xc17/Eyras/alex/rna-basecaller/train-test/model-53.h5'
     model = get_prediction_model(saved_filepath, config)
 
     # TODO: Assemble into reads
