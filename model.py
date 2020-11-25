@@ -51,8 +51,7 @@ def initialise_model(config):
     model = build_model(config.model, train=True)
     optimizer = get_optimizer(config.train.opt)
     model.compile(optimizer = optimizer,
-                  loss = {'ctc': lambda labels, y_pred: y_pred},
-                  metrics = [ed])
+                  loss = {'ctc': lambda labels, y_pred: y_pred})
     return model
 
 def restore_checkpoint(checkpoint, config):
@@ -73,7 +72,6 @@ def get_evaluation_model(config, weights):
     model = build_model(config.model, train=False)
     model.set_weights(weights)
     return model
-
 
 def build_model(config, train=True):
     c = config
