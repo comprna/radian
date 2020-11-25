@@ -5,6 +5,7 @@ from datetime import datetime
 import tensorflow as tf
 from tensorflow.distribute import MirroredStrategy
 from tensorflow.io.gfile import glob
+from tensorflow.keras import backend as K
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, Callback
 from textdistance import levenshtein
 
@@ -31,7 +32,7 @@ class EditDistanceCallback(Callback):
             label_lengths = batch[0]["label_length"]
 
             # Pass test data into network
-            softmax_out = model.predict(inputs)
+            softmax_out = eval_model.predict(inputs)
 
             # CTC decoding of network outputs
             prediction = K.ctc_decode(softmax_out, input_lengths, greedy=True, beam_width=100, top_paths=1)
