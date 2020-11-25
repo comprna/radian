@@ -11,6 +11,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, Callback
 from textdistance import levenshtein
 
 from data import get_dataset
+from edit_distance import compute_mean_edit_distance
 from model import get_training_model, get_evaluation_model
 from utilities import setup_local, get_config
 
@@ -24,59 +25,7 @@ class EditDistanceCallback(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         eval_model = get_evaluation_model(self.config, self.model.get_weights())
-
-        distances = []
-        for batch in self.val_dataset:
-            inputs = batch[0]["inputs"]
-            labels = batch[0]["labels"]
-            input_lengths = batch[0]["input_length"]
-            label_lengths = batch[0]["label_length"]
-
-            # Pass test data into network
-            softmax_out = eval_model.predict(inputs)
-
-            # CTC decoding of network outputs
-            prediction = K.ctc_decode(softmax_out, input_lengths, greedy=True, beam_width=100, top_paths=1)
-            prediction = K.get_value(prediction[0][0])
-
-            for i, pred_label in enumerate(prediction):
-                signal = inputs[i]
-                label = labels[i]
-                label_length = label_lengths[i]
-                y_pred = softmax_out[i]
-
-                label = self._to_int_list(label)
-                label = self._label_to_sequence(label, label_length)
-                print("True label: {0}".format(label))
-
-                pred_label = self._to_int_list(pred_label)
-                pred_label_len = self._calculate_len_pred(pred_label)
-                pred_label = self._label_to_sequence(pred_label, pred_label_len)
-                print("Predicted label: {0}".format(pred_label))
-
-                edit_dist = levenshtein.normalized_distance(label, pred_label)
-                print("Edit distance: {0}".format(edit_dist))
-                distances.append(edit_dist)
-                print("\n\n\n")
-                break
-        
-        print("Average edit distance across test dataset: {0}".format(mean(distances)))
-    
-    def _to_int_list(self, float_tensor):
-        return K.cast(float_tensor, "int32").numpy()
-
-    def _calculate_len_pred(self, pred):
-        for i, x in enumerate(pred):
-            if x == -1:
-                return i
-        print("ERROR IN LENGTH PREDICTION")
-        return -1
-
-    def _label_to_sequence(self, label, label_length):
-        label = label[:label_length]
-        bases = ['A', 'C', 'G', 'T']
-        label = list(map(lambda b: bases[b], label))
-        return "".join(label)
+        compute_mean_edit_distance(eval_model, self.val_dataset)
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
@@ -154,9 +103,3 @@ if __name__ == "__main__":
           args.checkpoint, 
           args.initial_epoch, 
           args.config_file)
-
-    # Refs:
-    # http://digital-thinking.de/keras-three-ways-to-use-custom-validation-metrics-in-keras/
-    # https://github.com/cyprienruffino/CTCModel/blob/151ca5a8116ccac4a6b452e05267f9977ed76fd9/keras_ctcmodel/CTCModel.py
-    # https://www.endpoint.com/blog/2019/01/08/speech-recognition-with-tensorflow
-    # https://github.com/keras-team/keras/issues/7445
