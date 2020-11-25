@@ -13,10 +13,10 @@ from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 MAX_LABEL_LEN = 46
 
 def create_sparse(ten):
-	n = len(ten)
-	ind = [[xi, 0, yi] for xi,x in enumerate(ten) for yi,y in enumerate(x)]
-	chars = list(''.join(ten))
-	return tf.SparseTensorValue(ind, chars, [n,1,1])
+    n = len(ten)
+    ind = [[xi, 0, yi] for xi,x in enumerate(ten) for yi,y in enumerate(x)]
+    chars = list(''.join(ten))
+    return tf.SparseTensorValue(ind, chars, [n,1,1])
 
 def ed(y_true,y_pred):
     print("Y_pred:")
@@ -28,7 +28,7 @@ def ed(y_true,y_pred):
     print(y_true)
     print(type(y_true))
     print(len(y_true))
-	return tf.edit_distance(create_sparse(y_pred), create_sparse(y_true), normalize=True)
+    return tf.edit_distance(create_sparse(y_pred), create_sparse(y_true), normalize=True)
 
 def get_training_model(checkpoint, epoch_to_resume, config):
     if checkpoint is not None:
