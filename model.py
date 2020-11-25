@@ -19,6 +19,15 @@ def create_sparse(ten):
 	return tf.SparseTensorValue(ind, chars, [n,1,1])
 
 def ed(y_true,y_pred):
+    print("Y_pred:")
+    print(y_pred)
+    print(type(y_pred))
+    print(len(y_pred))
+
+    print("\n\ny_true:")
+    print(y_true)
+    print(type(y_true))
+    print(len(y_true))
 	return tf.edit_distance(create_sparse(y_pred), create_sparse(y_true), normalize=True)
 
 def get_training_model(checkpoint, epoch_to_resume, config):
