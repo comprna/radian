@@ -21,7 +21,7 @@ def create_sparse(ten):
     where = tf.not_equal(ten, zero)
     indices = tf.where(where)
     values = tf.gather_nd(ten, indices)
-    sparse = tf.SparseTensor(indices, values, ten.shape)
+    sparse = tf.SparseTensorValue(indices, values, ten.shape)
     return sparse
 
 def ed(y_true,y_pred):
