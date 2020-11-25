@@ -57,6 +57,10 @@ def main():
 
 def _label_to_sequence(label, label_length):
     print(label)
+    label = K.cast(label, "int32")
+    print(label)
+    label = label.numpy()
+    print(label)
     label = label[:label_length]
     print(label)
     bases = ['A', 'C', 'G', 'T']
