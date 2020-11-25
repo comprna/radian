@@ -1,6 +1,7 @@
+from statistics import mean
+
 import matplotlib.pyplot as plt
 import numpy as np
-
 from tensorflow.io.gfile import glob
 from tensorflow.keras.models import load_model
 from tensorflow.keras import backend as K
@@ -22,6 +23,10 @@ def main():
     saved_filepath = '/g/data/xc17/Eyras/alex/rna-basecaller/train-16/model-389.h5'
     model = get_prediction_model(saved_filepath, config)
 
+    # TODO: Assemble into reads
+
+    distances = []
+
     for batch in test_dataset:
         inputs = batch[0]["inputs"]
         labels = batch[0]["labels"]
@@ -40,22 +45,24 @@ def main():
             label = labels[i]
             label_length = label_lengths[i]
             y_pred = softmax_out[i]
-            print("Label: {0}".format(label))
-            print("Label length: {0}".format(label_length))
+
             label = _to_int_list(label)
             label = _label_to_sequence(label, label_length)
-            print("Label after format: {0}".format(label))
+            print("True label: {0}".format(label))
 
-            print("Predicted sequence: {0}".format(pred_label))
             pred_label = _to_int_list(pred_label)
             pred_label_len = _calculate_len_pred(pred_label)
             pred_label = _label_to_sequence(pred_label, pred_label_len)
-            print("Predicted sequence after format: {0}".format(pred_label))
+            print("Predicted label: {0}".format(pred_label))
 
             edit_dist = levenshtein.normalized_distance(label, pred_label)
             print("Edit distance: {0}".format(edit_dist))
+            distances.append(edit_dist)
             print("\n\n\n")
             break
+    
+    print(distances)
+    print(mean(distances))
 
 def _to_int_list(float_tensor):
     return K.cast(float_tensor, "int32").numpy()
@@ -68,28 +75,16 @@ def _calculate_len_pred(pred):
     return -1
 
 def _label_to_sequence(label, label_length):
-    print(label)
     label = label[:label_length]
-    print(label)
     bases = ['A', 'C', 'G', 'T']
     label = list(map(lambda b: bases[b], label))
-    print(label)
     return "".join(label)
 
-
-
-    # [OPTIONAL] Assemble into reads
-
-
-    # Compute error rate
-    # Use Levenshtein (or Hamming?) normalised similarity here: https://pypi.org/project/textdistance/
-
+if __name__ == "__main__":
+    main()
 
     # Refs:
     # https://www.programcreek.com/python/example/122027/keras.backend.ctc_decode
     # https://www.tensorflow.org/api_docs/python/tf/keras/backend/ctc_decode
     # https://machinelearningmastery.com/train-final-machine-learning-model/
     # https://www.machinecurve.com/index.php/2020/02/21/how-to-predict-new-samples-with-your-keras-model/
-
-if __name__ == "__main__":
-    main()
