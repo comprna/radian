@@ -12,6 +12,15 @@ from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 # Computed elsewhere
 MAX_LABEL_LEN = 46
 
+def create_sparse(ten):
+	n = len(ten)
+	ind = [[xi, 0, yi] for xi,x in enumerate(ten) for yi,y in enumerate(x)]
+	chars = list(''.join(ten))
+	return K.tf.SparseTensorValue(ind, chars, [n,1,1])
+
+def ed(y_true,y_pred):
+	return K.tf.edit_distance(create_sparse(y_pred), create_sparse(y_true), normalize=True)
+
 def get_training_model(checkpoint, epoch_to_resume, config):
     if checkpoint is not None:
         model = restore_checkpoint(checkpoint, config)
@@ -26,7 +35,8 @@ def initialise_model(config):
     model = build_model(config.model, train=True)
     optimizer = get_optimizer(config.train.opt)
     model.compile(optimizer = optimizer,
-                  loss = {'ctc': lambda labels, y_pred: y_pred})
+                  loss = {'ctc': lambda labels, y_pred: y_pred},
+                  metrics = ['loss', ed])
     return model
 
 def restore_checkpoint(checkpoint, config):

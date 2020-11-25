@@ -61,8 +61,7 @@ def main():
             print("\n\n\n")
             break
     
-    print(distances)
-    print(mean(distances))
+    print("Average edit distance across test dataset: {0}".format(mean(distances)))
 
 def _to_int_list(float_tensor):
     return K.cast(float_tensor, "int32").numpy()
