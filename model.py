@@ -2,7 +2,8 @@ from tcn import TCN
 
 import tensorflow as tf
 from tensorflow import Variable
-from tensorflow.keras import Input, Model, backend
+from tensorflow.keras import Input, Model
+from tensorflow.keras import backend as K
 from tensorflow.keras.backend import ctc_batch_cost, get_value, set_value
 from tensorflow.keras.layers import Dense, Activation, Lambda
 from tensorflow.keras.models import load_model
