@@ -2,8 +2,7 @@ from tcn import TCN
 
 import tensorflow as tf
 from tensorflow import Variable
-from tensorflow.keras import Input, Model
-from tensorflow.keras import backend as K
+from tensorflow.keras import Input, Model, backend
 from tensorflow.keras.backend import ctc_batch_cost, get_value, set_value
 from tensorflow.keras.layers import Dense, Activation, Lambda
 from tensorflow.keras.models import load_model
@@ -17,10 +16,10 @@ def create_sparse(ten):
 	n = len(ten)
 	ind = [[xi, 0, yi] for xi,x in enumerate(ten) for yi,y in enumerate(x)]
 	chars = list(''.join(ten))
-	return K.tf.SparseTensorValue(ind, chars, [n,1,1])
+	return tf.SparseTensorValue(ind, chars, [n,1,1])
 
 def ed(y_true,y_pred):
-	return K.tf.edit_distance(create_sparse(y_pred), create_sparse(y_true), normalize=True)
+	return tf.edit_distance(create_sparse(y_pred), create_sparse(y_true), normalize=True)
 
 def get_training_model(checkpoint, epoch_to_resume, config):
     if checkpoint is not None:
