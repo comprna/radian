@@ -15,10 +15,10 @@ train:
       init_rate: 0.004                        # Causalcall
       decays: [0.4,0.2,0.1,0.06,0.03,0.01]    # Causalcall
     adam:
-      lr: 0.0004                                 # Causalcall
+      lr: 0.001                                 # Causalcall
       beta_1: 0.9                               # Experimental
       beta_2: 0.999                             # Experimental
-      epsilon: 0.0000001                        # Experimental
+      epsilon: 0.00000001                        # Experimental
       amsgrad: False                            # Experimental
     sgd:
       lr: 0.01                                  # Default
@@ -34,10 +34,10 @@ model:
   tcn:
     nb_filters: 256                       # Causalcall
     kernel_size: 5                        # Causalcall
-    nb_stacks: 2                          # Default
+    nb_stacks: 3                          # Default
     dilations: [1,2,4,8,16,32]               # Causalcall
     padding: 'causal'                     # Default
-    use_skip_connections: False           # Default
+    use_skip_connections: True           # Default
     dropout_rate: 0.0                     # Default
     return_sequences: True                # Default
     activation: 'sigmoid'                 # CausalCall
