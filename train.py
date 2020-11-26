@@ -33,11 +33,11 @@ class EditDistanceCallback(Callback):
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
 
-    train_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/split_shards/train/*.tfrecords")
+    train_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/two-labels/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/split_shards/train/*.tfrecords")
     train_dataset = get_dataset(train_files, config, val=False)
     train_dataset_for_eval = get_dataset(train_files, config, val=True)
 
-    val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/split_shards/val/*.tfrecords")
+    val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/two-labels/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/split_shards/val/*.tfrecords")
     val_dataset = get_dataset(val_files, config, val=True)
 
     strategy = MirroredStrategy()
