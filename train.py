@@ -29,6 +29,8 @@ class EditDistanceCallback(Callback):
             val_ed = compute_mean_edit_distance(eval_model, self.val_dataset)
             print("Mean ED (train): {0}".format(train_ed))
             print("Mean ED (val): {0}".format(val_ed))
+            tf.summary.scalar('edit distance (train)', data=train_ed, step=epoch)
+            tf.summary.scalar('edit distance (val)', data=val_ed, step=epoch)
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
@@ -44,12 +46,14 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     with strategy.scope():
         model, initial_epoch = get_training_model(
             checkpoint, epoch_to_resume, config)
-
-    edit_distance = EditDistanceCallback(config, train_dataset_for_eval, val_dataset)
-
+    
     logs_path = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
+    file_writer = tf.summary.create_file_writer(logs_path + "/metrics")
+    file_writer.set_as_default()
     tensorboard = TensorBoard(
         log_dir=logs_path, histogram_freq=1, profile_batch='500,520')
+
+    edit_distance = EditDistanceCallback(config, train_dataset_for_eval, val_dataset)
 
     checkpoint_path = "model-{epoch:02d}.h5"
     checkpoint = ModelCheckpoint(checkpoint_path,
