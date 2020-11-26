@@ -36,7 +36,7 @@ def compute_mean_edit_distance(model, dataset, verbose=False):
                 print("Predicted label: {0}".format(pred_label))
                 print("Edit distance: {0}\n\n\n".format(edit_dist))
     
-    print("Mean ED: {0}".format(mean(distances)))
+    return mean(distances)
 
 def _to_int_list(float_tensor):
     return K.cast(float_tensor, "int32").numpy()

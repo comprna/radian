@@ -16,23 +16,28 @@ from utilities import setup_local, get_config
 # STEPS_PER_EPOCH = 41407
 
 class EditDistanceCallback(Callback):
-    def __init__(self, config, val_dataset, interval=10):
+    def __init__(self, config, train_dataset, val_dataset, interval=10):
         self.config = config
+        self.train_dataset = train_dataset
         self.val_dataset = val_dataset
         self.interval = interval
 
     def on_epoch_end(self, epoch, logs=None):
         if epoch % self.interval == 0:
             eval_model = get_evaluation_model(self.config, self.model.get_weights())
-            compute_mean_edit_distance(eval_model, self.val_dataset)
+            train_ed = compute_mean_edit_distance(eval_model, self.train_dataset)
+            val_ed = compute_mean_edit_distance(eval_model, self.val_dataset)
+            print("Mean ED (train): {0}".format(train_ed))
+            print("Mean ED (val): {0}".format(val_ed))
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
 
-    train_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/*.tfrecords")
+    train_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/split_shards/train/*.tfrecords")
     train_dataset = get_dataset(train_files, config, val=False)
+    train_dataset_for_eval = get_dataset(train_files, config, val=True)
 
-    val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/*.tfrecords")
+    val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/CATTTTATCTCTGGGTCATT_GCCTACTTCGTCTATCACTCCT/split_shards/val/*.tfrecords")
     val_dataset = get_dataset(val_files, config, val=True)
 
     strategy = MirroredStrategy()
@@ -40,13 +45,12 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
         model, initial_epoch = get_training_model(
             checkpoint, epoch_to_resume, config)
 
-    edit_distance = EditDistanceCallback(config, val_dataset)
+    edit_distance = EditDistanceCallback(config, train_dataset_for_eval, val_dataset)
 
     logs_path = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard = TensorBoard(
         log_dir=logs_path, histogram_freq=1, profile_batch='500,520')
 
-    # checkpoint_path = "model-{epoch:02d}-{val_loss:.2f}.h5"
     checkpoint_path = "model-{epoch:02d}.h5"
     checkpoint = ModelCheckpoint(checkpoint_path,
                                  monitor="val_loss", 
@@ -61,8 +65,8 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
               steps_per_epoch=2000 // config.train.batch_size,
               epochs=config.train.n_epochs,
               initial_epoch=initial_epoch,
-            #   validation_data=val_dataset,
-            #   validation_freq=config.train.val_freq,
+              validation_data=val_dataset,
+              validation_freq=config.train.val_freq,
               verbose=1,
               callbacks=callbacks_list,
               )
