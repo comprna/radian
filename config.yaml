@@ -18,7 +18,7 @@ train:
       lr: 0.001                                 # Causalcall
       beta_1: 0.9                               # Experimental
       beta_2: 0.999                             # Experimental
-      epsilon: 0.00000001                        # Experimental
+      epsilon: 0.0000001                        # Experimental
       amsgrad: False                            # Experimental
     sgd:
       lr: 0.01                                  # Default
@@ -34,7 +34,7 @@ model:
   tcn:
     nb_filters: 256                       # Causalcall
     kernel_size: 5                        # Causalcall
-    nb_stacks: 3                          # Default
+    nb_stacks: 2                          # Default
     dilations: [1,2,4,8,16,32]               # Causalcall
     padding: 'causal'                     # Default
     use_skip_connections: True           # Default
