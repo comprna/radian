@@ -17,7 +17,8 @@ def main():
 
     # TODO: Assemble into reads
 
-    compute_mean_edit_distance(model, test_dataset, verbose=True)
+    mean_ed = compute_mean_edit_distance(model, test_dataset, verbose=True)
+    print("Mean edit distance on test data: {0}".format(mean_ed))
 
 if __name__ == "__main__":
     main()
