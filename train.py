@@ -15,7 +15,7 @@ from utilities import setup_local, get_config
 # Computed elsewhere
 # STEPS_PER_EPOCH = 41407
 
-N_TRAIN_DATA = 8000
+N_TRAIN_DATA = 900*5
 
 class EditDistanceCallback(Callback):
     def __init__(self, config, train_dataset, val_dataset, interval=10):
@@ -37,11 +37,11 @@ class EditDistanceCallback(Callback):
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
 
-    train_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/mixed-labels/train/*.tfrecords")
+    train_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/mixed-labels-5/train/*.tfrecords")
     train_dataset = get_dataset(train_files, config, val=False)
     train_dataset_for_eval = get_dataset(train_files, config, val=True)
 
-    val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/mixed-labels/val/*.tfrecords")
+    val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/mixed-labels-5/val/*.tfrecords")
     val_dataset = get_dataset(val_files, config, val=True)
 
     strategy = MirroredStrategy()
