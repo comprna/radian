@@ -29,11 +29,11 @@ model:
     nb_filters: 256                       # Causalcall
     kernel_size: 3                        # Causalcall
     nb_stacks: 1                          # Default
-    dilations: [1,2,4,8,16,32]               # Causalcall
+    dilations: [1,2,4,8,16]               # Causalcall
     padding: 'causal'                     # Default
     use_skip_connections: False           # Default
     dropout_rate: 0.0                     # Default
     return_sequences: True                # Default
-    activation: 'relu'                 # CausalCall
+    activation: 'sigmoid'                 # CausalCall
     kernel_initializer: 'he_normal'       # Default
     use_batch_norm: False                 # Default
