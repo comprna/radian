@@ -6,7 +6,7 @@ from tensorflow.keras import Input, Model, backend
 from tensorflow.keras.backend import ctc_batch_cost, get_value, set_value
 from tensorflow.keras.layers import Dense, Activation, Lambda
 from tensorflow.keras.models import load_model
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam, SGD
 from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 
 # Computed elsewhere
@@ -122,15 +122,31 @@ def ctc_loss_lambda(args):
     return ctc_batch_cost(labels, y_pred, input_length, label_length)
 
 def get_optimizer(config):
-    if config.use_cc_opt == True:
+    opt = config.type
+    if opt == 'cc_opt':
         return get_causalcall_optimizer(config.cc_opt)
-    else:
+    elif opt == 'adam':
         return Adam(learning_rate=config.adam.lr,
                     beta_1=config.adam.beta_1,
                     beta_2=config.adam.beta_2,
                     epsilon=config.adam.epsilon,
                     amsgrad=config.adam.amsgrad
                     )
+    elif opt == 'sgd':
+        if config.sgd.clipnorm != False:
+            return SGD(learning_rate = config.sgd.lr,
+                       momentum = config.sgd.momentum,
+                       nesterov = config.sgd.nesterov,
+                       clipnorm = config.sgd.clipnorm)
+        elif config.sgd.clipvalue != False:
+            return SGD(learning_rate = config.sgd.lr,
+                       momentum = config.sgd.momentum,
+                       nesterov = config.sgd.nesterov,
+                       clipvalue = config.sgd.clipvalue)
+        else:
+            return SGD(learning_rate = config.sgd.lr,
+                       momentum = config.sgd.momentum,
+                       nesterov = config.sgd.nesterov)
 
 def get_causalcall_optimizer(config):
     c = config
