@@ -3,7 +3,7 @@ data:
   window_size: 512                        # Causalcall
 
 train:
-  batch_size: 64                           # Experimental
+  batch_size: 32                           # Experimental
   n_epochs: 1000                             # Experimental
   n_folds: 10                               # Experimental
   val_freq: 1                               # Experimental
@@ -15,7 +15,7 @@ train:
       init_rate: 0.004                        # Causalcall
       decays: [0.4,0.2,0.1,0.06,0.03,0.01]    # Causalcall
     adam:
-      lr: 0.0001                                 # Causalcall
+      lr: 0.001                                 # Causalcall
       beta_1: 0.9                               # Experimental
       beta_2: 0.999                             # Experimental
       epsilon: 0.0000001                        # Experimental
