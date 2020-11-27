@@ -3,12 +3,12 @@ data:
   window_size: 512
 
 train:
-  batch_size: 128
+  batch_size: 32
   n_epochs: 1000
   n_folds: 10
   val_freq: 1
   opt:
-    type: sgd
+    type: adam
     cc_opt:
       max_steps: 200000
       boundaries: [0.03,0.07,0.25,0.5,0.7]
