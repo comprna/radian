@@ -19,7 +19,7 @@ train:
       beta_1: 0.9
       beta_2: 0.999
       epsilon: 0.0000001
-      amsgrad: False
+      amsgrad: True
     sgd:
       lr: 0.01
       momentum: 0.0
@@ -42,4 +42,4 @@ model:
     return_sequences: True
     activation: 'sigmoid'
     kernel_initializer: 'glorot_normal'
-    use_batch_norm: True
+    use_batch_norm: False
