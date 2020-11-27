@@ -15,7 +15,7 @@ train:
       init_rate: 0.004
       decays: [0.4,0.2,0.1,0.06,0.03,0.01]
     adam:
-      lr: 0.0001
+      lr: 0.001
       beta_1: 0.9
       beta_2: 0.999
       epsilon: 0.0000001
@@ -35,8 +35,8 @@ model:
   timesteps: 512
   tcn:
     nb_filters: 256
-    kernel_size: 5
-    nb_stacks: 3
+    kernel_size: 7
+    nb_stacks: 5
     dilations: [1,2,4,8,16,32,64]
     padding: 'causal'
     use_skip_connections: True
