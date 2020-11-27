@@ -126,12 +126,29 @@ def get_optimizer(config):
     if opt == 'cc_opt':
         return get_causalcall_optimizer(config.cc_opt)
     elif opt == 'adam':
-        return Adam(learning_rate=config.adam.lr,
-                    beta_1=config.adam.beta_1,
-                    beta_2=config.adam.beta_2,
-                    epsilon=config.adam.epsilon,
-                    amsgrad=config.adam.amsgrad
-                    )
+        if config.adam.clipnorm != False:
+            return Adam(learning_rate=config.adam.lr,
+                        beta_1=config.adam.beta_1,
+                        beta_2=config.adam.beta_2,
+                        epsilon=config.adam.epsilon,
+                        amsgrad=config.adam.amsgrad,
+                        clipnorm=config.adam.clipnorm
+                        )
+        if config.adam.clipvalue != False:
+            return Adam(learning_rate=config.adam.lr,
+                        beta_1=config.adam.beta_1,
+                        beta_2=config.adam.beta_2,
+                        epsilon=config.adam.epsilon,
+                        amsgrad=config.adam.amsgrad,
+                        clipvalue=config.adam.clipvalue
+                        )
+        else:
+            return Adam(learning_rate=config.adam.lr,
+                        beta_1=config.adam.beta_1,
+                        beta_2=config.adam.beta_2,
+                        epsilon=config.adam.epsilon,
+                        amsgrad=config.adam.amsgrad
+                        )
     elif opt == 'sgd':
         if config.sgd.clipnorm != False:
             return SGD(learning_rate = config.sgd.lr,

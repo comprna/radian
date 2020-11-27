@@ -19,7 +19,9 @@ train:
       beta_1: 0.9
       beta_2: 0.999
       epsilon: 0.0000001
-      amsgrad: True
+      amsgrad: False
+      clipnorm: 1.0
+      clipvalue: False
     sgd:
       lr: 0.01
       momentum: 0.0
