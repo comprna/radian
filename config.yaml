@@ -42,4 +42,4 @@ model:
     return_sequences: True                # Default
     activation: 'sigmoid'                 # CausalCall
     kernel_initializer: 'glorot_normal'       # Default
-    use_batch_norm: False                 # Default
+    use_batch_norm: True                 # Default
