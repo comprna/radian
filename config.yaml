@@ -35,13 +35,13 @@ model:
   timesteps: 512
   tcn:
     nb_filters: 256
-    kernel_size: 7
-    nb_stacks: 5
-    dilations: [1,2,4,8,16,32,64]
+    kernel_size: 5
+    nb_stacks: 2
+    dilations: [1,2,4,8,16,32]
     padding: 'causal'
     use_skip_connections: True
     dropout_rate: 0.4
     return_sequences: True
-    activation: 'sigmoid'
-    kernel_initializer: 'glorot_normal'
+    activation: 'relu'
+    kernel_initializer: 'he_normal'
     use_batch_norm: False
