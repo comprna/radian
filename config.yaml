@@ -20,7 +20,7 @@ train:
       beta_2: 0.999
       epsilon: 0.0000001
       amsgrad: False
-      clipnorm: 1.0
+      clipnorm: False
       clipvalue: False
     sgd:
       lr: 0.01
@@ -36,8 +36,8 @@ model:
   tcn:
     nb_filters: 256
     kernel_size: 5
-    nb_stacks: 2
-    dilations: [1,2,4,8,16,32]
+    nb_stacks: 3
+    dilations: [1,2,4,8,16,32,64]
     padding: 'causal'
     use_skip_connections: True
     dropout_rate: 0.4
