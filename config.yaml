@@ -3,7 +3,7 @@ data:
   window_size: 512                        # Causalcall
 
 train:
-  batch_size: 100                           # Experimental
+  batch_size: 64                           # Experimental
   n_epochs: 1000                             # Experimental
   n_folds: 10                               # Experimental
   val_freq: 1                               # Experimental
@@ -38,7 +38,7 @@ model:
     dilations: [1,2,4,8,16,32]               # Causalcall
     padding: 'causal'                     # Default
     use_skip_connections: True           # Default
-    dropout_rate: 0.4                     # Default
+    dropout_rate: 0.3                     # Default
     return_sequences: True                # Default
     activation: 'sigmoid'                 # CausalCall
     kernel_initializer: 'glorot_normal'       # Default
