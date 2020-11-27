@@ -38,7 +38,7 @@ model:
     dilations: [1,2,4,8,16,32]               # Causalcall
     padding: 'causal'                     # Default
     use_skip_connections: True           # Default
-    dropout_rate: 0.3                     # Default
+    dropout_rate: 0.4                     # Default
     return_sequences: True                # Default
     activation: 'sigmoid'                 # CausalCall
     kernel_initializer: 'glorot_normal'       # Default
