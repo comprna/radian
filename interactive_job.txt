@@ -22,5 +22,11 @@ python3 $TRAIN_SCRIPT -s $SHARDS_DIR -g $CONFIG_FILE
 
 5) Update config.yaml on local repo, push to remote, pull and then run in interactive session:
 
-CHECKPOINT='/g/data/xc17/Eyras/alex/rna-basecaller/train-14/model-82.h5'
-python3 $TRAIN_SCRIPT -s $SHARDS_DIR -g $CONFIG_FILE -c $CHECKPOINT -e 82
+CHECKPOINT='/g/data/xc17/Eyras/alex/rna-basecaller/train-35/model-69.h5'
+python3 $TRAIN_SCRIPT -s $SHARDS_DIR -g $CONFIG_FILE -c $CHECKPOINT -e 69
+
+6) Test
+
+TEST_SCRIPT='/home/150/as2781/rnabasecaller/test.py'
+python3 $TEST_SCRIPT > test_out.txt
+
