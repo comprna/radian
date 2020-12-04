@@ -13,7 +13,8 @@ from model import get_training_model, get_evaluation_model
 from utilities import setup_local, get_config
 
 # Computed elsewhere
-STEPS_PER_EPOCH = 41407
+# STEPS_PER_EPOCH = 41407 # Batch size 128
+STEPS_PER_EPOCH = 331250 # Batch size 32
 
 # N_TRAIN_DATA = 900*9 + 9000*3
 
