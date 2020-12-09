@@ -92,11 +92,13 @@ def build_model(config, train=True):
               'use_batch_norm': c.tcn.use_batch_norm,
               }
 
-    inner = TCN(**params)(inputs)   # (None, 512, 64)
-    inner = Dense(c.relu_units)(inner) # (None, 512, 5)
-    inner = Activation('relu')(inner)
-    inner = Dense(c.softmax_units)(inner) # (None, 512, 5)
-    y_pred = Activation('softmax')(inner) # (None, 512, 5)
+    # inner = TCN(**params)(inputs)   # (None, 512, 64)
+    # inner = Dense(c.relu_units)(inner) # (None, 512, 5)
+    # inner = Activation('relu')(inner)
+    # inner = Dense(c.softmax_units)(inner) # (None, 512, 5)
+    # y_pred = Activation('softmax')(inner) # (None, 512, 5)
+
+    y_pred = Activation('softmax')(inputs)
 
     labels = Input(shape=(MAX_LABEL_LEN,), name="labels") # (None, 39)
     input_length = Input(shape=[1],name="input_length") # (None, 1)
