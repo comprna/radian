@@ -12,7 +12,7 @@ def main():
     test_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/mixed-labels-5/val/*.tfrecords")
     test_dataset = get_dataset(test_files, config, val=True)
 
-    saved_filepath = '/g/data/xc17/Eyras/alex/rna-basecaller/train-37/model-111.h5'
+    saved_filepath = '/g/data/xc17/Eyras/alex/rna-basecaller/train-37/model-20.h5'
     model = get_prediction_model(saved_filepath, config)
 
     # TODO: Assemble into reads
