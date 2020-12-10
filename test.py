@@ -7,12 +7,12 @@ from utilities import get_config, setup_local
 
 def main():
     # setup_local()
-    config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
+    config = get_config('/home/alex/Documents/rnabasecaller/config.yaml')
 
-    test_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/mixed-labels-10/val/*.tfrecords")
+    test_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards/debugging/mixed-labels-10/val/*.tfrecords")
     test_dataset = get_dataset(test_files, config, val=True)
 
-    saved_filepath = '/g/data/xc17/Eyras/alex/rna-basecaller/train-42/model-152.h5'
+    saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-42/model-152.h5'
     model = get_prediction_model(saved_filepath, config)
 
     # TODO: Assemble into reads
