@@ -1,3 +1,8 @@
+"""
+This has been adapted from https://github.com/githubharald/CTCDecoder/blob/master/src/BeamSearch.py
+"""
+
+
 from __future__ import division
 from __future__ import print_function
 import numpy as np
@@ -129,7 +134,7 @@ def ctcBeamSearch(mat, classes, lm, beamWidth=25):
 				curr.entries[newLabeling].prTotal += prNonBlank
 				
 				# apply LM
-				applyLM(curr.entries[labeling], curr.entries[newLabeling], classes, lm)
+				# applyLM(curr.entries[labeling], curr.entries[newLabeling], classes, lm)
 
 		# set new beam state
 		last = curr

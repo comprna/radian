@@ -3,6 +3,15 @@ from statistics import mean
 from tensorflow.keras import backend as K
 from textdistance import levenshtein
 
+def greedy_decode_keras():
+    print("TBD")
+
+def beam_search_decode():
+    print("TBD")
+
+def beam_search_decode_with_model():
+    print("TBD")
+
 def compute_mean_edit_distance(model, dataset, verbose=False):
     distances = []
     for batch in dataset:
