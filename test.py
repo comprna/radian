@@ -9,10 +9,10 @@ def main():
     # setup_local()
     config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
 
-    test_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/mixed-labels-10/val/*.tfrecords")
+    test_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/mixed-labels-10/train/*.tfrecords")
     test_dataset = get_dataset(test_files, config, val=True)
 
-    saved_filepath = '/g/data/xc17/Eyras/alex/rna-basecaller/train-42/model-152.h5'
+    saved_filepath = '/g/data/xc17/Eyras/alex/rna-basecaller/train-42/model-153.h5'
     model = get_prediction_model(saved_filepath, config)
 
     # TODO: Assemble into reads
