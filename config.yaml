@@ -23,8 +23,8 @@ train:
       clipnorm: False
       clipvalue: False
     sgd:
-      lr: 0.001
-      momentum: 0.99
+      lr: 0.01
+      momentum: 0.0
       nesterov: False
       clipnorm: False
       clipvalue: False
@@ -38,10 +38,10 @@ model:
     kernel_size: 5
     nb_stacks: 2
     dilations: [1,2,4,8,16,32]
-    padding: 'causal'
+    padding: 'valid'
     use_skip_connections: True
     dropout_rate: 0.4
     return_sequences: True
-    activation: 'sigmoid'
-    kernel_initializer: 'glorot_normal'
+    activation: 'relu'
+    kernel_initializer: 'he_normal'
     use_batch_norm: False

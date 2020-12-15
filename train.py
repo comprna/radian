@@ -14,9 +14,10 @@ from utilities import setup_local, get_config
 
 # Computed elsewhere
 # STEPS_PER_EPOCH = 41407 # Batch size 128
-STEPS_PER_EPOCH = 331250 # Batch size 32
+# STEPS_PER_EPOCH = 331250 # Batch size 32
 
 # N_TRAIN_DATA = 900*9 + 9000*3
+N_TRAIN_DATA = 900*5
 
 class EditDistanceCallback(Callback):
     def __init__(self, config, train_dataset, val_dataset, interval=10):
@@ -28,8 +29,8 @@ class EditDistanceCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
         if epoch % self.interval == 0:
             eval_model = get_evaluation_model(self.config, self.model.get_weights())
-            train_ed = compute_mean_edit_distance(eval_model, self.train_dataset)
-            val_ed = compute_mean_edit_distance(eval_model, self.val_dataset)
+            train_ed = compute_mean_edit_distance(eval_model, self.train_dataset, verbose=True)
+            val_ed = compute_mean_edit_distance(eval_model, self.val_dataset, verbose=True)
             print("Mean ED (train): {0}".format(train_ed))
             print("Mean ED (val): {0}".format(val_ed))
             tf.summary.scalar('edit distance (train)', data=train_ed, step=epoch)
@@ -38,11 +39,11 @@ class EditDistanceCallback(Callback):
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
 
-    train_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/train/*.tfrecords")
+    train_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/mixed-labels-5/train/*.tfrecords")
     train_dataset = get_dataset(train_files, config, val=False)
     train_dataset_for_eval = get_dataset(train_files, config, val=True)
 
-    val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/val/*.tfrecords")
+    val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/mixed-labels-5/val/*.tfrecords")
     val_dataset = get_dataset(val_files, config, val=True)
 
     strategy = MirroredStrategy()
@@ -69,8 +70,8 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
     model.summary()
     model.fit(train_dataset,
-            #   steps_per_epoch=N_TRAIN_DATA // config.train.batch_size,
-              steps_per_epoch=STEPS_PER_EPOCH,
+              steps_per_epoch=N_TRAIN_DATA // config.train.batch_size,
+            #   steps_per_epoch=STEPS_PER_EPOCH,
               epochs=config.train.n_epochs,
               initial_epoch=initial_epoch,
               validation_data=val_dataset,
