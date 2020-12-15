@@ -15,7 +15,7 @@ train:
       init_rate: 0.004
       decays: [0.4,0.2,0.1,0.06,0.03,0.01]
     adam:
-      lr: 0.004
+      lr: 0.001
       beta_1: 0.9
       beta_2: 0.999
       epsilon: 0.0000001
