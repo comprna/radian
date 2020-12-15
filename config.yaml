@@ -34,11 +34,11 @@ model:
   softmax_units: 5
   timesteps: 512
   tcn:
-    nb_filters: 256
+    nb_filters: 512
     kernel_size: 5
     nb_stacks: 2
     dilations: [1,2,4,8,16,32]
-    padding: 'same'
+    padding: 'causal'
     use_skip_connections: True
     dropout_rate: 0.4
     return_sequences: True
