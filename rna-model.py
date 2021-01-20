@@ -49,6 +49,15 @@ def main():
     for k6mer, prob in k6mer_probs.items():
         print("{0}:\t{1}".format(k6mer, prob))
 
+class RnaModel:
+    def __init__(self, model):
+        self.model = model
+
+    def get6merProb(self, n1, n2, n3, n4, n5, n6):
+        k6mer = n1 + n2 + n3 + n4 + n5 + n6
+        # print("K-mer: {0}".format(k6mer))
+        return self.model[k6mer]
+
 
 if __name__ == "__main__":
     main()

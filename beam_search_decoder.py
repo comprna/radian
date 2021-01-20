@@ -51,18 +51,29 @@ def applyLM(parentBeam, childBeam, classes, lm):
 def applyRNAModel(parentBeam, childBeam, classes, lm):
     "calculate RNA model score of child beam by taking score from parent beam and 6-mer probability of last six chars"
     if lm and not childBeam.lmApplied:
-        # TODO: Check that parent beam is at least 5 chars long
+        if len(parentBeam.labeling) < 5:
+            return
         c1 = classes[parentBeam.labeling[-5]]
         c2 = classes[parentBeam.labeling[-4]]
         c3 = classes[parentBeam.labeling[-3]]
         c4 = classes[parentBeam.labeling[-2]]
         c5 = classes[parentBeam.labeling[-1]]
         c6 = classes[childBeam.labeling[-1]]
-        lmFactor = 0.01 # influence of language model
-        kmerProb = lm.getKmerProb(c1, c2, c3, c4, c5, c6) ** lmFactor # probability of seeing k-mer
+        lmFactor = 0.1 # influence of language model
+        kmerProb = lm.get6merProb(c1, c2, c3, c4, c5, c6)
+        # print("Parent beam: {0}".format(convertToSequence(parentBeam.labeling, classes)))
+        # print("Child beam: {0}".format(convertToSequence(childBeam.labeling, classes)))
+        # print("kmer prob before factor: {0}".format(kmerProb))
+        kmerProb = kmerProb ** lmFactor # probability of seeing k-mer
+        # print("kmer prob after factor: {0}".format(kmerProb))
         childBeam.prText = parentBeam.prText * kmerProb # probability of whole sequence
         childBeam.lmApplied = True # only apply LM once per beam entry
 
+def convertToSequence(beam, classes):
+	res = ""
+	for l in beam:
+		res += classes[l]
+	return res
 
 def addBeam(beamState, labeling):
 	"add beam if it does not yet exist"
@@ -134,7 +145,8 @@ def ctcBeamSearch(mat, classes, lm, beamWidth=25):
 				curr.entries[newLabeling].prTotal += prNonBlank
 				
 				# apply LM
-				# applyLM(curr.entries[labeling], curr.entries[newLabeling], classes, lm)
+				# print("applying model!")
+				applyRNAModel(curr.entries[labeling], curr.entries[newLabeling], classes, lm)
 
 		# set new beam state
 		last = curr
