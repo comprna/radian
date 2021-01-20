@@ -21,10 +21,11 @@ def benchmark(dataset, num_epochs=1):
         pass
     tf.print("execution time: {0}".format(time.perf_counter() - start_time))
 
-def count_training_size(dataset):
+def count_n_steps_per_epoch(dataset):
     n = 0
     for sample in dataset:
         n += 1
+        print(n)
     print(n)
 
 def get_data_info():
@@ -61,7 +62,7 @@ def print_dataset(shards_dir):
     with open('config.yaml') as config_file:
         config = AttrDict(yaml.load(config_file, Loader=yaml.Loader))
 
-    dataset = get_dataset(data_files, config, val=False)
+    dataset = get_dataset(data_files, config.train.batch_size, val=False)
 
     for batch in dataset:
         # print(batch)
@@ -82,5 +83,11 @@ def print_dataset(shards_dir):
         plt.show()
 
 if __name__ == "__main__":
-    shards_dir = "/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/3_8_NNInputs/debugging/single-label/CATTTTATCTCTGGGTCATT"
-    print_dataset(shards_dir)
+    data_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/train/*.tfrecords")
+
+    with open('config.yaml') as config_file:
+        config = AttrDict(yaml.load(config_file, Loader=yaml.Loader))
+
+    dataset = get_dataset(data_files, config.train.batch_size, val=True)
+
+    count_n_steps_per_epoch(dataset)

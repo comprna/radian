@@ -10,7 +10,7 @@ def main():
     config = get_config('/home/alex/Documents/rnabasecaller/config.yaml')
 
     test_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards/debugging/mixed-labels-5/val/*.tfrecords")
-    test_dataset = get_dataset(test_files, config, val=True)
+    test_dataset = get_dataset(test_files, config.train.batch_size, val=True)
 
     saved_filepath = '/home/alex/OneDrive/phd-project/rna-basecaller/train-53/model-60.h5'
     model = get_prediction_model(saved_filepath, config)

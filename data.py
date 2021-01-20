@@ -29,7 +29,7 @@ def read_tfrecord(example_batch):
 
     return inputs, outputs
 
-def get_dataset(shard_files, config, val = False):
+def get_dataset(shard_files, batch_size, val = False):
     AUTO = tf.data.experimental.AUTOTUNE
 
     option_no_order = tf.data.Options()
@@ -43,7 +43,7 @@ def get_dataset(shard_files, config, val = False):
     dataset = dataset.shuffle(buffer_size=WINDOWS_PER_SHARD+1)
     if val == False:
         dataset = dataset.repeat()
-    dataset = dataset.batch(config.train.batch_size)
+    dataset = dataset.batch(batch_size)
     dataset = dataset.map(map_func = read_tfrecord,
                           num_parallel_calls = AUTO)
     dataset = dataset.prefetch(AUTO)

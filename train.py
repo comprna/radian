@@ -12,12 +12,8 @@ from edit_distance import compute_mean_edit_distance
 from model import get_training_model, get_evaluation_model
 from utilities import setup_local, get_config
 
-# Computed elsewhere
-# STEPS_PER_EPOCH = 41407 # Batch size 128
-# STEPS_PER_EPOCH = 331250 # Batch size 32
-
-# N_TRAIN_DATA = 900*9 + 9000*3
-N_TRAIN_DATA = 900*5
+# Computed in utilities.py : count_n_steps_per_epoch()
+STEPS_PER_EPOCH = 329916 # Batch size 32
 
 class EditDistanceCallback(Callback):
     def __init__(self, config, train_dataset, val_dataset, interval=10):
@@ -47,12 +43,12 @@ class EditDistanceCallback(Callback):
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
 
-    train_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/mixed-labels-5/train/*.tfrecords")
-    train_dataset = get_dataset(train_files, config, val=False)
-    train_dataset_for_eval = get_dataset(train_files, config, val=True)
+    train_files = glob("{}/train/*.tfrecords".format(shards_dir))
+    train_dataset = get_dataset(train_files, config.train.batch_size, val=False)
+    train_dataset_for_eval = get_dataset(train_files, config.train.batch_size, val=True)
 
-    val_files = glob("/g/data/xc17/Eyras/alex/rna-basecaller/shards/debugging/mixed-labels-5/val/*.tfrecords")
-    val_dataset = get_dataset(val_files, config, val=True)
+    val_files = glob("{}/val/*.tfrecords".format(shards_dir))
+    val_dataset = get_dataset(val_files, config.train.batch_size, val=True)
 
     strategy = MirroredStrategy()
     with strategy.scope():
@@ -78,8 +74,8 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
     model.summary()
     model.fit(train_dataset,
-              steps_per_epoch=N_TRAIN_DATA // config.train.batch_size,
-            #   steps_per_epoch=STEPS_PER_EPOCH,
+            #   steps_per_epoch=N_TRAIN_DATA // config.train.batch_size,
+              steps_per_epoch=STEPS_PER_EPOCH,
               epochs=config.train.n_epochs,
               initial_epoch=initial_epoch,
               validation_data=val_dataset,
@@ -93,8 +89,8 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
 def train_local(checkpoint=None, initial_epoch=None):
     setup_local()
-    data = '/mnt/sda/singleton-dataset-generation/dRNA/3_8_NNInputs/tfrecord_approach/shards'
-    train(data, checkpoint, initial_epoch, 'config.yaml')
+    shards_dir = '/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards'
+    train(shards_dir, checkpoint, initial_epoch, 'config.yaml')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

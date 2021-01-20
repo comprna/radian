@@ -167,6 +167,7 @@ def get_optimizer(config):
     elif opt == 'adagrad':
         return Adagrad(learning_rate = config.adagrad.lr)
 
+# TODO: Fix up passing config object around
 def get_causalcall_optimizer(config):
     c = config
     step = Variable(0, trainable = False)
