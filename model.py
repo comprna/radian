@@ -9,8 +9,8 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam, SGD, Adagrad
 from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 
-# Computed elsewhere
-MAX_LABEL_LEN = 46
+# Computed in 4_8_NNInputs/0_2_CreateTFRecords/1_ComputeMaxLabelLen
+MAX_LABEL_LEN = 47
 
 def create_sparse(ten):
     # n = len(ten)
