@@ -10,12 +10,12 @@ from textdistance import levenshtein
 from beam_search_decoder import ctcBeamSearch
 from rna_model import RnaModel
 
-# def plot_softmax_output(matrix, label):
-#     print(matrix.shape)
-#     t_matrix = np.transpose(matrix)
-#     plt.imshow(t_matrix, cmap="gray_r", aspect="auto")
-#     plt.show()
-#     plt.savefig('softmax_outputs/{0}'.format(label))
+def plot_softmax_output(matrix, label):
+    print(matrix.shape)
+    t_matrix = np.transpose(matrix)
+    plt.imshow(t_matrix, cmap="gray_r", aspect="auto")
+    plt.show()
+    plt.savefig('softmax_outputs/{0}'.format(label))
 
 #     # TODO: Why is there not a value for all 512 timesteps in the softmax output?
 
@@ -80,9 +80,15 @@ def compute_mean_edit_distance(model, dataset, verbose=False):
                 print("Predicted label (model): {0}".format(model_pred))
                 print("Edit distance (model): {0}\n\n\n".format(model_edit_dist))
 
-    print("Mean ed greedy: {0}".format(mean(greedy_distances)))
-    print("Mean ed beam: {0}".format(mean(beam_distances)))
-    print("Mean ed beam with model: {0}".format(mean(model_distances)))
+    mean_ed_greedy = mean(greedy_distances)
+    mean_ed_beam = mean(beam_distances)
+    mean_ed_model = mean(model_distances)
+
+    print("Mean ed greedy: {0}".format(mean_ed_greedy))
+    print("Mean ed beam: {0}".format(mean_ed_beam))
+    print("Mean ed beam with model: {0}".format(mean_ed_model))
+
+    return mean_ed_greedy, mean_ed_beam, mean_ed_model
 
 def _to_int_list(float_tensor):
     return K.cast(float_tensor, "int32").numpy()
