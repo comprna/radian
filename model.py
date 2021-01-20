@@ -6,7 +6,7 @@ from tensorflow.keras import Input, Model, backend
 from tensorflow.keras.backend import ctc_batch_cost, get_value, set_value
 from tensorflow.keras.layers import Dense, Activation, Lambda
 from tensorflow.keras.models import load_model
-from tensorflow.keras.optimizers import Adam, SGD
+from tensorflow.keras.optimizers import Adam, SGD, Adagrad
 from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 
 # Computed elsewhere
@@ -164,6 +164,8 @@ def get_optimizer(config):
             return SGD(learning_rate = config.sgd.lr,
                        momentum = config.sgd.momentum,
                        nesterov = config.sgd.nesterov)
+    elif opt == 'adagrad':
+        return Adagrad(learning_rate = config.adagrad.lr)
 
 def get_causalcall_optimizer(config):
     c = config

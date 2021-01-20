@@ -28,6 +28,8 @@ train:
       nesterov: False
       clipnorm: False
       clipvalue: False
+    adagrad:
+      lr: 0.001
 
 model:
   relu_units: 128
