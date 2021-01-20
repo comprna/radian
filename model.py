@@ -12,31 +12,6 @@ from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 # Computed in 4_8_NNInputs/0_2_CreateTFRecords/1_ComputeMaxLabelLen
 MAX_LABEL_LEN = 47
 
-def create_sparse(ten):
-    # n = len(ten)
-    # ind = [[xi, 0, yi] for xi,x in enumerate(ten) for yi,y in enumerate(x)]
-    # chars = list(''.join(ten))
-    # return tf.SparseTensorValue(ind, chars, [n,1,1])
-    zero = tf.constant(0, dtype=tf.float32)
-    where = tf.not_equal(ten, zero)
-    indices = tf.where(where)
-    values = tf.gather_nd(ten, indices)
-    sparse = tf.compat.v1.SparseTensorValue(indices, values, ten.shape)
-    print(sparse)
-    return sparse
-
-def ed(y_true,y_pred):
-    print("Y_pred:")
-    print(y_pred)
-    print(type(y_pred))
-    print(len(y_pred))
-
-    print("\n\ny_true:")
-    print(y_true)
-    print(type(y_true))
-    print(len(y_true))
-    return tf.edit_distance(create_sparse(y_pred), create_sparse(y_true), normalize=True)
-
 def get_training_model(checkpoint, epoch_to_resume, config):
     if checkpoint is not None:
         model = restore_checkpoint(checkpoint, config)
@@ -77,7 +52,7 @@ def build_model(config, train=True):
     c = config
     input_shape = (c.timesteps, 1)
 
-    inputs = Input(shape=input_shape, name="inputs") # (None, 512, 1)
+    inputs = Input(shape=input_shape, name="inputs")
 
     params = {'nb_filters': c.tcn.nb_filters,
               'kernel_size': c.tcn.kernel_size,
@@ -92,15 +67,15 @@ def build_model(config, train=True):
               'use_batch_norm': c.tcn.use_batch_norm,
               }
 
-    inner = TCN(**params)(inputs)   # (None, 512, 64)
-    # inner = Dense(c.relu_units)(inner) # (None, 512, 5)
-    # inner = Activation('relu')(inner)
-    inner = Dense(c.softmax_units)(inner) # (None, 512, 5)
-    y_pred = Activation('softmax')(inner) # (None, 512, 5)
+    inner = TCN(**params)(inputs)
+    inner = Dense(c.relu_units)(inner)
+    inner = Activation('relu')(inner)
+    inner = Dense(c.softmax_units)(inner)
+    y_pred = Activation('softmax')(inner)
 
-    labels = Input(shape=(MAX_LABEL_LEN,), name="labels") # (None, 39)
-    input_length = Input(shape=[1],name="input_length") # (None, 1)
-    label_length = Input(shape=[1],name="label_length") # (None, 1)
+    labels = Input(shape=(MAX_LABEL_LEN,), name="labels")
+    input_length = Input(shape=[1],name="input_length")
+    label_length = Input(shape=[1],name="label_length")
 
     loss_out = Lambda(
         ctc_loss_lambda, output_shape=(1,), name='ctc')((
