@@ -26,7 +26,7 @@ def generate_model():
     for k6mer, prob in k6mer_probs.items():
         print("{0}:\t{1}".format(k6mer, prob))
 
-    with open('6mer-probs.json', 'w') as f:
+    with open('/home/150/as2781/rnabasecaller/6mer-probs.json', 'w') as f:
         json.dump(k6mer_probs, f)
 
 def initialise_6mer_counts():
@@ -43,7 +43,7 @@ def initialise_6mer_counts():
     return k6mer_counts
 
 def main():
-    with open('6mer-probs.json', 'r') as f:
+    with open('/home/150/as2781/rnabasecaller/6mer-probs.json', 'r') as f:
         k6mer_probs = json.load(f)
 
     for k6mer, prob in k6mer_probs.items():

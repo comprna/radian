@@ -22,7 +22,7 @@ def plot_softmax_output(matrix, label):
 def compute_mean_edit_distance(model, dataset, verbose=False):
     classes = 'ACGT'
 
-    with open('6mer-probs.json', 'r') as f:
+    with open('/home/150/as2781/rnabasecaller/6mer-probs.json', 'r') as f:
         k6mer_probs = json.load(f)
     rna_model = RnaModel(k6mer_probs)
 
