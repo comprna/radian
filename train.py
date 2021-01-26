@@ -23,7 +23,7 @@ class EditDistanceCallback(Callback):
         self.interval = interval
 
     def on_epoch_end(self, epoch, logs=None):
-        if epoch % self.interval == 0:
+        if epoch % self.interval == 0 and epoch != 0:
             eval_model = get_evaluation_model(self.config, self.model.get_weights())
             train_ed = compute_mean_edit_distance_greedy(eval_model, self.train_dataset, verbose=True)
             val_ed = compute_mean_edit_distance_greedy(eval_model, self.val_dataset, verbose=True)

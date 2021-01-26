@@ -46,7 +46,6 @@ def compute_mean_edit_distance_greedy(model, dataset, verbose=False):
             label_length = label_lengths[i]
             label = _to_int_list(label)
             label = _label_to_sequence(label, label_length)
-            print("True label: {0}".format(label))
 
             # plot_softmax_output(softmax_out, label)
 

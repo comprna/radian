@@ -14,6 +14,9 @@ TRAIN_SCRIPT='/home/150/as2781/rnabasecaller/train.py'
 CONFIG_FILE='/home/150/as2781/rnabasecaller/config.yaml'
 SHARDS_DIR='/g/data/xc17/Eyras/alex/mnt-sda-backup/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards'
 
+For testing:
+SHARDS_DIR='/g/data/xc17/Eyras/alex/working/test_shards'
+
 3) Open terminal window for gadi rnabasecaller repo and pull latest changes
 
 4) cd in interactive job to train-x directory and run training
