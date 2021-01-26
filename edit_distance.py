@@ -19,6 +19,54 @@ def plot_softmax_output(matrix, label):
 
 #     # TODO: Why is there not a value for all 512 timesteps in the softmax output?
 
+def compute_mean_edit_distance_greedy(model, dataset, verbose=False):
+    classes = 'ACGT'
+
+    greedy_distances = []
+
+    for batch in dataset:
+        inputs = batch[0]["inputs"]
+        labels = batch[0]["labels"]
+        input_lengths = batch[0]["input_length"]
+        label_lengths = batch[0]["label_length"]
+
+        # Pass test data into network
+        softmax_out_batch = model.predict(inputs)
+
+        # Greedy decoding
+        greedy_pred_batch = K.ctc_decode(softmax_out_batch,
+                                  input_lengths,
+                                  greedy=True,
+                                  beam_width=100,
+                                  top_paths=1)
+        greedy_pred_batch = K.get_value(greedy_pred_batch[0][0])
+
+        for i, softmax_out in enumerate(softmax_out_batch):
+            label = labels[i]
+            label_length = label_lengths[i]
+            label = _to_int_list(label)
+            label = _label_to_sequence(label, label_length)
+            print("True label: {0}".format(label))
+
+            # plot_softmax_output(softmax_out, label)
+
+            greedy_pred = _to_int_list(greedy_pred_batch[i])
+            greedy_pred_len = _calculate_len_pred(greedy_pred)
+            greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
+            greedy_edit_dist = levenshtein.normalized_distance(label, greedy_pred)
+            greedy_distances.append(greedy_edit_dist)
+
+            if verbose == True:
+                print("True label: {0}".format(label))
+                print("Predicted label (greedy): {0}".format(greedy_pred))
+                print("Edit distance (greedy): {0}".format(greedy_edit_dist))
+
+    mean_ed_greedy = mean(greedy_distances)
+
+    print("Mean ed greedy: {0}".format(mean_ed_greedy))
+
+    return mean_ed_greedy
+
 def compute_mean_edit_distance(model, dataset, verbose=False):
     classes = 'ACGT'
 

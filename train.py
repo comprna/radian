@@ -8,7 +8,7 @@ from tensorflow.io.gfile import glob
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, Callback
 
 from data import get_dataset
-from edit_distance import compute_mean_edit_distance
+from edit_distance import compute_mean_edit_distance_greedy
 from model import get_training_model, get_evaluation_model
 from utilities import setup_local, get_config
 
@@ -25,20 +25,12 @@ class EditDistanceCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
         if epoch % self.interval == 0:
             eval_model = get_evaluation_model(self.config, self.model.get_weights())
-            train_eds = compute_mean_edit_distance(eval_model, self.train_dataset, verbose=True)
-            val_eds = compute_mean_edit_distance(eval_model, self.val_dataset, verbose=True)
-            print("Mean ED (train) greedy: {0}".format(train_eds[0]))
-            print("Mean ED (train) beam: {0}".format(train_eds[1]))
-            print("Mean ED (train) model: {0}".format(train_eds[2]))
-            print("Mean ED (val) greedy: {0}".format(val_eds[0]))
-            print("Mean ED (val) beam: {0}".format(val_eds[1]))
-            print("Mean ED (val) model: {0}".format(val_eds[2]))
-            tf.summary.scalar('edit distance (train) greedy', data=train_eds[0], step=epoch)
-            tf.summary.scalar('edit distance (train) beam', data=train_eds[1], step=epoch)
-            tf.summary.scalar('edit distance (train) model', data=train_eds[2], step=epoch)
-            tf.summary.scalar('edit distance (val) greedy', data=val_eds[0], step=epoch)
-            tf.summary.scalar('edit distance (val) beam', data=val_eds[1], step=epoch)
-            tf.summary.scalar('edit distance (val) model', data=val_eds[2], step=epoch)
+            train_ed = compute_mean_edit_distance_greedy(eval_model, self.train_dataset, verbose=True)
+            val_ed = compute_mean_edit_distance_greedy(eval_model, self.val_dataset, verbose=True)
+            print("Mean ED (train) greedy: {0}".format(train_ed))
+            print("Mean ED (val) greedy: {0}".format(val_ed))
+            tf.summary.scalar('edit distance (train) greedy', data=train_ed, step=epoch)
+            tf.summary.scalar('edit distance (val) greedy', data=val_ed, step=epoch)
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     config = get_config(config_file)
