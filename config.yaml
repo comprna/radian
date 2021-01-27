@@ -37,8 +37,8 @@ model:
   timesteps: 512
   tcn:
     nb_filters: 256
-    kernel_size: 3
-    nb_stacks: 1
+    kernel_size: 5
+    nb_stacks: 2
     dilations: [1,2,4,8,16,32]
     padding: 'causal'
     use_skip_connections: True
