@@ -58,7 +58,7 @@ def compute_mean_edit_distance_greedy(model, dataset, verbose=False):
             if verbose == True:
                 print("True label: {0}".format(label))
                 print("Predicted label (greedy): {0}".format(greedy_pred))
-                print("Edit distance (greedy): {0}".format(greedy_edit_dist))
+                print("Edit distance (greedy): {0}\n\n".format(greedy_edit_dist))
 
     mean_ed_greedy = mean(greedy_distances)
 
