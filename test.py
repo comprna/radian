@@ -12,7 +12,7 @@ def main():
     test_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/val/*.tfrecords")
     test_dataset = get_dataset(test_files, config.train.batch_size, val=True)
 
-    saved_filepath = '/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/train-5/model-01.h5'
+    saved_filepath = '/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/train-6/model-01.h5'
     model = get_prediction_model(saved_filepath, config)
 
     # TODO: Assemble into reads
