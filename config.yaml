@@ -39,11 +39,11 @@ model:
     nb_filters: 256
     kernel_size: 3
     nb_stacks: 1
-    dilations: [1,2,4,16,64]
+    dilations: [1,2,4,8,32]
     padding: 'causal'
     use_skip_connections: False
     dropout_rate: 0.4
     return_sequences: True
-    activation: 'relu'
-    kernel_initializer: 'he_normal'
+    activation: 'sigmoid'
+    kernel_initializer: 'glorot_normal'
     use_batch_norm: False
