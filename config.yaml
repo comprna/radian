@@ -42,7 +42,7 @@ model:
     dilations: [1,2,4,8,16]
     padding: 'causal'
     use_skip_connections: False
-    dropout_rate: 0.2
+    dropout_rate: 0.4
     return_sequences: True
     activation: 'relu'
     kernel_initializer: 'he_normal'
