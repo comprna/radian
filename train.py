@@ -50,8 +50,9 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     logs_path = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
     file_writer = tf.summary.create_file_writer(logs_path + "/metrics")
     file_writer.set_as_default()
-    tensorboard = TensorBoard(
-        log_dir=logs_path, histogram_freq=1, profile_batch='500,520')
+    tensorboard = TensorBoard(log_dir=logs_path,
+                              histogram_freq=1,
+                              write_grads=True)
 
     edit_distance = EditDistanceCallback(config, train_dataset_for_eval, val_dataset)
 
