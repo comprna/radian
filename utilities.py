@@ -1,5 +1,6 @@
 import ast
 import csv
+import json
 import time
 import yaml
 from attrdict import AttrDict
@@ -7,6 +8,7 @@ from matplotlib import pyplot as plt
 
 import tensorflow as tf
 from tensorflow.io.gfile import glob
+from tensorflow.keras import backend as K
 
 from data import get_dataset
 
@@ -82,6 +84,64 @@ def print_dataset(shards_dir):
         # plt.plot(signal)
         plt.show()
 
+def label_to_sequence(label, label_length):
+    label = label[:label_length]
+    bases = ['A', 'C', 'G', 'T']
+    label = list(map(lambda b: bases[b], label))
+    return "".join(label)
+
+def to_int_list(float_tensor):
+    return K.cast(float_tensor, "int32").numpy()
+
+def get_label_stats(dataset):
+    label_count = {}
+    
+    for batch in dataset:
+        inputs = batch[0]
+        label_batch = inputs['labels']
+        label_lengths = batch[0]["label_length"]
+
+        for i, label in enumerate(label_batch):
+            label = to_int_list(label)
+            label = label_to_sequence(label, label_lengths[i])
+
+            if label in label_count:
+                label_count[label] += 1
+            else:
+                label_count[label] = 1
+
+    with open('labels.json', 'w') as f:
+        json.dump(label_count, f)
+
+
+def print_same_label_signals(dataset):
+
+    target = "CCCGATCCGACCTCACCATTTTCCGA"
+    target_signals = []
+
+    for batch in dataset:
+        inputs = batch[0]
+        signal_batch = inputs['inputs']
+        label_batch = inputs['labels']
+        label_lengths = batch[0]["label_length"]
+
+        for i, label in enumerate(label_batch):
+            label = to_int_list(label)
+            label = label_to_sequence(label, label_lengths[i])
+
+            if label == target:
+                target_signals.append(signal_batch[i])
+                print(len(target_signals))
+        
+        if len(target_signals) == 10:
+            break
+
+    fig, axs = plt.subplots(5, 2, sharey='all')
+    for i in range(len(target_signals)):
+        axs[i%5, int(i/5)].plot(target_signals[i])
+
+    plt.show()
+
 if __name__ == "__main__":
     data_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/train/*.tfrecords")
 
@@ -90,4 +150,4 @@ if __name__ == "__main__":
 
     dataset = get_dataset(data_files, config.train.batch_size, val=True)
 
-    count_n_steps_per_epoch(dataset)
+    print_same_label_signals(dataset)
