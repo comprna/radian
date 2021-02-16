@@ -52,7 +52,8 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     file_writer.set_as_default()
     tensorboard = TensorBoard(log_dir=logs_path,
                               histogram_freq=1,
-                              write_grads=True)
+                              # write_grads=True, # Currently deprecated: https://github.com/tensorflow/tensorflow/issues/31173
+                              )
 
     edit_distance = EditDistanceCallback(config, train_dataset_for_eval, val_dataset)
 
