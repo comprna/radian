@@ -64,7 +64,7 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
                                  mode="min",
                                  save_weights_only=True,
                                  )
-    callbacks_list = [checkpoint, tensorboard, edit_distance]
+    callbacks_list = [checkpoint, tensorboard]
 
     model.summary()
     model.fit(train_dataset,
