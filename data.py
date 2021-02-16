@@ -30,21 +30,44 @@ def read_tfrecord(example_batch):
     return inputs, outputs
 
 def get_dataset(shard_files, batch_size, val = False):
+    # Dynamically tune the level of parallelism.
     AUTO = tf.data.experimental.AUTOTUNE
 
-    option_no_order = tf.data.Options()
-    option_no_order.experimental_deterministic = False
+    # Construct the dataset from the shard files.
     dataset = tf.data.Dataset.from_tensor_slices(shard_files)
-    dataset = dataset.with_options(option_no_order)
+    print(dataset)
+
+    # Training datasets need to be shuffled.
+    if val == False:
+        option_no_order = tf.data.Options()
+        option_no_order.experimental_deterministic = False
+        dataset = dataset.with_options(option_no_order)
+    else:
+        option_order = tf.data.Options()
+        option_order.experimental_deterministic = True
+        dataset = dataset.with_options(option_order)
+
+    # Process multiple input files concurrently.
     dataset = dataset.interleave(tf.data.TFRecordDataset,
                                 cycle_length=32, 
                                 num_parallel_calls=AUTO)
+
+    # Cache the dataset to save loading time.
     dataset = dataset.cache()
-    dataset = dataset.shuffle(buffer_size=WINDOWS_PER_SHARD+1)
+
+    # Training datasets need to be shuffled and infinitely repeated.
     if val == False:
+        dataset = dataset.shuffle(buffer_size=WINDOWS_PER_SHARD+1)
         dataset = dataset.repeat()
+    
+    # Produce batches of data.
     dataset = dataset.batch(batch_size)
+
+    # Generate the dataset using read_tfrecord function.
     dataset = dataset.map(map_func = read_tfrecord,
                           num_parallel_calls = AUTO)
+    
+    # Overlap data processing and model training to improve performance
     dataset = dataset.prefetch(AUTO)
+    
     return dataset
