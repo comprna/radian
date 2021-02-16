@@ -35,7 +35,6 @@ def get_dataset(shard_files, batch_size, val = False):
 
     # Construct the dataset from the shard files.
     dataset = tf.data.Dataset.from_tensor_slices(shard_files)
-    print(dataset)
 
     # Training datasets need to be shuffled.
     if val == False:
