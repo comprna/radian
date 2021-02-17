@@ -1,7 +1,7 @@
 from tensorflow.io.gfile import glob
 
 from data import get_dataset
-from edit_distance import compute_mean_edit_distance_greedy, predict_greedy
+from evaluate import compute_mean_ed_greedy
 from model import get_prediction_model
 from utilities import get_config, setup_local
 
@@ -17,9 +17,7 @@ def main():
 
     # TODO: Assemble into reads
 
-    predictions = predict_greedy(model, test_dataset)
-
-    mean_ed = compute_mean_edit_distance_greedy(model, test_dataset, verbose=True)
+    mean_ed = compute_mean_ed_greedy(model, test_dataset, verbose=True)
     print("Mean edit distance on test data: {0}".format(mean_ed))
 
 if __name__ == "__main__":

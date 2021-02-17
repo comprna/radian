@@ -10,6 +10,10 @@ from textdistance import levenshtein
 from beam_search_decoder import ctcBeamSearch
 from rna_model import RnaModel
 
+def compute_mean_ed_greedy(model, dataset, verbose=False):
+    predictions = predict_greedy(model, dataset, verbose)
+    return compute_mean_ed(predictions)
+
 def plot_softmax(signal, matrix, actual, predicted):
     # Display timesteps horizontally rather than vertically
     t_matrix = np.transpose(matrix)
@@ -37,7 +41,7 @@ def plot_softmax(signal, matrix, actual, predicted):
     fig.suptitle("Actual: {}   Predicted: {}".format(predicted, actual))
     plt.show()
 
-def predict_greedy(model, dataset):
+def predict_greedy(model, dataset, verbose=False, plot=False):
     predictions = []
     for batch in dataset:
         inputs = batch[0]["inputs"]
@@ -70,7 +74,10 @@ def predict_greedy(model, dataset):
             greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
 
             # Plot the signal and prediction for debugging
-            plot_softmax(inputs[i], softmax_out, label, greedy_pred)
+            if plot == True:
+                plot_softmax(inputs[i], softmax_out, label, greedy_pred)
+            if verbose == True:
+                print("{}, {}".format(label, greedy_pred))
 
             predictions.append((label, greedy_pred))
     
@@ -117,11 +124,8 @@ def compute_mean_ed(predictions):
     for p in predictions:
         ed = levenshtein.normalized_distance(p[0], p[1])
         eds.append(ed)
-    
-    mean_ed = mean(eds)
-    print("Mean ed: {0}".format(mean_ed))
 
-    return mean_ed
+    return mean(eds)
 
 def _to_int_list(float_tensor):
     return K.cast(float_tensor, "int32").numpy()
