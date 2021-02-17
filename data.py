@@ -6,7 +6,7 @@ WINDOWS_PER_SHARD = 50000
 
 def read_tfrecord(example_batch):
     features = {
-        'signal': tf.io.FixedLenFeature([512], tf.float32), # TODO: Remove hardcoding
+        'signal': tf.io.FixedLenFeature([512], tf.float32), # TODO: Window size - Remove hardcoding
         'label': tf.io.VarLenFeature(tf.float32),
         'signal_length': tf.io.FixedLenFeature([], tf.int64), # shape [] means scalar
         'label_length': tf.io.FixedLenFeature([], tf.int64)
@@ -25,7 +25,7 @@ def read_tfrecord(example_batch):
         'input_length': signal_length,
         'label_length': label_length
     }
-    outputs = {'ctc': np.zeros([256])} # TODO: Remove hardcoding
+    outputs = {'ctc': np.zeros([32])} # TODO: Batch size - Remove hardcoding
 
     return inputs, outputs
 

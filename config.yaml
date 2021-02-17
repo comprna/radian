@@ -3,7 +3,7 @@ data:
   window_size: 512
 
 train:
-  batch_size: 32
+  batch_size: 32 # UPDATE DEPENDENCY IN DATA.PY IF THIS IS UPDATED
   n_epochs: 1000
   n_folds: 10
   val_freq: 1
