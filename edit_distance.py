@@ -10,19 +10,32 @@ from textdistance import levenshtein
 from beam_search_decoder import ctcBeamSearch
 from rna_model import RnaModel
 
-def plot_softmax_spikes(matrix):
-    print(matrix.shape)
+def plot_softmax(signal, matrix, actual, predicted):
+    # Display timesteps horizontally rather than vertically
     t_matrix = np.transpose(matrix)
 
+    # Share time axis to allow for comparison
+    fig, axs = plt.subplots(3, 1, sharex="all", figsize=(20,10))
 
-def plot_softmax_matrix(matrix, label):
-    print(matrix.shape)
-    t_matrix = np.transpose(matrix)
-    plt.imshow(t_matrix, cmap="gray_r", aspect="auto")
+    # Plot signal
+    axs[0].set_title("Raw Signal")
+    axs[0].plot(signal)
+
+    # Plot spikes
+    axs[1].set_title("CTC Output (spikes)")
+    axs[1].plot(t_matrix[4], label="b", color="grey", linestyle="dashed")
+    axs[1].plot(t_matrix[0], label="A", color="red")
+    axs[1].plot(t_matrix[1], label="C", color="orange")
+    axs[1].plot(t_matrix[2], label="G", color="green")
+    axs[1].plot(t_matrix[3], label="T", color="blue")
+    axs[1].legend()
+
+    # Plot probability matrix
+    axs[2].set_title("CTC Output (shaded)")
+    grid = axs[2].imshow(t_matrix, cmap="gray_r", aspect="auto")
+
+    fig.suptitle("Actual: {}   Predicted: {}".format(predicted, actual))
     plt.show()
-    plt.savefig('softmax_outputs/{0}'.format(label))
-
-#     # TODO: Why is there not a value for all 512 timesteps in the softmax output?
 
 def predict_greedy(model, dataset):
     predictions = []
@@ -51,12 +64,13 @@ def predict_greedy(model, dataset):
             label = _to_int_list(label)
             label = _label_to_sequence(label, label_length)
 
-            plot_softmax_spikes(softmax_out)
-
             # Predicted label
             greedy_pred = _to_int_list(greedy_pred_batch[i])
             greedy_pred_len = _calculate_len_pred(greedy_pred)
             greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
+
+            # Plot the signal and prediction for debugging
+            plot_softmax(inputs[i], softmax_out, label, greedy_pred)
 
             predictions.append((label, greedy_pred))
     
@@ -206,3 +220,22 @@ def _label_to_sequence(label, label_length):
     bases = ['A', 'C', 'G', 'T']
     label = list(map(lambda b: bases[b], label))
     return "".join(label)
+
+if __name__ == "__main__":
+    from tensorflow.io.gfile import glob
+    from data import get_dataset
+    from model import get_prediction_model
+    from utilities import get_config, setup_local
+
+    setup_local()
+    config = get_config('/home/alex/Documents/rnabasecaller/config.yaml')
+
+    test_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/val/*.tfrecords")
+    test_dataset = get_dataset(test_files, config.train.batch_size, val=True)
+
+    saved_filepath = '/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/train-1/model-01.h5'
+    model = get_prediction_model(saved_filepath, config)
+
+    # TODO: Assemble into reads
+
+    predictions = predict_greedy(model, test_dataset)
