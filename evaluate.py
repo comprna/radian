@@ -14,33 +14,6 @@ def compute_mean_ed_greedy(model, dataset, verbose=False):
     predictions = predict_greedy(model, dataset, verbose)
     return compute_mean_ed(predictions)
 
-def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
-    # Display timesteps horizontally rather than vertically
-    t_matrix = np.transpose(matrix)
-
-    # Share time axis to allow for comparison
-    fig, axs = plt.subplots(3, 1, sharex="all", figsize=(20,10))
-
-    # Plot signal
-    axs[0].set_title("Raw Signal")
-    axs[0].plot(signal)
-
-    # Plot spikes
-    axs[1].set_title("CTC Output (spikes)")
-    axs[1].plot(t_matrix[4], label="b", color="grey", linestyle="dashed")
-    axs[1].plot(t_matrix[0], label="A", color="red")
-    axs[1].plot(t_matrix[1], label="C", color="orange")
-    axs[1].plot(t_matrix[2], label="G", color="green")
-    axs[1].plot(t_matrix[3], label="T", color="blue")
-    axs[1].legend()
-
-    # Plot probability matrix
-    axs[2].set_title("CTC Output (shaded)")
-    grid = axs[2].imshow(t_matrix, cmap="gray_r", aspect="auto")
-
-    fig.suptitle("Actual: {}   Predicted: {}".format(actual, predicted))
-    plt.savefig("{}-{}.png".format(model_id, data_id))
-
 def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
     predictions = []
     for batch in dataset:
@@ -122,6 +95,33 @@ def predict_beam(model, dataset, use_model=False):
             predictions.append((label, pred))
     
     return predictions
+
+def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
+    # Display timesteps horizontally rather than vertically
+    t_matrix = np.transpose(matrix)
+
+    # Share time axis to allow for comparison
+    fig, axs = plt.subplots(3, 1, sharex="all", figsize=(20,10))
+
+    # Plot signal
+    axs[0].set_title("Raw Signal")
+    axs[0].plot(signal)
+
+    # Plot spikes
+    axs[1].set_title("CTC Output (spikes)")
+    axs[1].plot(t_matrix[4], label="b", color="grey", linestyle="dashed")
+    axs[1].plot(t_matrix[0], label="A", color="red")
+    axs[1].plot(t_matrix[1], label="C", color="orange")
+    axs[1].plot(t_matrix[2], label="G", color="green")
+    axs[1].plot(t_matrix[3], label="T", color="blue")
+    axs[1].legend()
+
+    # Plot probability matrix
+    axs[2].set_title("CTC Output (shaded)")
+    grid = axs[2].imshow(t_matrix, cmap="gray_r", aspect="auto")
+
+    fig.suptitle("Actual: {}   Predicted: {}".format(actual, predicted))
+    plt.savefig("{}-{}.png".format(model_id, data_id))
 
 def compute_mean_ed(predictions):
     eds = []

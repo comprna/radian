@@ -12,6 +12,24 @@ from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 # Computed in 4_8_NNInputs/0_2_CreateTFRecords/1_ComputeMaxLabelLen
 MAX_LABEL_LEN = 47
 
+def edit_distance(y_true, y_pred):
+    # NEED TO CONVERT INPUTS TO SPARSE TENSORS
+    # https://stackoverflow.com/questions/60285167/tensorflow-callback-as-custom-metric-for-ctc
+    # decode = K.ctc_label_dense_to_sparse(decode[0], K.cast(input_length, 'int32'))
+    # y_true_sparse = K.ctc_label_dense_to_sparse(y_true, K.cast(input_length, 'int32'))
+
+    # print(type(y_true))
+    # return 1
+
+    # Debug as follows: https://stackoverflow.com/questions/55428731/how-to-debug-custom-metric-values-in-tf-keras
+
+    y_true = tf.sparse.from_dense(y_true)
+    y_pred = tf.sparse.from_dense(y_pred)
+
+    edit_distance = tf.edit_distance(y_pred, y_true, normalize=True)
+    print(edit_distance)
+    return tf.reduce_mean(edit_distance)
+
 def get_training_model(checkpoint, epoch_to_resume, config):
     if checkpoint is not None:
         model = restore_checkpoint(checkpoint, config)
@@ -26,7 +44,8 @@ def initialise_model(config):
     model = build_model(config.model, train=True)
     optimizer = get_optimizer(config.train.opt)
     model.compile(optimizer = optimizer,
-                  loss = {'ctc': lambda labels, y_pred: y_pred})
+                  loss = {'ctc': lambda labels, y_pred: y_pred},
+                  metrics = [edit_distance])
     return model
 
 def restore_checkpoint(checkpoint, config):
@@ -35,7 +54,8 @@ def restore_checkpoint(checkpoint, config):
     print("Loaded checkpoint {0}".format(checkpoint))
     optimizer = get_optimizer(config.train.opt)
     model.compile(optimizer = optimizer,
-                  loss = {'ctc': lambda labels, y_pred: y_pred})
+                  loss = {'ctc': lambda labels, y_pred: y_pred},
+                  metrics = [edit_distance])
     return model
 
 def get_prediction_model(checkpoint, config):

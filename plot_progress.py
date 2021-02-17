@@ -2,7 +2,6 @@ import glob
 import os
 
 from tensorflow.io import gfile
-from tensorflow.keras import backend as K
 
 from data import get_dataset
 from evaluate import predict_greedy
