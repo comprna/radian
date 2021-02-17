@@ -14,7 +14,7 @@ def compute_mean_ed_greedy(model, dataset, verbose=False):
     predictions = predict_greedy(model, dataset, verbose)
     return compute_mean_ed(predictions)
 
-def plot_softmax(signal, matrix, actual, predicted):
+def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
     # Display timesteps horizontally rather than vertically
     t_matrix = np.transpose(matrix)
 
@@ -38,10 +38,10 @@ def plot_softmax(signal, matrix, actual, predicted):
     axs[2].set_title("CTC Output (shaded)")
     grid = axs[2].imshow(t_matrix, cmap="gray_r", aspect="auto")
 
-    fig.suptitle("Actual: {}   Predicted: {}".format(predicted, actual))
-    plt.show()
+    fig.suptitle("Actual: {}   Predicted: {}".format(actual, predicted))
+    plt.savefig("{}-{}.png".format(model_id, data_id))
 
-def predict_greedy(model, dataset, verbose=False, plot=False):
+def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
     predictions = []
     for batch in dataset:
         inputs = batch[0]["inputs"]
@@ -75,12 +75,16 @@ def predict_greedy(model, dataset, verbose=False, plot=False):
 
             # Plot the signal and prediction for debugging
             if plot == True:
-                plot_softmax(inputs[i], softmax_out, label, greedy_pred)
+                plot_softmax(inputs[i], softmax_out, label, greedy_pred, model_id, i)
             if verbose == True:
                 print("{}, {}".format(label, greedy_pred))
 
             predictions.append((label, greedy_pred))
     
+        # If we are in plotting mode, only plot the first batch
+        if plot == True:
+            break
+
     return predictions
 
 def predict_beam(model, dataset, use_model=False):
