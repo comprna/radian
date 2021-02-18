@@ -15,20 +15,24 @@ from utilities import get_config, setup_local
 
 def main():
     # MacBook Pro
+
     setup_local()
     config = get_config('/Users/alexsneddon/Documents/phd/rnabasecaller/config.yaml')
-    data_files = gfile.glob("/Users/alexsneddon/Documents/phd/rnabasecaller/val/*.tfrecords")
+    data_files = gfile.glob("/Users/alexsneddon/Documents/phd/rnabasecaller/debug/*.tfrecords")
     model_file = "/Users/alexsneddon/Documents/phd/rnabasecaller/model-01.h5"
 
+    # Local Desktop
+
+    # setup_local()
     # config = get_config('/home/alex/Documents/rnabasecaller/config.yaml')
-    # config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
-
     # data_files = gfile.glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/val/*.tfrecords")
-    # data_files = gfile.glob("/g/data/xc17/Eyras/alex/working/test_shards/val/*.tfrecords")
-
     # model_file = "/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/train-1/model-01.h5"
-    # model_file = "/g/data/xc17/Eyras/alex/working/rna-basecaller/4_8_NNInputs/train-1/model-01.h5"
 
+    # Gadi
+
+    # config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
+    # data_files = gfile.glob("/g/data/xc17/Eyras/alex/working/test_shards/val/*.tfrecords")
+    # model_file = "/g/data/xc17/Eyras/alex/working/rna-basecaller/4_8_NNInputs/train-1/model-01.h5"
 
     # Create a strategy to use all available GPUs.
 
@@ -76,6 +80,8 @@ def main():
             greedy_pred_len = _calculate_len_pred(greedy_pred)
             greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
 
+            print("{}, {}".format(label, greedy_pred))
+
             predictions.append((label, greedy_pred))
 
         return predictions
@@ -87,13 +93,18 @@ def main():
         prediction = strategy.run(predict, args=(dist_data,))
         return prediction
 
-    result = []
-    for i, chunk in enumerate(dist_dataset):
-        predictions = distributed_predict(chunk)
-        print("Predict: {}\n".format(softmax_batch))
-        result.extend(predictions)
-        print("Result: {}\n\n\n".format(result))
+    def run_distributed_predict_greedy(dist_dataset):
+        result = []
+        for i, chunk in enumerate(dist_dataset):
+            predictions = distributed_predict(chunk)
+            result.extend(predictions)
 
+    # Verify distributed approach gives correct results by comparing
+    # printed output. (Test on Gadi)
+
+    # TODO: Do not use mirrored model here
+    predict_greedy(model, dataset, verbose=True) # Original
+    # run_distributed_predict_greedy(dist_dataset) # Distributed
 
     # BENCHMARKING
     # NB: Using time.time() only gives an approximate time, but since
