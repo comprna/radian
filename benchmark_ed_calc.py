@@ -13,6 +13,73 @@ from evaluate import _to_int_list, _label_to_sequence, _calculate_len_pred
 from model import get_prediction_model
 from utilities import get_config, setup_local
 
+def predict(data):
+    inputs = data[0]["inputs"]
+    labels = data[0]["labels"]
+    input_lengths = data[0]["input_length"]
+    label_lengths = data[0]["label_length"]
+
+    softmax_batch = model(inputs)
+
+    greedy_pred_batch = K.ctc_decode(softmax_batch,
+                            input_lengths,
+                            greedy=True,
+                            beam_width=100,
+                            top_paths=1)
+    greedy_pred_batch = K.get_value(greedy_pred_batch[0][0])
+
+    # Get prediction for each input
+    predictions = []
+    for i, softmax_out in enumerate(softmax_batch):
+        # Actual label
+        label = labels[i]
+        label_length = label_lengths[i]
+        label = _to_int_list(label)
+        label = _label_to_sequence(label, label_length)
+
+        # Predicted label
+        greedy_pred = _to_int_list(greedy_pred_batch[i])
+        greedy_pred_len = _calculate_len_pred(greedy_pred)
+        greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
+
+        print("{}, {}".format(label, greedy_pred))
+
+        predictions.append((label, greedy_pred))
+
+    return predictions
+
+@tf.function
+def distributed_predict(dist_data):
+    # Pass the predict step to strategy.run with the distributed data.
+    prediction = strategy.run(predict, args=(dist_data,))
+    return prediction
+
+def run_distributed_predict_greedy(dist_dataset):
+    result = []
+    for i, chunk in enumerate(dist_dataset):
+        predictions = distributed_predict(chunk)
+        result.extend(predictions)
+
+def run_mirrored_strategy():
+    # Create a strategy to use all available GPUs.
+    strategy = MirroredStrategy()
+
+    # Create the model inside the strategy's scope so that it is a
+    # mirrored variable.
+    with strategy.scope():
+        model = get_prediction_model(model_file, config)
+
+    # Create a distributed dataset based on the strategy.
+    dataset = get_dataset(data_files, config.train.batch_size, val=True)
+    dist_dataset = strategy.experimental_distribute_dataset(dataset)
+
+    # Run the distributed prediction.
+    run_distributed_predict_greedy(dist_dataset)
+
+
+def run_serial():
+    predict_greedy(model, dataset, verbose=True)
+
 def main():
     # MacBook Pro
 
@@ -34,77 +101,12 @@ def main():
     # data_files = gfile.glob("/g/data/xc17/Eyras/alex/working/test_shards/val/*.tfrecords")
     # model_file = "/g/data/xc17/Eyras/alex/working/rna-basecaller/4_8_NNInputs/train-1/model-01.h5"
 
-    # Create a strategy to use all available GPUs.
-
-    strategy = MirroredStrategy()
-
-    # Create the model inside the strategy's scope so that it is a
-    # mirrored variable.
-
-    with strategy.scope():
-        model = get_prediction_model(model_file, config)
-
-    # Create a distributed dataset based on the strategy.
-
-    dataset = get_dataset(data_files, config.train.batch_size, val=True)
-    dist_dataset = strategy.experimental_distribute_dataset(dataset)
-
-    # Define the predict step.
-
-    def predict(data):
-        inputs = data[0]["inputs"]
-        labels = data[0]["labels"]
-        input_lengths = data[0]["input_length"]
-        label_lengths = data[0]["label_length"]
-
-        softmax_batch = model(inputs)
-
-        greedy_pred_batch = K.ctc_decode(softmax_batch,
-                                input_lengths,
-                                greedy=True,
-                                beam_width=100,
-                                top_paths=1)
-        greedy_pred_batch = K.get_value(greedy_pred_batch[0][0])
-
-        # Get prediction for each input
-        predictions = []
-        for i, softmax_out in enumerate(softmax_batch):
-            # Actual label
-            label = labels[i]
-            label_length = label_lengths[i]
-            label = _to_int_list(label)
-            label = _label_to_sequence(label, label_length)
-
-            # Predicted label
-            greedy_pred = _to_int_list(greedy_pred_batch[i])
-            greedy_pred_len = _calculate_len_pred(greedy_pred)
-            greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
-
-            print("{}, {}".format(label, greedy_pred))
-
-            predictions.append((label, greedy_pred))
-
-        return predictions
-
-    # Pass the predict step to strategy.run with the distributed data.
-
-    @tf.function
-    def distributed_predict(dist_data):
-        prediction = strategy.run(predict, args=(dist_data,))
-        return prediction
-
-    def run_distributed_predict_greedy(dist_dataset):
-        result = []
-        for i, chunk in enumerate(dist_dataset):
-            predictions = distributed_predict(chunk)
-            result.extend(predictions)
 
     # Verify distributed approach gives correct results by comparing
     # printed output. (Test on Gadi)
+    run_mirrored_strategy()
+    run_serial()
 
-    # TODO: Do not use mirrored model here
-    predict_greedy(model, dataset, verbose=True) # Original
-    # run_distributed_predict_greedy(dist_dataset) # Distributed
 
     # BENCHMARKING
     # NB: Using time.time() only gives an approximate time, but since
