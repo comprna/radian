@@ -2,6 +2,7 @@ import glob
 import os
 import time
 
+from tensorflow.distribute import MirroredStrategy
 from tensorflow.io import gfile
 
 from data import get_dataset
@@ -28,8 +29,17 @@ def main():
 
     print("Starting benchmarking...")
 
+    # Distribute computation across all available GPUs
+    strategy = MirroredStrategy()
+
+    # Distribute the data
+    dist_dataset = strategy.experimental_distribute_dataset(dataset)
+
     start = time.time()
-    predictions = predict_greedy(model, dataset)
+    predictions = []
+    for chunk in dist_dataset:
+        predictions.append(strategy.run(predict_greedy, args=(model, chunk)))
+
     prediction_end = time.time()
     mean_ed = compute_mean_ed(predictions)
     mean_end = time.time()
