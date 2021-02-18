@@ -4,6 +4,7 @@ from statistics import mean
 import matplotlib.pyplot as plt
 import numpy as np
 
+import tensorflow as tf
 from tensorflow.keras import backend as K
 from textdistance import levenshtein
 
@@ -13,6 +14,52 @@ from rna_model import RnaModel
 def compute_mean_ed_greedy(model, dataset, verbose=False):
     predictions = predict_greedy(model, dataset, verbose)
     return compute_mean_ed(predictions)
+
+@tf.function
+def predict_greedy_opt(model, batch, verbose=False, plot=False, model_id=None):
+    predictions = []
+    inputs = batch[0]["inputs"]
+    labels = batch[0]["labels"]
+    input_lengths = batch[0]["input_length"]
+    label_lengths = batch[0]["label_length"]
+
+    # Pass test data into network
+    softmax_out_batch = model.predict(inputs)
+
+    # Greedy decoding
+    greedy_pred_batch = K.ctc_decode(softmax_out_batch,
+                                input_lengths,
+                                greedy=True,
+                                beam_width=100,
+                                top_paths=1)
+    greedy_pred_batch = K.get_value(greedy_pred_batch[0][0])
+
+    # Get prediction for each input
+    for i, softmax_out in enumerate(softmax_out_batch):
+        # Actual label
+        label = labels[i]
+        label_length = label_lengths[i]
+        label = _to_int_list(label)
+        label = _label_to_sequence(label, label_length)
+
+        # Predicted label
+        greedy_pred = _to_int_list(greedy_pred_batch[i])
+        greedy_pred_len = _calculate_len_pred(greedy_pred)
+        greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
+
+        # Plot the signal and prediction for debugging
+        if plot == True:
+            plot_softmax(inputs[i], softmax_out, label, greedy_pred, model_id, i)
+        if verbose == True:
+            print("{}, {}".format(label, greedy_pred))
+
+        predictions.append((label, greedy_pred))
+
+    # # If we are in plotting mode, only plot the first batch
+    # if plot == True:
+    #     break
+
+    return predictions
 
 def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
     predictions = []
