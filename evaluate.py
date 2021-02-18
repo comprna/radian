@@ -15,7 +15,6 @@ def compute_mean_ed_greedy(model, dataset, verbose=False):
     predictions = predict_greedy(model, dataset, verbose)
     return compute_mean_ed(predictions)
 
-@tf.function
 def predict_greedy_opt(model, batch, verbose=False, plot=False, model_id=None):
     predictions = []
     inputs = batch[0]["inputs"]

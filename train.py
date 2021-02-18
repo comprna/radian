@@ -18,6 +18,9 @@ STEPS_PER_EPOCH = 329916 # Batch size 32
 # An edit distance metric cannot be created since the model during training
 # only outputs the loss, whereas we need the softmax matrix to compute
 # edit distance.
+# 
+# Perhaps we could specify the train/eval model using a training argument
+# in the call function, to allow a metric: https://keras.io/api/models/model/
 class EditDistanceCallback(Callback):
     def __init__(self, config, train_dataset, val_dataset, interval=10):
         self.config = config
