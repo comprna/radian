@@ -15,6 +15,9 @@ from utilities import setup_local, get_config
 # Computed in utilities.py : count_n_steps_per_epoch()
 STEPS_PER_EPOCH = 329916 # Batch size 32
 
+# An edit distance metric cannot be created since the model during training
+# only outputs the loss, whereas we need the softmax matrix to compute
+# edit distance.
 class EditDistanceCallback(Callback):
     def __init__(self, config, train_dataset, val_dataset, interval=10):
         self.config = config
@@ -83,7 +86,7 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
 def train_local(checkpoint=None, initial_epoch=None):
     setup_local()
-    shards_dir = '/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards'
+    shards_dir = '/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/local_testing'
     train(shards_dir, checkpoint, initial_epoch, 'config.yaml')
 
 if __name__ == "__main__":
@@ -106,10 +109,10 @@ if __name__ == "__main__":
         assert args.initial_epoch is not None
         args.initial_epoch = int(args.initial_epoch)
 
-    # train_local()
+    train_local()
     # train_local('/home/alex/OneDrive/phd-project/rna-basecaller/train-10-local/model-57.h5', 57)
 
-    train(args.shards_dir,
-          args.checkpoint, 
-          args.initial_epoch, 
-          args.config_file)
+    # train(args.shards_dir,
+    #       args.checkpoint, 
+    #       args.initial_epoch, 
+    #       args.config_file)

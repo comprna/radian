@@ -57,6 +57,7 @@ def setup_local():
     config.log_device_placement = True
     sess = tf.compat.v1.Session(config=config)
     tf.compat.v1.keras.backend.set_session(sess)
+    tf.config.experimental_run_functions_eagerly(True)
 
 def print_dataset(shards_dir):
     data_files = glob("{0}/*.tfrecords".format(shards_dir))
