@@ -5,36 +5,44 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import tensorflow as tf
+from tensorflow.distribute import MirroredStrategy
 from tensorflow.keras import backend as K
 from textdistance import levenshtein
 
 from beam_search_decoder import ctcBeamSearch
 from rna_model import RnaModel
 
-def compute_mean_ed_greedy(model, dataset, verbose=False):
-    predictions = predict_greedy(model, dataset, verbose)
-    return compute_mean_ed(predictions)
+def run_distributed_predict_greedy(strategy, dist_dataset, model):
+    result = []
+    for i, chunk in enumerate(dist_dataset):
+        predictions = distributed_predict_greedy(strategy, chunk, model)
+        result.extend(predictions)
+    return result
 
-def predict_greedy_opt(model, batch, verbose=False, plot=False, model_id=None):
-    predictions = []
-    inputs = batch[0]["inputs"]
-    labels = batch[0]["labels"]
-    input_lengths = batch[0]["input_length"]
-    label_lengths = batch[0]["label_length"]
+@tf.function
+def distributed_predict_greedy(strategy, dist_data, model):
+    # Pass the predict step to strategy.run with the distributed data.
+    prediction = strategy.run(predict_greedy_op, args=(dist_data, model,))
+    return prediction
 
-    # Pass test data into network
-    softmax_out_batch = model.predict(inputs)
+def predict_greedy_op(data, model):
+    inputs = data[0]["inputs"]
+    labels = data[0]["labels"]
+    input_lengths = data[0]["input_length"]
+    label_lengths = data[0]["label_length"]
 
-    # Greedy decoding
-    greedy_pred_batch = K.ctc_decode(softmax_out_batch,
-                                input_lengths,
-                                greedy=True,
-                                beam_width=100,
-                                top_paths=1)
+    softmax_batch = model(inputs)
+
+    greedy_pred_batch = K.ctc_decode(softmax_batch,
+                            input_lengths,
+                            greedy=True,
+                            beam_width=100,
+                            top_paths=1)
     greedy_pred_batch = K.get_value(greedy_pred_batch[0][0])
 
     # Get prediction for each input
-    for i, softmax_out in enumerate(softmax_out_batch):
+    predictions = []
+    for i, softmax_out in enumerate(softmax_batch):
         # Actual label
         label = labels[i]
         label_length = label_lengths[i]
@@ -46,21 +54,13 @@ def predict_greedy_opt(model, batch, verbose=False, plot=False, model_id=None):
         greedy_pred_len = _calculate_len_pred(greedy_pred)
         greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
 
-        # Plot the signal and prediction for debugging
-        if plot == True:
-            plot_softmax(inputs[i], softmax_out, label, greedy_pred, model_id, i)
-        if verbose == True:
-            print("{}, {}".format(label, greedy_pred))
+        print("{}, {}".format(label, greedy_pred))
 
         predictions.append((label, greedy_pred))
 
-    # # If we are in plotting mode, only plot the first batch
-    # if plot == True:
-    #     break
-
     return predictions
 
-def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
+def predict_greedy_serial(model, dataset, verbose=False, plot=False, model_id=None):
     predictions = []
     for batch in dataset:
         inputs = batch[0]["inputs"]
@@ -168,6 +168,10 @@ def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
 
     fig.suptitle("Actual: {}   Predicted: {}".format(actual, predicted))
     plt.savefig("{}-{}.png".format(model_id, data_id))
+
+def compute_mean_ed_greedy(model, dataset, verbose=False):
+    predictions = predict_greedy(model, dataset, verbose)
+    return compute_mean_ed(predictions)
 
 def compute_mean_ed(predictions):
     eds = []
