@@ -52,6 +52,7 @@ def main():
 
     # Gadi
 
+    tf.config.experimental_run_functions_eagerly(True)
     config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
     data_files = gfile.glob("/g/data/xc17/Eyras/alex/working/test_shards/val/*.tfrecords")
     model_file = "/g/data/xc17/Eyras/alex/working/rna-basecaller/4_8_NNInputs/train-1/model-01.h5"
