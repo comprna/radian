@@ -93,16 +93,16 @@ def main():
 
     # Local Desktop
 
-    # setup_local()
-    # config = get_config('/home/alex/Documents/rnabasecaller/config.yaml')
-    # data_files = gfile.glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/val/*.tfrecords")
-    # model_file = "/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/train-1/model-01.h5"
+    setup_local()
+    config = get_config('/home/alex/Documents/rnabasecaller/config.yaml')
+    data_files = gfile.glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/val/*.tfrecords")
+    model_file = "/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/train-1/model-01.h5"
 
     # Gadi
 
-    config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
-    data_files = gfile.glob("/g/data/xc17/Eyras/alex/working/test_shards/val/*.tfrecords")
-    model_file = "/g/data/xc17/Eyras/alex/working/rna-basecaller/4_8_NNInputs/train-1/model-01.h5"
+    # config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
+    # data_files = gfile.glob("/g/data/xc17/Eyras/alex/working/test_shards/val/*.tfrecords")
+    # model_file = "/g/data/xc17/Eyras/alex/working/rna-basecaller/4_8_NNInputs/train-1/model-01.h5"
 
 
     # BENCHMARKING
@@ -110,15 +110,15 @@ def main():
     # the running times are long this is good enough here. More accurate
     # benchmarking can be done with the timeit module.
 
-    start = time.time()
+    # start = time.time()
 
     # run_mirrored_strategy(model_file, config, data_files)
     run_serial(model_file, config, data_files)
 
-    prediction_end = time.time()
-    prediction_time = prediction_end - start
+    # prediction_end = time.time()
+    # prediction_time = prediction_end - start
 
-    print("Prediction time: {}".format(prediction_time))
+    # print("Prediction time: {}".format(prediction_time))
 
     
     # print("Starting benchmarking...")
