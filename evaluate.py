@@ -22,8 +22,57 @@ def run_distributed_predict_greedy(strategy, dist_dataset, model):
 @tf.function
 def distributed_predict_greedy(strategy, dist_data, model):
     # Pass the predict step to strategy.run with the distributed data.
-    prediction = strategy.run(predict_greedy_op, args=(dist_data, model,))
+    prediction = strategy.run(predict_greedy_op_working, args=(dist_data, model,))
     return prediction
+
+def predict_greedy_op_working(data, model):
+    inputs = data[0]["inputs"]
+    labels = data[0]["labels"]
+    input_lengths = data[0]["input_length"]
+    label_lengths = data[0]["label_length"]
+
+    softmax_batch = model(inputs)
+
+    greedy_pred_batch = K.ctc_decode(softmax_batch,
+                            input_lengths,
+                            greedy=True,
+                            beam_width=100,
+                            top_paths=1)
+    greedy_pred_batch = K.get_value(greedy_pred_batch[0][0])
+
+    # Get prediction for each input
+    predictions = []
+    for i, softmax_out in enumerate(softmax_batch):
+        # Actual label
+        label = labels[i]
+        K.print_tensor(label, message='label = ')
+
+        label_length = label_lengths[i]
+        K.print_tensor(label_length, message='label_length = ')
+
+        # Cut off non-label values
+        label = label[:label_length]
+        K.print_tensor(label, message='label trimmed = ')
+
+        # Convert to sparse tensor
+        label = tf.sparse.from_dense(label)
+        K.print_tensor(label, message='label sparse = ')
+
+
+        
+        label = _to_int_list(label)
+        label = _label_to_sequence(label, label_length)
+
+        # Predicted label
+        greedy_pred = _to_int_list(greedy_pred_batch[i])
+        greedy_pred_len = _calculate_len_pred(greedy_pred)
+        greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
+
+        print("{}, {}".format(label, greedy_pred))
+
+        predictions.append((label, greedy_pred))
+
+    return predictions
 
 def predict_greedy_op(data, model):
     inputs = data[0]["inputs"]

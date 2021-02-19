@@ -6,6 +6,7 @@ import tensorflow as tf
 from tensorflow.distribute import MirroredStrategy
 from tensorflow.io import gfile
 from tensorflow.keras import backend as K
+from textdistance import levenshtein
 
 from data import get_dataset
 from evaluate import run_distributed_predict_greedy, predict_greedy_serial
@@ -32,7 +33,7 @@ def run_serial(model_file, config, data_files):
     model = get_prediction_model(model_file, config)
     dataset = get_dataset(data_files, config.train.batch_size, val=True)
 
-    predict_greedy_serial(model, dataset, verbose=True)
+    return predict_greedy_serial(model, dataset, verbose=True)
 
 def main():
     # MacBook Pro
@@ -61,15 +62,17 @@ def main():
     # the running times are long this is good enough here. More accurate
     # benchmarking can be done with the timeit module.
 
-    # start = time.time()
 
-    run_mirrored_strategy(model_file, config, data_files)
-    # run_serial(model_file, config, data_files)
+    predictions = run_mirrored_strategy(model_file, config, data_files)
+    # predictions = run_serial(model_file, config, data_files)
 
-    # prediction_end = time.time()
-    # prediction_time = prediction_end - start
+    # print(predictions)
 
-    # print("Prediction time: {}".format(prediction_time))
+    # eds = []
+    # for p in predictions:
+    #     ed = levenshtein.normalized_distance(p[0], p[1])
+    #     eds.append(ed)
+
 
     
     # print("Starting benchmarking...")
