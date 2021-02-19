@@ -105,17 +105,22 @@ def main():
     model_file = "/g/data/xc17/Eyras/alex/working/rna-basecaller/4_8_NNInputs/train-1/model-01.h5"
 
 
-    # Verify distributed approach gives correct results by comparing
-    # printed output. (Test on Gadi)
-    # run_mirrored_strategy(model_file, config, data_files)
-    run_serial(model_file, config, data_files)
-
-
     # BENCHMARKING
     # NB: Using time.time() only gives an approximate time, but since
     # the running times are long this is good enough here. More accurate
     # benchmarking can be done with the timeit module.
 
+    start = time.time()
+
+    # run_mirrored_strategy(model_file, config, data_files)
+    run_serial(model_file, config, data_files)
+
+    prediction_end = time.time()
+    prediction_time = prediction_end - start
+
+    print("Prediction time: {}".format(prediction_time))
+
+    
     # print("Starting benchmarking...")
     # start = time.time()
     # predictions = []
