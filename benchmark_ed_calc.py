@@ -95,7 +95,7 @@ def main():
 
     setup_local()
     config = get_config('/home/alex/Documents/rnabasecaller/config.yaml')
-    data_files = gfile.glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/val/*.tfrecords")
+    data_files = gfile.glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/local_testing/val/*.tfrecords")
     model_file = "/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/train-1/model-01.h5"
 
     # Gadi
