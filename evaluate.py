@@ -22,7 +22,7 @@ def run_distributed_predict_greedy(strategy, dist_dataset, model):
 @tf.function
 def distributed_predict_greedy(strategy, dist_data, model):
     # Pass the predict step to strategy.run with the distributed data.
-    prediction = strategy.run(predict_greedy_op_working, args=(dist_data, model,))
+    prediction = strategy.run(predict_greedy_op, args=(dist_data, model,))
     return prediction
 
 def predict_greedy_op_working(data, model):
