@@ -13,7 +13,7 @@ from evaluate import _to_int_list, _label_to_sequence, _calculate_len_pred
 from model import get_prediction_model
 from utilities import get_config, setup_local
 
-def predict(data):
+def predict(data, model):
     inputs = data[0]["inputs"]
     labels = data[0]["labels"]
     input_lengths = data[0]["input_length"]
@@ -49,18 +49,18 @@ def predict(data):
     return predictions
 
 @tf.function
-def distributed_predict(dist_data):
+def distributed_predict(strategy, dist_data, model):
     # Pass the predict step to strategy.run with the distributed data.
-    prediction = strategy.run(predict, args=(dist_data,))
+    prediction = strategy.run(predict, args=(dist_data, model,))
     return prediction
 
-def run_distributed_predict_greedy(dist_dataset):
+def run_distributed_predict_greedy(strategy, dist_dataset, model):
     result = []
     for i, chunk in enumerate(dist_dataset):
-        predictions = distributed_predict(chunk)
+        predictions = distributed_predict(strategy, chunk, model)
         result.extend(predictions)
 
-def run_mirrored_strategy():
+def run_mirrored_strategy(model_file, config, data_files):
     # Create a strategy to use all available GPUs.
     strategy = MirroredStrategy()
 
@@ -74,19 +74,22 @@ def run_mirrored_strategy():
     dist_dataset = strategy.experimental_distribute_dataset(dataset)
 
     # Run the distributed prediction.
-    run_distributed_predict_greedy(dist_dataset)
+    run_distributed_predict_greedy(strategy, dist_dataset, model)
 
 
-def run_serial():
+def run_serial(model_file, config, data_files):
+    model = get_prediction_model(model_file, config)
+    dataset = get_dataset(data_files, config.train.batch_size, val=True)
+
     predict_greedy(model, dataset, verbose=True)
 
 def main():
     # MacBook Pro
 
-    setup_local()
-    config = get_config('/Users/alexsneddon/Documents/phd/rnabasecaller/config.yaml')
-    data_files = gfile.glob("/Users/alexsneddon/Documents/phd/rnabasecaller/debug/*.tfrecords")
-    model_file = "/Users/alexsneddon/Documents/phd/rnabasecaller/model-01.h5"
+    # setup_local()
+    # config = get_config('/Users/alexsneddon/Documents/phd/rnabasecaller/config.yaml')
+    # data_files = gfile.glob("/Users/alexsneddon/Documents/phd/rnabasecaller/debug/*.tfrecords")
+    # model_file = "/Users/alexsneddon/Documents/phd/rnabasecaller/model-01.h5"
 
     # Local Desktop
 
@@ -97,15 +100,15 @@ def main():
 
     # Gadi
 
-    # config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
-    # data_files = gfile.glob("/g/data/xc17/Eyras/alex/working/test_shards/val/*.tfrecords")
-    # model_file = "/g/data/xc17/Eyras/alex/working/rna-basecaller/4_8_NNInputs/train-1/model-01.h5"
+    config = get_config('/home/150/as2781/rnabasecaller/config.yaml')
+    data_files = gfile.glob("/g/data/xc17/Eyras/alex/working/test_shards/val/*.tfrecords")
+    model_file = "/g/data/xc17/Eyras/alex/working/rna-basecaller/4_8_NNInputs/train-1/model-01.h5"
 
 
     # Verify distributed approach gives correct results by comparing
     # printed output. (Test on Gadi)
-    run_mirrored_strategy()
-    run_serial()
+    # run_mirrored_strategy(model_file, config, data_files)
+    run_serial(model_file, config, data_files)
 
 
     # BENCHMARKING
