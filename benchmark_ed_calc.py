@@ -63,8 +63,8 @@ def main():
     # benchmarking can be done with the timeit module.
 
 
-    # predictions = run_mirrored_strategy(model_file, config, data_files)
-    predictions = run_serial(model_file, config, data_files)
+    predictions = run_mirrored_strategy(model_file, config, data_files)
+    # predictions = run_serial(model_file, config, data_files)
 
     # print(predictions)
 

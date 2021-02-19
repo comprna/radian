@@ -58,12 +58,28 @@ def predict_greedy_op_working(data, model):
         label = tf.sparse.from_dense(label)
         K.print_tensor(label, message='label sparse = ')
 
-
-        
-        label = _to_int_list(label)
-        label = _label_to_sequence(label, label_length)
+        # 
 
         # Predicted label
+        pred = greedy_pred_batch[i]
+        K.print_tensor(pred, message='pred = ')
+
+        pred_len = _calculate_len_pred(pred)
+        print(pred_len)
+
+        # Trim prediction
+        pred = pred[:pred_len]
+        K.print_tensor(pred, message='pred = ')
+
+        # Convert to sparse tensor
+        pred = tf.sparse.from_dense(pred)
+        K.print_tensor(pred, message='pred = ')
+
+        # Calculate edit distance
+        distance_matrix = tf.edit_distance(pred, label)
+        K.print_tensor(distance_matrix, message='ED = ')
+
+
         greedy_pred = _to_int_list(greedy_pred_batch[i])
         greedy_pred_len = _calculate_len_pred(greedy_pred)
         greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
