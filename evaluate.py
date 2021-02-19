@@ -22,7 +22,7 @@ def run_distributed_predict_greedy(strategy, dist_dataset, model):
 @tf.function
 def distributed_predict_greedy(strategy, dist_data, model):
     # Pass the predict step to strategy.run with the distributed data.
-    prediction = strategy.run(predict_greedy_op, args=(dist_data, model,))
+    prediction = strategy.run(predict_greedy_op_working, args=(dist_data, model,))
     return prediction
 
 def predict_greedy_op_working(data, model):
@@ -75,8 +75,14 @@ def predict_greedy_op_working(data, model):
         pred = tf.sparse.from_dense(pred)
         K.print_tensor(pred, message='pred = ')
 
+        # TODO: SPARSE TENSORS NEED TO BE OF CERTAIN FORMATE
+        # See docs: https://www.tensorflow.org/api_docs/python/tf/edit_distance
+        # See stack overflow: https://stackoverflow.com/questions/51612489/tensorflow-tf-edit-distance-explanation-required
+        # See example: https://github.com/nfmcclure/tensorflow_cookbook/blob/master/05_Nearest_Neighbor_Methods/03_Working_with_Text_Distances/03_text_distances.py
+        # ProgramCreek examples: https://www.programcreek.com/python/example/90310/tensorflow.edit_distance
+
         # Calculate edit distance
-        distance_matrix = tf.edit_distance(pred, label)
+        distance_matrix = tf.edit_distance(pred, tf.cast(label, dtype=tf.int64))
         K.print_tensor(distance_matrix, message='ED = ')
 
 
@@ -127,7 +133,7 @@ def predict_greedy_op(data, model):
 
 def predict_greedy_serial(model, dataset, verbose=False, plot=False, model_id=None):
     predictions = []
-    for batch in dataset:
+    for s, batch in enumerate(dataset):
         inputs = batch[0]["inputs"]
         labels = batch[0]["labels"]
         input_lengths = batch[0]["input_length"]
@@ -144,30 +150,43 @@ def predict_greedy_serial(model, dataset, verbose=False, plot=False, model_id=No
                                   top_paths=1)
         greedy_pred_batch = K.get_value(greedy_pred_batch[0][0])
 
-        # Get prediction for each input
-        for i, softmax_out in enumerate(softmax_out_batch):
-            # Actual label
-            label = labels[i]
-            label_length = label_lengths[i]
-            label = _to_int_list(label)
-            label = _label_to_sequence(label, label_length)
+        # TODO: Use approach here https://github.com/cyprienruffino/CTCModel/blob/992e771937c94843a345dadc50770866b290e167/keras_ctcmodel/CTCModel.py
 
-            # Predicted label
-            greedy_pred = _to_int_list(greedy_pred_batch[i])
-            greedy_pred_len = _calculate_len_pred(greedy_pred)
-            greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
+        sparse_pred = K.ctc_label_dense_to_sparse(greedy_pred_batch)
+        sparse_label = K.ctc_label_dense_to_sparse(labels, tf.cast(tf.squeeze(label_lengths), tf.int32))
+        K.print_tensor(sparse_label, message='sparse_label = ')
 
-            # Plot the signal and prediction for debugging
-            if plot == True:
-                plot_softmax(inputs[i], softmax_out, label, greedy_pred, model_id, i)
-            if verbose == True:
-                print("{}, {}".format(label, greedy_pred))
+        ed_tensor = tf.edit_distance(greedy_pred_batch, sparse_label)
+        k.print_tensor(ed_tensor, message='ed_tensor = ')
 
-            predictions.append((label, greedy_pred))
+
+        # # Get prediction for each input
+        # for i, softmax_out in enumerate(softmax_out_batch):
+        #     # Actual label
+        #     label = labels[i]
+        #     label_length = label_lengths[i]
+        #     label = _to_int_list(label)
+        #     label = _label_to_sequence(label, label_length)
+
+        #     # Predicted label
+        #     greedy_pred = _to_int_list(greedy_pred_batch[i])
+        #     greedy_pred_len = _calculate_len_pred(greedy_pred)
+        #     greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
+
+        #     # Plot the signal and prediction for debugging
+        #     if plot == True:
+        #         plot_softmax(inputs[i], softmax_out, label, greedy_pred, model_id, i)
+        #     if verbose == True:
+        #         print("{}, {}".format(label, greedy_pred))
+
+        #     predictions.append((label, greedy_pred))
     
-        # If we are in plotting mode, only plot the first batch
-        if plot == True:
-            break
+        # # If we are in plotting mode, only plot the first batch
+        # if plot == True:
+        #     break
+            
+        if s > 1000:
+            return predictions
 
     return predictions
 
