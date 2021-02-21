@@ -12,126 +12,7 @@ from textdistance import levenshtein
 from beam_search_decoder import ctcBeamSearch
 from rna_model import RnaModel
 
-def run_distributed_predict_greedy(strategy, dist_dataset, model):
-    result = []
-    for i, chunk in enumerate(dist_dataset):
-        predictions = distributed_predict_greedy(strategy, chunk, model)
-        result.extend(predictions)
-    return result
-
-@tf.function
-def distributed_predict_greedy(strategy, dist_data, model):
-    # Pass the predict step to strategy.run with the distributed data.
-    prediction = strategy.run(predict_greedy_op_working, args=(dist_data, model,))
-    return prediction
-
-def predict_greedy_op_working(data, model):
-    inputs = data[0]["inputs"]
-    labels = data[0]["labels"]
-    input_lengths = data[0]["input_length"]
-    label_lengths = data[0]["label_length"]
-
-    softmax_batch = model(inputs)
-
-    greedy_pred_batch = K.ctc_decode(softmax_batch,
-                            input_lengths,
-                            greedy=True,
-                            beam_width=100,
-                            top_paths=1)
-    greedy_pred_batch = K.get_value(greedy_pred_batch[0][0])
-
-    # Get prediction for each input
-    predictions = []
-    for i, softmax_out in enumerate(softmax_batch):
-        # Actual label
-        label = labels[i]
-        K.print_tensor(label, message='label = ')
-
-        label_length = label_lengths[i]
-        K.print_tensor(label_length, message='label_length = ')
-
-        # Cut off non-label values
-        label = label[:label_length]
-        K.print_tensor(label, message='label trimmed = ')
-
-        # Convert to sparse tensor
-        label = tf.sparse.from_dense(label)
-        K.print_tensor(label, message='label sparse = ')
-
-        # 
-
-        # Predicted label
-        pred = greedy_pred_batch[i]
-        K.print_tensor(pred, message='pred = ')
-
-        pred_len = _calculate_len_pred(pred)
-        print(pred_len)
-
-        # Trim prediction
-        pred = pred[:pred_len]
-        K.print_tensor(pred, message='pred = ')
-
-        # Convert to sparse tensor
-        pred = tf.sparse.from_dense(pred)
-        K.print_tensor(pred, message='pred = ')
-
-        # TODO: SPARSE TENSORS NEED TO BE OF CERTAIN FORMATE
-        # See docs: https://www.tensorflow.org/api_docs/python/tf/edit_distance
-        # See stack overflow: https://stackoverflow.com/questions/51612489/tensorflow-tf-edit-distance-explanation-required
-        # See example: https://github.com/nfmcclure/tensorflow_cookbook/blob/master/05_Nearest_Neighbor_Methods/03_Working_with_Text_Distances/03_text_distances.py
-        # ProgramCreek examples: https://www.programcreek.com/python/example/90310/tensorflow.edit_distance
-
-        # Calculate edit distance
-        distance_matrix = tf.edit_distance(pred, tf.cast(label, dtype=tf.int64))
-        K.print_tensor(distance_matrix, message='ED = ')
-
-
-        greedy_pred = _to_int_list(greedy_pred_batch[i])
-        greedy_pred_len = _calculate_len_pred(greedy_pred)
-        greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
-
-        print("{}, {}".format(label, greedy_pred))
-
-        predictions.append((label, greedy_pred))
-
-    return predictions
-
-def predict_greedy_op(data, model):
-    inputs = data[0]["inputs"]
-    labels = data[0]["labels"]
-    input_lengths = data[0]["input_length"]
-    label_lengths = data[0]["label_length"]
-
-    softmax_batch = model(inputs)
-
-    greedy_pred_batch = K.ctc_decode(softmax_batch,
-                            input_lengths,
-                            greedy=True,
-                            beam_width=100,
-                            top_paths=1)
-    greedy_pred_batch = K.get_value(greedy_pred_batch[0][0])
-
-    # Get prediction for each input
-    predictions = []
-    for i, softmax_out in enumerate(softmax_batch):
-        # Actual label
-        label = labels[i]
-        label_length = label_lengths[i]
-        label = _to_int_list(label)
-        label = _label_to_sequence(label, label_length)
-
-        # Predicted label
-        greedy_pred = _to_int_list(greedy_pred_batch[i])
-        greedy_pred_len = _calculate_len_pred(greedy_pred)
-        greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
-
-        print("{}, {}".format(label, greedy_pred))
-
-        predictions.append((label, greedy_pred))
-
-    return predictions
-
-def predict_greedy_serial(model, dataset, verbose=False, plot=False, model_id=None):
+def predict_greedy_working(model, dataset, verbose=False, plot=False, model_id=None):
     predictions = []
     for s, batch in enumerate(dataset):
         inputs = batch[0]["inputs"]
@@ -152,12 +33,12 @@ def predict_greedy_serial(model, dataset, verbose=False, plot=False, model_id=No
 
         # TODO: Use approach here https://github.com/cyprienruffino/CTCModel/blob/992e771937c94843a345dadc50770866b290e167/keras_ctcmodel/CTCModel.py
 
-        sparse_pred = K.ctc_label_dense_to_sparse(greedy_pred_batch)
-        sparse_label = K.ctc_label_dense_to_sparse(labels, tf.cast(tf.squeeze(label_lengths), tf.int32))
-        K.print_tensor(sparse_label, message='sparse_label = ')
+        # sparse_pred = K.ctc_label_dense_to_sparse(greedy_pred_batch)
+        # sparse_label = K.ctc_label_dense_to_sparse(labels, tf.cast(tf.squeeze(label_lengths), tf.int32))
+        # K.print_tensor(sparse_label, message='sparse_label = ')
 
-        ed_tensor = tf.edit_distance(greedy_pred_batch, sparse_label)
-        k.print_tensor(ed_tensor, message='ed_tensor = ')
+        # ed_tensor = tf.edit_distance(greedy_pred_batch, sparse_label)
+        # k.print_tensor(ed_tensor, message='ed_tensor = ')
 
 
         # # Get prediction for each input
@@ -187,6 +68,52 @@ def predict_greedy_serial(model, dataset, verbose=False, plot=False, model_id=No
             
         if s > 1000:
             return predictions
+
+    return predictions
+
+def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
+    predictions = []
+    for s, batch in enumerate(dataset):
+        inputs = batch[0]["inputs"]
+        labels = batch[0]["labels"]
+        input_lengths = batch[0]["input_length"]
+        label_lengths = batch[0]["label_length"]
+
+        # Pass test data into network
+        softmax_out_batch = model.predict(inputs)
+
+        # Greedy decoding
+        greedy_pred_batch = K.ctc_decode(softmax_out_batch,
+                                  input_lengths,
+                                  greedy=True,
+                                  beam_width=100,
+                                  top_paths=1)
+        greedy_pred_batch = K.get_value(greedy_pred_batch[0][0])
+
+        # Get prediction for each input
+        for i, softmax_out in enumerate(softmax_out_batch):
+            # Actual label
+            label = labels[i]
+            label_length = label_lengths[i]
+            label = _to_int_list(label)
+            label = _label_to_sequence(label, label_length)
+
+            # Predicted label
+            greedy_pred = _to_int_list(greedy_pred_batch[i])
+            greedy_pred_len = _calculate_len_pred(greedy_pred)
+            greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
+
+            # Plot the signal and prediction for debugging
+            if plot == True:
+                plot_softmax(inputs[i], softmax_out, label, greedy_pred, model_id, i)
+            if verbose == True:
+                print("{}, {}".format(label, greedy_pred))
+
+            predictions.append((label, greedy_pred))
+    
+        # If we are in plotting mode, only plot the first batch
+        if plot == True:
+            break
 
     return predictions
 
