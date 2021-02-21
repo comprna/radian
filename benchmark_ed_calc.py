@@ -46,7 +46,7 @@ def main():
     #     predictions = predict_greedy(model, dataset, verbose=True)
     #     mean_ed = compute_mean_ed(predictions)
     
-    cProfile.run('callback()')
+    cProfile.run('callback()', sort='cumtime')
 
 def callback():
     config = get_config('/Users/alexsneddon/Documents/phd/rnabasecaller/config.yaml')
