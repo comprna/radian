@@ -31,11 +31,11 @@ class EditDistanceCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
         if epoch % self.interval == 0 and epoch != 0:
             eval_model = get_evaluation_model(self.config, self.model.get_weights())
-            train_ed = compute_mean_ed_greedy(eval_model, self.train_dataset, verbose=True)
+            # train_ed = compute_mean_ed_greedy(eval_model, self.train_dataset, verbose=True)
             val_ed = compute_mean_ed_greedy(eval_model, self.val_dataset, verbose=True)
-            print("Mean ED (train) greedy: {0}".format(train_ed))
+            # print("Mean ED (train) greedy: {0}".format(train_ed))
             print("Mean ED (val) greedy: {0}".format(val_ed))
-            tf.summary.scalar('edit distance (train) greedy', data=train_ed, step=epoch)
+            # tf.summary.scalar('edit distance (train) greedy', data=train_ed, step=epoch)
             tf.summary.scalar('edit distance (val) greedy', data=val_ed, step=epoch)
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file):
@@ -70,7 +70,7 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
                                  mode="min",
                                  save_weights_only=True,
                                  )
-    callbacks_list = [checkpoint, tensorboard]
+    callbacks_list = [checkpoint, tensorboard, edit_distance]
 
     model.summary()
     model.fit(train_dataset,
