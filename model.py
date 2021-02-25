@@ -27,8 +27,7 @@ def initialise_model(config):
     model = build_model(config.model, train=True)
     optimizer = get_optimizer(config.train.opt)
     model.compile(optimizer = optimizer,
-                  loss = {'ctc': lambda labels, y_pred: y_pred},
-                  metrics = [edit_distance])
+                  loss = {'ctc': lambda labels, y_pred: y_pred})
     return model
 
 def restore_checkpoint(checkpoint, config):
@@ -37,8 +36,7 @@ def restore_checkpoint(checkpoint, config):
     print("Loaded checkpoint {0}".format(checkpoint))
     optimizer = get_optimizer(config.train.opt)
     model.compile(optimizer = optimizer,
-                  loss = {'ctc': lambda labels, y_pred: y_pred},
-                  metrics = [edit_distance])
+                  loss = {'ctc': lambda labels, y_pred: y_pred})
     return model
 
 def get_prediction_model(checkpoint, config):

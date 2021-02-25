@@ -12,7 +12,7 @@ module load hdf5/1.8.21
 
 TRAIN_SCRIPT='/home/150/as2781/rnabasecaller/train.py'
 CONFIG_FILE='/home/150/as2781/rnabasecaller/config.yaml'
-SHARDS_DIR='/g/data/xc17/Eyras/alex/mnt-sda-backup/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards'
+SHARDS_DIR='/g/data/xc17/Eyras/alex/mnt-sda-backup/singleton-dataset-generation/dRNA/4_8_NNInputs/0_3_CreateTrimmedSortedTFRecords/stages/stage_1/'
 
 For testing:
 SHARDS_DIR='/g/data/xc17/Eyras/alex/working/test_shards'
