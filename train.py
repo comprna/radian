@@ -13,12 +13,13 @@ from model import get_training_model, get_evaluation_model
 from utilities import setup_local, get_config
 
 # Computed in utilities.py : count_n_steps_per_epoch()
-STEPS_PER_EPOCH = 329916 # Batch size 32
+# STEPS_PER_EPOCH = 329916 # Batch size 32 (full dataset)
+STEPS_PER_EPOCH = 45881 # Batch size 32 (4_8_NNInputs CC Stage 1)
 
 # An edit distance metric cannot be created since the model during training
 # only outputs the loss, whereas we need the softmax matrix to compute
 # edit distance.
-# 
+
 # Perhaps we could specify the train/eval model using a training argument
 # in the call function, to allow a metric: https://keras.io/api/models/model/
 class EditDistanceCallback(Callback):
@@ -112,10 +113,10 @@ if __name__ == "__main__":
         assert args.initial_epoch is not None
         args.initial_epoch = int(args.initial_epoch)
 
-    train_local()
+    # train_local()
     # train_local('/home/alex/OneDrive/phd-project/rna-basecaller/train-10-local/model-57.h5', 57)
 
-    # train(args.shards_dir,
-    #       args.checkpoint, 
-    #       args.initial_epoch, 
-    #       args.config_file)
+    train(args.shards_dir,
+          args.checkpoint, 
+          args.initial_epoch, 
+          args.config_file)

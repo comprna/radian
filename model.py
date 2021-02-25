@@ -10,7 +10,8 @@ from tensorflow.keras.optimizers import Adam, SGD, Adagrad
 from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 
 # Computed in 4_8_NNInputs/0_2_CreateTFRecords/1_ComputeMaxLabelLen
-MAX_LABEL_LEN = 47
+# MAX_LABEL_LEN = 47
+MAX_LABEL_LEN = 45 # TrimmedSortedTFRecords
 
 def get_training_model(checkpoint, epoch_to_resume, config):
     if checkpoint is not None:
