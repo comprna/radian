@@ -117,7 +117,7 @@ def get_label_stats(dataset):
 
 def print_same_label_signals(dataset):
 
-    target = "CCCGATCCGACCTCACCATTTTCCGA"
+    target = "CCGATCCGACCTCACCATTTTCCG"
     target_signals = []
 
     for batch in dataset:
@@ -144,11 +144,11 @@ def print_same_label_signals(dataset):
     plt.show()
 
 if __name__ == "__main__":
-    data_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/train/*.tfrecords")
+    data_files = glob("/g/data/xc17/Eyras/alex/mnt-sda-backup/singleton-dataset-generation/dRNA/4_8_NNInputs/0_3_CreateTrimmedSortedTFRecords/stages/stage_1/train")
 
     with open('config.yaml') as config_file:
         config = AttrDict(yaml.load(config_file, Loader=yaml.Loader))
 
     dataset = get_dataset(data_files, config.train.batch_size, val=True)
 
-    print_same_label_signals(dataset)
+    count_n_steps_per_epoch(dataset)
