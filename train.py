@@ -14,7 +14,8 @@ from utilities import setup_local, get_config
 
 # Computed in utilities.py : count_n_steps_per_epoch()
 # STEPS_PER_EPOCH = 329916 # Batch size 32 (full dataset)
-STEPS_PER_EPOCH = 45881 # Batch size 32 (4_8_NNInputs CC Stage 1)
+# STEPS_PER_EPOCH = 45881 # Batch size 32 (4_8_NNInputs CC ASC Stage 1)
+STEPS_PER_EPOCH = 131486 # Batch size 32 (4_8_NNInputs CC IND Stage L20)
 
 # An edit distance metric cannot be created since the model during training
 # only outputs the loss, whereas we need the softmax matrix to compute
