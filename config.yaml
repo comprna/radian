@@ -44,6 +44,6 @@ model:
     use_skip_connections: False
     dropout_rate: 0.0
     return_sequences: True
-    activation: 'relu'
-    kernel_initializer: 'he_normal'
+    activation: 'sigmoid'
+    kernel_initializer: 'glorot_normal'
     use_batch_norm: False
