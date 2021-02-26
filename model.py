@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow import Variable
 from tensorflow.keras import Input, Model, backend
 from tensorflow.keras.backend import ctc_batch_cost, get_value, set_value
-from tensorflow.keras.layers import Dense, Activation, Lambda
+from tensorflow.keras.layers import Dense, Activation, Lambda, LSTM
 from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam, SGD, Adagrad
 from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
@@ -69,6 +69,8 @@ def build_model(config, train=True):
               }
 
     inner = TCN(**params)(inputs)
+    inner = LSTM(inner, return_sequences=True)
+    inner = LSTM(inner, return_sequences=True)
     inner = Dense(c.relu_units)(inner)
     inner = Activation('relu')(inner)
     inner = Dense(c.softmax_units)(inner)
