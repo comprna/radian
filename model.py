@@ -69,8 +69,8 @@ def build_model(config, train=True):
               }
 
     inner = TCN(**params)(inputs)
-    inner = LSTM(inner, return_sequences=True)
-    inner = LSTM(inner, return_sequences=True)
+    lstm = LSTM(200, return_sequences=True)(inner)
+    lstm = LSTM(200, return_sequences=True)(inner)
     inner = Dense(c.relu_units)(inner)
     inner = Activation('relu')(inner)
     inner = Dense(c.softmax_units)(inner)
