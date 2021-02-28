@@ -47,8 +47,8 @@ def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
             # Plot the signal and prediction for debugging
             if plot == True:
                 plot_softmax(inputs[i], softmax_out, label, greedy_pred, model_id, i)
-            if verbose == True:
-                print("{}, {}".format(label, greedy_pred))
+            # if verbose == True:
+            #     print("{}, {}".format(label, greedy_pred))
 
             predictions.append((label, greedy_pred))
     
@@ -123,12 +123,14 @@ def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
 
 def compute_mean_ed_greedy(model, dataset, verbose=False):
     predictions = predict_greedy(model, dataset, verbose)
-    return compute_mean_ed(predictions)
+    return compute_mean_ed(predictions, verbose)
 
-def compute_mean_ed(predictions):
+def compute_mean_ed(predictions, verbose=False):
     eds = []
     for p in predictions:
         ed = levenshtein.normalized_distance(p[0], p[1])
+        if verbose == True:
+            print('{}, {}, {}'.format(p[0], p[1], ed))
         eds.append(ed)
 
     return mean(eds)
