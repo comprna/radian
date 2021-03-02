@@ -52,9 +52,9 @@ def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
 
             predictions.append((label, greedy_pred))
     
-        # If we are in plotting mode, only plot the first batch
-        if plot == True:
-            break
+            # If we are in plotting mode, only plot the first batch
+            if plot == True and i == 5:
+                return
 
     return predictions
 
@@ -118,7 +118,10 @@ def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
     axs[2].set_title("CTC Output (shaded)")
     grid = axs[2].imshow(t_matrix, cmap="gray_r", aspect="auto")
 
-    fig.suptitle("Actual: {}   Predicted: {}".format(actual, predicted))
+    # Get edit distance
+    ed = levenshtein.normalized_distance(actual, predicted)
+
+    fig.suptitle("Actual: {}   Predicted: {}   ED: {}".format(actual, predicted, ed))
     plt.savefig("{}-{}.png".format(model_id, data_id))
 
 def compute_mean_ed_greedy(model, dataset, verbose=False):
