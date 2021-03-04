@@ -47,8 +47,8 @@ def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
             # Plot the signal and prediction for debugging
             if plot == True:
                 plot_softmax(inputs[i], softmax_out, label, greedy_pred, model_id, i)
-            # if verbose == True:
-            #     print("{}, {}".format(label, greedy_pred))
+            if verbose == True:
+                print("{}, {}".format(label, greedy_pred))
 
             predictions.append((label, greedy_pred))
     
@@ -60,7 +60,9 @@ def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
 
 def predict_beam(model, dataset, verbose=False, use_model=False):
     if use_model == True:
-        with open('/home/150/as2781/rnabasecaller/6mer-probs.json', 'r') as f:
+        # model_file = '/home/alex/Documents/rnabasecaller/6mer-probs.json'
+        model_file = '/home/150/as2781/rnabasecaller/6mer-probs.json'
+        with open(model_file, 'r') as f:
             k6mer_probs = json.load(f)
         rna_model = RnaModel(k6mer_probs)
     else:
@@ -124,8 +126,8 @@ def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
     fig.suptitle("Actual: {}   Predicted: {}   ED: {}".format(actual, predicted, ed))
     plt.savefig("{}-{}.png".format(model_id, data_id))
 
-def compute_mean_ed_beam(model, dataset, verbose=False):
-    predictions = predict_beam(model, dataset, verbose)
+def compute_mean_ed_beam(model, dataset, verbose=False, use_model=False):
+    predictions = predict_beam(model, dataset, verbose, use_model)
     return compute_mean_ed(predictions, verbose)
 
 def compute_mean_ed_greedy(model, dataset, verbose=False):
@@ -164,13 +166,22 @@ if __name__ == "__main__":
     from model import get_prediction_model
     from utilities import get_config, setup_local
 
-    setup_local()
-    config = get_config('/home/alex/Documents/rnabasecaller/config.yaml')
+    # Gadi
+    config_file = '/home/150/as2781/rnabasecaller/config.yaml'
+    data_dir = '/g/data/xc17/Eyras/alex/mnt-sda-backup/singleton-dataset-generation/dRNA/4_8_NNInputs/0_3_CreateTrimmedSortedTFRecords/shards/val/label_len_20'
+    model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/4_8_NNInputs/curriculum_learning/train-10/model-95.h5'
 
-    test_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_3_CreateTrimmedSortedTFRecords/shards/val/label_len_20/*.tfrecords")
+    # Local
+    # setup_local()
+    # config_file = '/home/alex/Documents/rnabasecaller/config.yaml'
+    # data_dir = '/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_3_CreateTrimmedSortedTFRecords/shards/val/label_len_20'
+    # model_file = '/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/curriculum_learning/train-10/model-95.h5'
+
+    config = get_config(config_file)
+    test_files = glob("{}/*.tfrecords".format(data_dir))
     test_dataset = get_dataset(test_files, config.train.batch_size, val=True)
+    model = get_prediction_model(model_file, config)
 
-    saved_filepath = '/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/curriculum_learning/train-10/model-90.h5'
-    model = get_prediction_model(saved_filepath, config)
-
-    mean_ed_beam = compute_mean_ed_beam(model, test_dataset, verbose=True)
+    mean_ed_greedy = compute_mean_ed_greedy(model, test_dataset, verbose=True)
+    # mean_ed_beam = compute_mean_ed_beam(model, test_dataset, verbose=True)
+    # mean_ed_model = compute_mean_ed_beam(model, test_dataset, verbose=True, use_model=True)
