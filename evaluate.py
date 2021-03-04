@@ -146,7 +146,7 @@ def predict_all(model, dataset, verbose=False, plot=False, model_id=None):
             model_pred = ctcBeamSearch(softmax_out, classes, rna_model)
             model_ed = levenshtein.normalized_distance(model_pred, label)
 
-            print("{}, {}, {}, {}, {}, {}".format(label, greedy_pred, 
+            print("{}, {}, {}, {}, {}, {}, {}".format(label, greedy_pred, 
                 greedy_ed, beam_pred, beam_ed, model_pred, model_ed))
 
 
