@@ -182,6 +182,6 @@ if __name__ == "__main__":
     test_dataset = get_dataset(test_files, config.train.batch_size, val=True)
     model = get_prediction_model(model_file, config)
 
-    mean_ed_greedy = compute_mean_ed_greedy(model, test_dataset, verbose=True)
-    # mean_ed_beam = compute_mean_ed_beam(model, test_dataset, verbose=True)
+    # mean_ed_greedy = compute_mean_ed_greedy(model, test_dataset, verbose=True)
+    mean_ed_beam = compute_mean_ed_beam(model, test_dataset, verbose=True)
     # mean_ed_model = compute_mean_ed_beam(model, test_dataset, verbose=True, use_model=True)
