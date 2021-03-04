@@ -97,6 +97,59 @@ def predict_beam(model, dataset, verbose=False, use_model=False):
     
     return predictions
 
+def predict_all(model, dataset, verbose=False, plot=False, model_id=None):
+    # model_file = '/home/alex/Documents/rnabasecaller/6mer-probs.json'
+    # model_file = '/home/150/as2781/rnabasecaller/6mer-probs.json
+    model_file = '/home/150/as2781/rnabasecaller/6mer-cond-probs.json'
+    with open(model_file, 'r') as f:
+        k6mer_probs = json.load(f)
+    rna_model = RnaModel(k6mer_probs)
+
+    classes = 'ACGT'
+    predictions = []
+    for s, batch in enumerate(dataset):
+        inputs = batch[0]["inputs"]
+        labels = batch[0]["labels"]
+        input_lengths = batch[0]["input_length"]
+        label_lengths = batch[0]["label_length"]
+
+        # Pass test data into network
+        softmax_out_batch = model.predict(inputs)
+
+        # Greedy decoding
+        greedy_pred_batch = K.ctc_decode(softmax_out_batch,
+                                  input_lengths,
+                                  greedy=True,
+                                  beam_width=100,
+                                  top_paths=1)
+        greedy_pred_batch = K.get_value(greedy_pred_batch[0][0])
+
+        # Get prediction for each input
+        for i, softmax_out in enumerate(softmax_out_batch):
+            # Actual label
+            label = labels[i]
+            label_length = label_lengths[i]
+            label = _to_int_list(label)
+            label = _label_to_sequence(label, label_length)
+
+            # Greedy prediction
+            greedy_pred = _to_int_list(greedy_pred_batch[i])
+            greedy_pred_len = _calculate_len_pred(greedy_pred)
+            greedy_pred = _label_to_sequence(greedy_pred, greedy_pred_len)
+            greedy_ed = levenshtein.normalized_distance(greedy_pred, label)
+
+            # Beam search prediction - no model
+            beam_pred = ctcBeamSearch(softmax_out, classes, None)
+            beam_ed = levenshtein.normalized_distance(beam_pred, label)
+
+            # Beam search prediction - with model
+            model_pred = ctcBeamSearch(softmax_out, classes, rna_model)
+            model_ed = levenshtein.normalized_distance(model_pred, label)
+
+            print("{}, {}, {}, {}, {}, {}".format(label, greedy_pred, 
+                greedy_ed, beam_pred, beam_ed, model_pred, model_ed))
+
+
 def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
     # Display timesteps horizontally rather than vertically
     t_matrix = np.transpose(matrix)
@@ -185,4 +238,6 @@ if __name__ == "__main__":
 
     # mean_ed_greedy = compute_mean_ed_greedy(model, test_dataset, verbose=True)
     # mean_ed_beam = compute_mean_ed_beam(model, test_dataset, verbose=True)
-    mean_ed_model = compute_mean_ed_beam(model, test_dataset, verbose=True, use_model=True)
+    # mean_ed_model = compute_mean_ed_beam(model, test_dataset, verbose=True, use_model=True)
+
+    predict_all(model, test_dataset)
