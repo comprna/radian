@@ -61,7 +61,8 @@ def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
 def predict_beam(model, dataset, verbose=False, use_model=False):
     if use_model == True:
         # model_file = '/home/alex/Documents/rnabasecaller/6mer-probs.json'
-        model_file = '/home/150/as2781/rnabasecaller/6mer-probs.json'
+        # model_file = '/home/150/as2781/rnabasecaller/6mer-probs.json'
+        model_file = '/home/150/as2781/rnabasecaller/6mer-cond-probs.json'
         with open(model_file, 'r') as f:
             k6mer_probs = json.load(f)
         rna_model = RnaModel(k6mer_probs)
