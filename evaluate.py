@@ -58,7 +58,7 @@ def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
 
     return predictions
 
-def predict_beam(model, dataset, use_model=False):
+def predict_beam(model, dataset, verbose=False, use_model=False):
     if use_model == True:
         with open('/home/150/as2781/rnabasecaller/6mer-probs.json', 'r') as f:
             k6mer_probs = json.load(f)
@@ -87,8 +87,8 @@ def predict_beam(model, dataset, use_model=False):
             # Predicted label
             pred = ctcBeamSearch(softmax_out, classes, rna_model)
 
-            # Plot the signal and prediction for debugging
-            plot_softmax(inputs[i], softmax_out, label, pred)
+            if verbose == True:
+                print("{}, {}".format(label, pred))
 
             predictions.append((label, pred))
     
@@ -123,6 +123,10 @@ def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
 
     fig.suptitle("Actual: {}   Predicted: {}   ED: {}".format(actual, predicted, ed))
     plt.savefig("{}-{}.png".format(model_id, data_id))
+
+def compute_mean_ed_beam(model, dataset, verbose=False):
+    predictions = predict_beam(model, dataset, verbose)
+    return compute_mean_ed(predictions, verbose)
 
 def compute_mean_ed_greedy(model, dataset, verbose=False):
     predictions = predict_greedy(model, dataset, verbose)
@@ -163,12 +167,10 @@ if __name__ == "__main__":
     setup_local()
     config = get_config('/home/alex/Documents/rnabasecaller/config.yaml')
 
-    test_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/val/*.tfrecords")
+    test_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_3_CreateTrimmedSortedTFRecords/shards/val/label_len_20/*.tfrecords")
     test_dataset = get_dataset(test_files, config.train.batch_size, val=True)
 
-    saved_filepath = '/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/train-1/model-01.h5'
+    saved_filepath = '/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/curriculum_learning/train-10/model-90.h5'
     model = get_prediction_model(saved_filepath, config)
 
-    # TODO: Assemble into reads
-
-    predictions = predict_greedy(model, test_dataset)
+    mean_ed_beam = compute_mean_ed_beam(model, test_dataset, verbose=True)
