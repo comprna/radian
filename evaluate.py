@@ -47,8 +47,8 @@ def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
             # Plot the signal and prediction for debugging
             if plot == True:
                 plot_softmax(inputs[i], softmax_out, label, greedy_pred, model_id, i)
-            if verbose == True:
-                print("{}, {}".format(label, greedy_pred))
+            # if verbose == True:
+            #     print("{}, {}".format(label, greedy_pred))
 
             predictions.append((label, greedy_pred))
     
@@ -89,8 +89,8 @@ def predict_beam(model, dataset, verbose=False, use_model=False):
             # Predicted label
             pred = ctcBeamSearch(softmax_out, classes, rna_model)
 
-            if verbose == True:
-                print("{}, {}".format(label, pred))
+            # if verbose == True:
+            #     print("{}, {}".format(label, pred))
 
             predictions.append((label, pred))
     
