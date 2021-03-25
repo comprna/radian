@@ -1,5 +1,7 @@
 import numpy as np
 import tensorflow as tf
+from tensorflow.io.gfile import glob
+
 
 # Computed elsewhere
 WINDOWS_PER_SHARD = 50000
@@ -70,3 +72,13 @@ def get_dataset(shard_files, batch_size, val = False):
     dataset = dataset.prefetch(AUTO)
     
     return dataset
+
+if __name__ == "__main__":
+    shard_dir = "/Users/alexsneddon/Downloads"
+    batch_size = 32
+
+    data_files = glob("{}/*.tfrecords".format(shard_dir))
+    dataset = get_dataset(data_files, batch_size, val=True)
+
+    for sample in dataset:
+        print(sample)
