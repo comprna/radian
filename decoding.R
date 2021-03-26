@@ -13,10 +13,10 @@ load_results <- function(results_file)
            ed        = X3)
 }
 
-greedy_file     <- "/Users/alexsneddon/Documents/phd/rnabasecaller/train-10-test-greedy.sh.o18529352-clean"
-beam_file       <- "/Users/alexsneddon/Documents/phd/rnabasecaller/train-10-test-beam.sh.o18529381-clean"
-model_file      <- "/Users/alexsneddon/Documents/phd/rnabasecaller/train-10-test-rna-model.sh.o18529427-clean"
-cond_model_file <- "/Users/alexsneddon/Documents/phd/rnabasecaller/train-10-test-rna-cond-model.sh.o18530456-clean"
+greedy_file     <- "/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/curriculum_learning/train-10/tests/train-10-test-greedy.sh.o18529352-clean"
+beam_file       <- "/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/curriculum_learning/train-10/tests/train-10-test-beam.sh.o18529381-clean"
+model_file      <- "/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/curriculum_learning/train-10/tests/train-10-test-rna-model.sh.o18529427-clean"
+cond_model_file <- "/mnt/sda/rna-basecaller/experiments/4_8_NNInputs/curriculum_learning/train-10/tests/train-10-test-rna-cond-model.sh.o18530456-clean"
 
 greedy     <- load_results(greedy_file)
 beam       <- load_results(beam_file)
@@ -63,7 +63,8 @@ merged %<>%
 # Get the average edit distance for each decoder
 
 merged %>%
-  select(expected, predicted_beam, ed_beam, predicted_cond, ed_cond) %>%
+  select(expected, predicted_greedy, ed_greedy, predicted_beam,
+         ed_beam, predicted_model, ed_model, predicted_cond, ed_cond) %>%
   summarise_all(mean) ->
 mean_eds
 
@@ -97,4 +98,4 @@ ed_cond_same
 ed_cond_same # 409,772 instances = 91%
 
 # ED Beam average = 0.289
-# ED RNA conditional model average = 0.31
+# ED RNA conditional model average = 0.305
