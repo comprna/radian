@@ -117,7 +117,9 @@ def get_label_stats(dataset):
 
 def print_same_label_signals(dataset):
 
-    target = "CCGATCCGACCTCACCATTTTCCG"
+    # target = "AAAAAAA"
+    # target = "AAAAA"
+    target = "AGACTCCGAACATCCTCCCATTT"
     target_signals = []
 
     for batch in dataset:
@@ -134,21 +136,22 @@ def print_same_label_signals(dataset):
                 target_signals.append(signal_batch[i])
                 print(len(target_signals))
         
-        if len(target_signals) == 10:
+        if len(target_signals) == 6:
             break
 
-    fig, axs = plt.subplots(5, 2, sharey='all')
+    fig, axs = plt.subplots(3, 2, sharey='all')
     for i in range(len(target_signals)):
-        axs[i%5, int(i/5)].plot(target_signals[i])
+        axs[i%3, int(i/3)].plot(target_signals[i])
 
+    plt.suptitle("Signals for {}".format(target))
     plt.show()
 
 if __name__ == "__main__":
-    data_files = glob("/g/data/xc17/Eyras/alex/mnt-sda-backup/singleton-dataset-generation/dRNA/4_8_NNInputs/0_3_CreateTrimmedSortedTFRecords/curriculum/individual/stage_L25/train/*.tfrecords")
+    data_files = glob("/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/4_8_NNInputs/0_3_CreateTrimmedSortedTFRecords/shards/train/label_len_25/*.tfrecords")
 
     with open('config.yaml') as config_file:
         config = AttrDict(yaml.load(config_file, Loader=yaml.Loader))
 
     dataset = get_dataset(data_files, config.train.batch_size, val=True)
 
-    count_n_steps_per_epoch(dataset)
+    print_same_label_signals(dataset)
