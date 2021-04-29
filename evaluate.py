@@ -10,7 +10,7 @@ from tensorflow.keras import backend as K
 from textdistance import levenshtein
 
 from beam_search_decoder import ctcBeamSearch
-from rna_model import RnaModel
+from create_model import RnaModel
 
 def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
     predictions = []
