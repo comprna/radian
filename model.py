@@ -9,9 +9,8 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam, SGD, Adagrad
 from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 
-# Computed in 4_8_NNInputs/0_2_CreateTFRecords/1_ComputeMaxLabelLen
-# MAX_LABEL_LEN = 47
-MAX_LABEL_LEN = 45 # TrimmedSortedTFRecords
+# MAX_LABEL_LEN = 24 # 3 / 256 / 64
+MAX_LABEL_LEN = 38 # 3 / 512 / 128
 
 def get_training_model(checkpoint, epoch_to_resume, config):
     if checkpoint is not None:
@@ -69,8 +68,6 @@ def build_model(config, train=True):
               }
 
     inner = TCN(**params)(inputs)
-    # lstm = LSTM(200, return_sequences=True)(inner)
-    # lstm = LSTM(200, return_sequences=True)(inner)
     inner = Dense(c.relu_units)(inner)
     inner = Activation('relu')(inner)
     inner = Dense(c.softmax_units)(inner)

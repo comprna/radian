@@ -13,10 +13,8 @@ from model import get_training_model, get_evaluation_model
 from utilities import setup_local, get_config
 
 # Computed in utilities.py : count_n_steps_per_epoch()
-# STEPS_PER_EPOCH = 329916 # Batch size 32 (full dataset)
-# STEPS_PER_EPOCH = 45881 # Batch size 32 (4_8_NNInputs CC ASC Stage 1)
-# STEPS_PER_EPOCH = 131486 # Batch size 32 (4_8_NNInputs CC IND Stage L20)
-STEPS_PER_EPOCH = 50154 # Batch size 32 (4_8_NNInputs CC IND Stage L25)
+
+STEPS_PER_EPOCH = 260442 # 3 / 512 / 128 / Batch size 32
 
 # An edit distance metric cannot be created since the model during training
 # only outputs the loss, whereas we need the softmax matrix to compute
@@ -77,7 +75,6 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
 
     model.summary()
     model.fit(train_dataset,
-            #   steps_per_epoch=N_TRAIN_DATA // config.train.batch_size,
               steps_per_epoch=STEPS_PER_EPOCH,
               epochs=config.train.n_epochs,
               initial_epoch=initial_epoch,
