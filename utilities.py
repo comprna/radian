@@ -1,6 +1,7 @@
 import ast
 import csv
 import json
+import sys
 import time
 import yaml
 from attrdict import AttrDict
@@ -147,11 +148,11 @@ def print_same_label_signals(dataset):
     plt.show()
 
 if __name__ == "__main__":
-    data_files = glob("/home/alex/OneDrive/phd-project/singleton-dataset-generation/dRNA/4_8_NNInputs/0_3_CreateTrimmedSortedTFRecords/shards/train/label_len_25/*.tfrecords")
+    data_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/2_ProcessTrainingData/0_8_WriteTFRecords/3/512_128/*.tfrecords")
 
     with open('config.yaml') as config_file:
         config = AttrDict(yaml.load(config_file, Loader=yaml.Loader))
 
     dataset = get_dataset(data_files, config.train.batch_size, val=True)
 
-    print_same_label_signals(dataset)
+    count_n_steps_per_epoch(dataset)
