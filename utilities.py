@@ -148,7 +148,7 @@ def print_same_label_signals(dataset):
     plt.show()
 
 if __name__ == "__main__":
-    data_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/2_ProcessTrainingData/0_8_WriteTFRecords/3/1024_128/train/*.tfrecords")
+    data_files = glob("/mnt/sda/singleton-dataset-generation/dRNA/2_ProcessTrainingData/0_8_WriteTFRecords/3/1024_64/train/*.tfrecords")
 
     with open('config.yaml') as config_file:
         config = AttrDict(yaml.load(config_file, Loader=yaml.Loader))
