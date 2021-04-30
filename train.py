@@ -16,7 +16,8 @@ from utilities import setup_local, get_config
 
 # STEPS_PER_EPOCH = 233880 # 3 / 512 / 128 / Batch size 32
 # STEPS_PER_EPOCH = 466686 # 3 / 512 / 64 / Batch size 32
-STEPS_PER_EPOCH = 229070 # 3 / 1024 / 128 / Batch size 32
+# STEPS_PER_EPOCH = 229070 # 3 / 1024 / 128 / Batch size 32
+STEPS_PER_EPOCH = 458635 # 3 / 1024 / 64 / Batch size 32
 
 
 # An edit distance metric cannot be created since the model during training
