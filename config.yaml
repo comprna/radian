@@ -1,6 +1,6 @@
 data:
   n_classes: 5 # (A, C, G, U, blank)
-  window_size: 1024 # UPDATE DEPENDENCY IN DATA.PY IF THIS IS UPDATED
+  window_size: 256 # UPDATE DEPENDENCY IN DATA.PY IF THIS IS UPDATED
 
 train:
   batch_size: 32 # UPDATE DEPENDENCY IN DATA.PY IF THIS IS UPDATED
@@ -34,7 +34,7 @@ train:
 model:
   relu_units: 128
   softmax_units: 5
-  timesteps: 1024 # UPDATE DEPENDENCY IN DATA.PY IF THIS IS UPDATED
+  timesteps: 256 # UPDATE DEPENDENCY IN DATA.PY IF THIS IS UPDATED
   tcn:
     nb_filters: 256
     kernel_size: 3

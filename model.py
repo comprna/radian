@@ -9,9 +9,9 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam, SGD, Adagrad
 from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 
-# MAX_LABEL_LEN = 24 # 3 / 256 / 64
+MAX_LABEL_LEN = 24 # 3 / 256 / 64
 # MAX_LABEL_LEN = 38 # 3 / 512 / 64,128
-MAX_LABEL_LEN = 63 # 3 / 1024 / 64,128
+# MAX_LABEL_LEN = 63 # 3 / 1024 / 64,128
 
 
 def get_training_model(checkpoint, epoch_to_resume, config):
