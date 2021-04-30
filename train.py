@@ -14,7 +14,8 @@ from utilities import setup_local, get_config
 
 # Computed in utilities.py : count_n_steps_per_epoch()
 
-STEPS_PER_EPOCH = 455502 # 3 / 256 / 64 / Batch size 32
+STEPS_PER_EPOCH = 911506 # 3 / 256 / 32 / Batch size 32
+# STEPS_PER_EPOCH = 455502 # 3 / 256 / 64 / Batch size 32
 # STEPS_PER_EPOCH = 233880 # 3 / 512 / 128 / Batch size 32
 # STEPS_PER_EPOCH = 466686 # 3 / 512 / 64 / Batch size 32
 # STEPS_PER_EPOCH = 229070 # 3 / 1024 / 128 / Batch size 32
