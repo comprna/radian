@@ -46,7 +46,7 @@ class EditDistanceCallback(Callback):
             # tf.summary.scalar('edit distance (train) greedy', data=train_ed, step=epoch)
             tf.summary.scalar('edit distance (val) greedy', data=val_ed, step=epoch)
 
-def train(shards_dir, checkpoint, epoch_to_resume, config_file):
+def train(shards_dir, checkpoint, epoch_to_resume, config_file, strategy):
     config = get_config(config_file)
 
     train_files = glob("{}/train/*.tfrecords".format(shards_dir))
@@ -56,7 +56,6 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     val_files = glob("{}/val/*.tfrecords".format(shards_dir))
     val_dataset = get_dataset(val_files, config.train.batch_size, val=True)
 
-    strategy = MultiWorkerMirroredStrategy()
     with strategy.scope():
         model, initial_epoch = get_training_model(
             checkpoint, epoch_to_resume, config)
@@ -133,7 +132,10 @@ if __name__ == "__main__":
         "task": {"type": "worker", "index": 0}
     })
 
+    strategy = MultiWorkerMirroredStrategy()
+
     train(args.shards_dir,
           args.checkpoint, 
           args.initial_epoch, 
-          args.config_file)
+          args.config_file,
+          strategy)
