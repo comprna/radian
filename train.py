@@ -3,7 +3,7 @@ from datetime import datetime
 import sys
 
 import tensorflow as tf
-from tensorflow.distribute import MirroredStrategy
+from tensorflow.distribute import MultiWorkerMirroredStrategy
 from tensorflow.io.gfile import glob
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, Callback
 
@@ -54,7 +54,7 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file):
     val_files = glob("{}/val/*.tfrecords".format(shards_dir))
     val_dataset = get_dataset(val_files, config.train.batch_size, val=True)
 
-    strategy = MirroredStrategy()
+    strategy = MultiWorkerMirroredStrategy()
     with strategy.scope():
         model, initial_epoch = get_training_model(
             checkpoint, epoch_to_resume, config)
