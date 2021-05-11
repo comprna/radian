@@ -47,6 +47,7 @@ class EditDistanceCallback(Callback):
             tf.summary.scalar('edit distance (val) greedy', data=val_ed, step=epoch)
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file, strategy):
+    print("Inside train function...")
     config = get_config(config_file)
 
     train_files = glob("{}/train/*.tfrecords".format(shards_dir))
@@ -121,6 +122,8 @@ if __name__ == "__main__":
     # train_local()
     # train_local('/home/alex/OneDrive/phd-project/rna-basecaller/train-10-local/model-57.h5', 57)
 
+    print("Setting TF CONFIG...")
+
     # Set TF_CONFIG for MultiWorkerMirroredStrategy
     with open('tensorflow_nodefile','r') as fid:
         workers = [ host+':12345' for host in fid]
@@ -132,7 +135,11 @@ if __name__ == "__main__":
         "task": {"type": "worker", "index": 0}
     })
 
+    print("Setting up strategy...")
+
     strategy = MultiWorkerMirroredStrategy()
+
+    print("About to start training...")
 
     train(args.shards_dir,
           args.checkpoint, 
