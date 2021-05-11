@@ -94,10 +94,10 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file, strategy):
     score = model.evaluate(x=train_dataset)
     print(score)
 
-def train_local(checkpoint=None, initial_epoch=None):
-    setup_local()
-    shards_dir = '/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/local_testing'
-    train(shards_dir, checkpoint, initial_epoch, 'config.yaml')
+# def train_local(checkpoint=None, initial_epoch=None):
+#     setup_local()
+#     shards_dir = '/mnt/sda/singleton-dataset-generation/dRNA/4_8_NNInputs/0_2_CreateTFRecords/2_WriteTFRecords/shards/local_testing'
+#     train(shards_dir, checkpoint, initial_epoch, 'config.yaml')
 
 if __name__ == "__main__":
     print("Top of main...")
