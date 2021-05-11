@@ -14,6 +14,8 @@ from evaluate import compute_mean_ed_greedy
 from model import get_training_model, get_evaluation_model
 from utilities import setup_local, get_config
 
+print("Finished imports")
+
 # Computed in utilities.py : count_n_steps_per_epoch()
 
 STEPS_PER_EPOCH = 911506 # 3 / 256 / 32 / Batch size 32
