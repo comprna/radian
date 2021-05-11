@@ -3,7 +3,7 @@ from datetime import datetime
 import sys
 
 import tensorflow as tf
-from tensorflow.distribute import MultiWorkerMirroredStrategy
+from tensorflow.distribute.experimental import MultiWorkerMirroredStrategy
 from tensorflow.io.gfile import glob
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, Callback
 
