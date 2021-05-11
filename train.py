@@ -1,5 +1,7 @@
 import argparse
 from datetime import datetime
+import json
+import os
 import sys
 
 import tensorflow as tf
@@ -119,6 +121,17 @@ if __name__ == "__main__":
 
     # train_local()
     # train_local('/home/alex/OneDrive/phd-project/rna-basecaller/train-10-local/model-57.h5', 57)
+
+    # Set TF_CONFIG for MultiWorkerMirroredStrategy
+    with open('tensorflow_nodefile','r') as fid:
+        workers = [ host+':12345' for host in fid]
+
+    os.environ["TF_CONFIG"] = json.dumps({
+        "cluster": {
+            "worker": workers,
+        },
+        "task": {"type": "worker", "index": 0}
+    })
 
     train(args.shards_dir,
           args.checkpoint, 
