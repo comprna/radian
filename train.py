@@ -100,6 +100,7 @@ def train_local(checkpoint=None, initial_epoch=None):
     train(shards_dir, checkpoint, initial_epoch, 'config.yaml')
 
 if __name__ == "__main__":
+    print("Top of main...")
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",
                         "--checkpoint",
