@@ -133,14 +133,19 @@ if __name__ == "__main__":
 
     # Set TF_CONFIG for MultiWorkerMirroredStrategy
     with open('tensorflow_nodefile','r') as fid:
-        workers = [ host+':12345' for host in fid]
+        workers = [ f"{host.rstrip()}:12345" for host in fid ]
+        worker_nodes = [ host.rstrip() for host in fid ]
 
     print("For debugging, the workers are...")
     for worker in workers:
         print(worker)
+    
+    print("For debugging, the worker nodes are...")
+    for node in worker_nodes:
+        print(node)
 
     host=os.uname()[1]
-    idx = workers.index(host)
+    idx = worker_nodes.index(host)
     config_json = {'cluster': { 'worker': workers }, 'task': {'type': 'worker', 'index': idx} }
     os.environ["TF_CONFIG"] = json.dumps(config_json)
 
