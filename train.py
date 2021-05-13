@@ -133,35 +133,39 @@ if __name__ == "__main__":
 
     # Set TF_CONFIG for MultiWorkerMirroredStrategy
     with open('tensorflow_nodefile','r') as fid:
-        print("Debugging node file parsing...")
+        print("Printing contents of tensorflow_nodefile")
         for host in fid:
             print(host)
             print(host.rstrip())
         workers = [ f"{host.rstrip()}:12345" for host in fid ]
+        
+        print("Printing workers...")
+        for worker in workers:
+            print(worker)
         # worker_nodes = [ host.rstrip() for host in fid ]
 
-    print("For debugging, the workers are...")
-    for worker in workers:
-        print(worker)
+    # print("For debugging, the workers are...")
+    # for worker in workers:
+    #     print(worker)
     
-    worker_nodes = []
-    print("For debugging, the worker nodes are...")
-    for node in worker_nodes:
-        print(node)
+    # worker_nodes = []
+    # print("For debugging, the worker nodes are...")
+    # for node in worker_nodes:
+    #     print(node)
 
-    host=os.uname()[1]
-    idx = worker_nodes.index(host)
-    config_json = {'cluster': { 'worker': workers }, 'task': {'type': 'worker', 'index': idx} }
-    os.environ["TF_CONFIG"] = json.dumps(config_json)
+    # host=os.uname()[1]
+    # idx = worker_nodes.index(host)
+    # config_json = {'cluster': { 'worker': workers }, 'task': {'type': 'worker', 'index': idx} }
+    # os.environ["TF_CONFIG"] = json.dumps(config_json)
 
-    print("Setting up strategy...")
+    # print("Setting up strategy...")
 
-    strategy = MultiWorkerMirroredStrategy()
+    # strategy = MultiWorkerMirroredStrategy()
 
-    print("About to start training...")
+    # print("About to start training...")
 
-    train(args.shards_dir,
-          args.checkpoint, 
-          args.initial_epoch, 
-          args.config_file,
-          strategy)
+    # train(args.shards_dir,
+    #       args.checkpoint, 
+    #       args.initial_epoch, 
+    #       args.config_file,
+    #       strategy)
