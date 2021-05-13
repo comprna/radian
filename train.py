@@ -135,6 +135,10 @@ if __name__ == "__main__":
     with open('tensorflow_nodefile','r') as fid:
         workers = [ host+':12345' for host in fid]
 
+    print("For debugging, the workers are...")
+    for worker in workers:
+        print(worker)
+
     host=os.uname()[1]
     idx = workers.index(host)
     config_json = {'cluster': { 'worker': workers }, 'task': {'type': 'worker', 'index': idx} }
