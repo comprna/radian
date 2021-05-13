@@ -134,7 +134,11 @@ if __name__ == "__main__":
     # Set TF_CONFIG for MultiWorkerMirroredStrategy
     with open('tensorflow_nodefile','r') as fid:
         workers = [ f"{host.rstrip()}:12345" for host in fid ]
-        worker_nodes = [ host.rstrip() for host in fid ]
+        print("Debugging node file parsing...")
+        for host in fid:
+            print(host)
+            print(host.rstrip())
+        # worker_nodes = [ host.rstrip() for host in fid ]
 
     print("For debugging, the workers are...")
     for worker in workers:
