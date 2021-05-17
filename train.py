@@ -14,8 +14,6 @@ from evaluate import compute_mean_ed_greedy
 from model import get_training_model, get_evaluation_model
 from utilities import setup_local, get_config
 
-print("Finished imports")
-
 # Computed in utilities.py : count_n_steps_per_epoch()
 
 STEPS_PER_EPOCH = 911506 # 3 / 256 / 32 / Batch size 32
@@ -49,10 +47,8 @@ class EditDistanceCallback(Callback):
             tf.summary.scalar('edit distance (val) greedy', data=val_ed, step=epoch)
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file, strategy):
-    print("Inside train function...")
     config = get_config(config_file)
 
-    print("Creating datasets...")
     train_files = glob("{}/train/*.tfrecords".format(shards_dir))
     train_dataset = get_dataset(train_files, config.train.batch_size, val=False)
     train_dataset_for_eval = get_dataset(train_files, config.train.batch_size, val=True)
@@ -60,12 +56,10 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file, strategy):
     val_files = glob("{}/val/*.tfrecords".format(shards_dir))
     val_dataset = get_dataset(val_files, config.train.batch_size, val=True)
 
-    print("Creating model...")
     with strategy.scope():
         model, initial_epoch = get_training_model(
             checkpoint, epoch_to_resume, config)
     
-    print("Setting up callbacks...")
     logs_path = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
     file_writer = tf.summary.create_file_writer(logs_path + "/metrics")
     file_writer.set_as_default()
@@ -85,7 +79,6 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file, strategy):
                                  )
     callbacks_list = [checkpoint, tensorboard, edit_distance]
 
-    print("About to start training...")
     model.summary()
     model.fit(train_dataset,
               steps_per_epoch=STEPS_PER_EPOCH,
@@ -106,7 +99,6 @@ def train(shards_dir, checkpoint, epoch_to_resume, config_file, strategy):
 #     train(shards_dir, checkpoint, initial_epoch, 'config.yaml')
 
 if __name__ == "__main__":
-    print("Top of main...")
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",
                         "--checkpoint",
@@ -129,31 +121,17 @@ if __name__ == "__main__":
     # train_local()
     # train_local('/home/alex/OneDrive/phd-project/rna-basecaller/train-10-local/model-57.h5', 57)
 
-    print("Setting TF CONFIG...")
-
     # Set TF_CONFIG for MultiWorkerMirroredStrategy
     with open('tensorflow_nodefile','r') as fid:
         worker_nodes = [ host.rstrip() for host in fid ]
         workers = [ f"{node}:12345" for node in worker_nodes ]
-
-    print("For debugging, the workers are...")
-    for worker in workers:
-        print(worker)
-    
-    print("For debugging, the worker nodes are...")
-    for node in worker_nodes:
-        print(node)
 
     host=os.uname()[1]
     idx = worker_nodes.index(host)
     config_json = {'cluster': { 'worker': workers }, 'task': {'type': 'worker', 'index': idx} }
     os.environ["TF_CONFIG"] = json.dumps(config_json)
 
-    print("Setting up strategy...")
-
     strategy = MultiWorkerMirroredStrategy()
-
-    print("About to start training...")
 
     train(args.shards_dir,
           args.checkpoint, 
