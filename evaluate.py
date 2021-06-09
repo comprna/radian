@@ -65,9 +65,15 @@ def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
 
     return predictions
 
-def predict_beam(model, dataset, verbose=False, rna_model=None):
+def predict_beam(model, dataset, verbose=False, rna_model=None, profile=False):
+    # Header of tsv
+    print(f"Change\tBatch\tInput\tTruth\tPred_Without\tPred_Model\tED_Without\tED_Model")
     classes = 'ACGT'
-    predictions = []
+    n_better = 0
+    n_worse = 0
+    n_same = 0
+    eds_without = []
+    eds_model = []
     for s, batch in enumerate(dataset):
         inputs = batch[0]["inputs"]
         labels = batch[0]["labels"]
@@ -85,35 +91,43 @@ def predict_beam(model, dataset, verbose=False, rna_model=None):
             label_seq = _label_to_sequence(label, label_length)
 
             # Predicted label (without RNA model)
-            start = datetime.now()
             pred_without = ctcBeamSearch(softmax_out, classes, None, label[:label_length])
-            end = datetime.now()
-            time_without = end - start
             ed_without = levenshtein.normalized_distance(label_seq, pred_without)
+            eds_without.append(ed_without)
 
             # Predicted label (with RNA model)
-            start = datetime.now()
             pred_model = ctcBeamSearch(softmax_out, classes, rna_model, label[:label_length])
-            end = datetime.now()
-            time_with = end - start
             ed_model = levenshtein.normalized_distance(label_seq, pred_model)
+            eds_model.append(ed_model)
 
             if verbose == True:
-                print(f"Truth: {label_seq}")
-                print(f"W/O:   {pred_without}")
-                print(f"With:  {pred_model}")
-                print(f"ED w/o:  {ed_without}\nED with: {ed_model}\n\n")
                 if ed_model - ed_without < 0:
-                    print(f"MODEL IMPROVES ACCURACY !!!!! Batch {s} Input {i}\n\n")
+                    n_better += 1
+                    print(f"Better\t{s}\t{i}\t{label_seq}\t{pred_without}\t{pred_model}\t{ed_without}\t{ed_model}")
+
                 elif ed_model - ed_without > 0:
-                    print(f"Model worsens accuracy :( Batch {s} Input {i}\n\n")
+                    n_worse += 1
+                    print(f"Worse\t{s}\t{i}\t{label_seq}\t{pred_without}\t{pred_model}\t{ed_without}\t{ed_model}")
+
+                else:
+                    n_same += 1
+                    print(f"Same\t{s}\t{i}\t{label_seq}\t{pred_without}\t{pred_model}\t{ed_without}\t{ed_model}")
+
+            if profile == True:
+                return
 
             # plt.imshow(np.transpose(softmax_out), cmap="gray_r", aspect="auto")
             # plt.show()
 
-            predictions.append((label_seq, pred_model))
+    print(f"# better: {n_better}")
+    print(f"# worse:  {n_worse}")
+    print(f"# same:   {n_same}")
+    print(f"% better: {n_better/(n_better+n_worse+n_same)*100}")
+    print(f"% worse:  {n_worse/(n_better+n_worse+n_same)*100}")
+    print(f"% same:   {n_same/(n_better+n_worse+n_same)*100}")
 
-    return predictions
+    print(f"Average ED without RNA model: {mean(eds_without)}")
+    print(f"Average ED with RNA model: {mean(eds_model)}")
 
 def predict_all(model, dataset, verbose=False, plot=False, model_id=None):
     # model_file = '/home/alex/Documents/rnabasecaller/6mer-probs.json'
@@ -199,8 +213,8 @@ def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
     plt.savefig("{}-{}.png".format(model_id, data_id))
 
 def compute_mean_ed_beam(model, dataset, verbose=False, rna_model=None):
-    predictions = predict_beam(model, dataset, verbose, rna_model)
-    return compute_mean_ed(predictions, verbose)
+    print(f"Change\tBatch\tInput\tTruth\tPred_Without\tPred_Model\tED_Without\tED_Model")
+    predict_beam(model, dataset, verbose, rna_model)
 
 def compute_mean_ed_greedy(model, dataset, verbose=False):
     predictions = predict_greedy(model, dataset, verbose)
@@ -232,20 +246,21 @@ def _label_to_sequence(label, label_length):
     label = list(map(lambda b: bases[b], label))
     return "".join(label)
 
-if __name__ == "__main__":
-
+def callback():
     # # Gadi
-    # s_config_file = '/home/150/as2781/rnabasecaller/config.yaml'
-    # data_dir = '/g/data/xc17/Eyras/alex/mnt-sda-backup/singleton-dataset-generation/dRNA/4_8_NNInputs/0_3_CreateTrimmedSortedTFRecords/shards/val/label_len_20'
-    # model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/4_8_NNInputs/curriculum_learning/train-10/model-95.h5'
+    s_config_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/s-config-3.yaml'
+    r_config_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-config-37.yaml'
+    data_dir = '/g/data/xc17/Eyras/alex/working/2_0_8_WriteTFRecords/3/1024_128/val'
+    s_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/train-3/model-10.h5'
+    r_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-train-37-model-03.h5'
 
-    # Local
-    setup_local()
-    s_config_file = '/home/alex/OneDrive/phd-project/rna-basecaller/experiments/with-rna-model/train-3-37/s-config-3.yaml'
-    r_config_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-config-37.yaml'
-    data_dir = '/mnt/sda/basecaller-data/dRNA/2_ProcessTrainingData/0_8_WriteTFRecords/3/1024_128/val'
-    s_model_file = '/mnt/sda/rna-basecaller/experiments/sig-to-seq/dRNA/train-3/model-10.h5'
-    r_model_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-train-37-model-03.h5'
+    # # Local
+    # setup_local()
+    # s_config_file = '/home/alex/OneDrive/phd-project/rna-basecaller/experiments/with-rna-model/train-3-37/s-config-3.yaml'
+    # r_config_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-config-37.yaml'
+    # data_dir = '/mnt/sda/basecaller-data/dRNA/2_ProcessTrainingData/0_8_WriteTFRecords/3/1024_128/val'
+    # s_model_file = '/mnt/sda/rna-basecaller/experiments/sig-to-seq/dRNA/train-3/model-10.h5'
+    # r_model_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-train-37-model-03.h5'
 
     s_config = get_config(s_config_file)
     r_config = get_config(r_config_file)
@@ -256,12 +271,38 @@ if __name__ == "__main__":
     s_model = get_prediction_model(s_model_file, s_config)
     r_model = get_rna_prediction_model(r_model_file, r_config)
 
-    test_x = tf.one_hot([0,0,1,0,0,1,3,0], 4).numpy()
-    test_x = test_x.reshape(1,8,4)
-    print(r_model.predict(test_x))
+    predict_beam(s_model, test_dataset, verbose=True, rna_model=r_model, profile=True)
 
-    # mean_ed_greedy = compute_mean_ed_greedy(model, test_dataset, verbose=True)
-    mean_ed_beam = compute_mean_ed_beam(s_model, test_dataset, verbose=True, rna_model=r_model) # Pass RNA model here!
-    # mean_ed_model = compute_mean_ed_beam(model, test_dataset, verbose=True, use_model=True)
+if __name__ == "__main__":
 
-    # predict_all(model, test_dataset)
+    cProfile.run('callback()', sort='cumtime')
+
+    # # Gadi
+    s_config_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/s-config-3.yaml'
+    r_config_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-config-37.yaml'
+    data_dir = '/g/data/xc17/Eyras/alex/working/2_0_8_WriteTFRecords/3/1024_128/val'
+    s_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/train-3/model-10.h5'
+    r_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-train-37-model-03.h5'
+
+    # Local
+    # setup_local()
+    # s_config_file = '/home/alex/OneDrive/phd-project/rna-basecaller/experiments/with-rna-model/train-3-37/s-config-3.yaml'
+    # r_config_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-config-37.yaml'
+    # data_dir = '/mnt/sda/basecaller-data/dRNA/2_ProcessTrainingData/0_8_WriteTFRecords/3/1024_128/val'
+    # s_model_file = '/mnt/sda/rna-basecaller/experiments/sig-to-seq/dRNA/train-3/model-10.h5'
+    # r_model_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-train-37-model-03.h5'
+
+    s_config = get_config(s_config_file)
+    r_config = get_config(r_config_file)
+
+    test_files = glob("{}/*.tfrecords".format(data_dir))
+    test_dataset = get_dataset(test_files, s_config.train.batch_size, val=True)
+
+    s_model = get_prediction_model(s_model_file, s_config)
+    r_model = get_rna_prediction_model(r_model_file, r_config)
+
+    # test_x = tf.one_hot([0,0,1,0,0,1,3,0], 4).numpy()
+    # test_x = test_x.reshape(1,8,4)
+    # print(r_model.predict(test_x))
+
+    predict_beam(s_model, test_dataset, verbose=True, rna_model=r_model)
