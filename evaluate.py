@@ -1,6 +1,7 @@
 import cProfile
 from datetime import datetime
 import json
+import sys
 
 from statistics import mean
 import matplotlib.pyplot as plt
@@ -65,7 +66,7 @@ def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
 
     return predictions
 
-def predict_beam(model, dataset, verbose=False, rna_model=None, profile=False):
+def predict_beam(model, dataset, lm_factor, verbose=False, rna_model=None, profile=False):
     # Header of tsv
     print(f"Change\tBatch\tInput\tTruth\tPred_Without\tPred_Model\tED_Without\tED_Model")
     classes = 'ACGT'
@@ -91,12 +92,12 @@ def predict_beam(model, dataset, verbose=False, rna_model=None, profile=False):
             label_seq = _label_to_sequence(label, label_length)
 
             # Predicted label (without RNA model)
-            pred_without = ctcBeamSearch(softmax_out, classes, None, label[:label_length])
+            pred_without = ctcBeamSearch(softmax_out, classes, None, label[:label_length], lm_factor=lm_factor)
             ed_without = levenshtein.normalized_distance(label_seq, pred_without)
             eds_without.append(ed_without)
 
             # Predicted label (with RNA model)
-            pred_model = ctcBeamSearch(softmax_out, classes, rna_model, label[:label_length])
+            pred_model = ctcBeamSearch(softmax_out, classes, rna_model, label[:label_length], lm_factor=lm_factor)
             ed_model = levenshtein.normalized_distance(label_seq, pred_model)
             eds_model.append(ed_model)
 
@@ -253,6 +254,7 @@ def callback():
     data_dir = '/g/data/xc17/Eyras/alex/working/2_0_8_WriteTFRecords/3/1024_128/val'
     s_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/train-3/model-10.h5'
     r_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-train-37-model-03.h5'
+    lm_factor = 0.01
 
     # # Local
     # setup_local()
@@ -271,7 +273,7 @@ def callback():
     s_model = get_prediction_model(s_model_file, s_config)
     r_model = get_rna_prediction_model(r_model_file, r_config)
 
-    predict_beam(s_model, test_dataset, verbose=True, rna_model=r_model, profile=True)
+    predict_beam(s_model, test_dataset, lm_factor, verbose=True, rna_model=r_model, profile=True)
 
 if __name__ == "__main__":
 
@@ -283,6 +285,7 @@ if __name__ == "__main__":
     data_dir = '/g/data/xc17/Eyras/alex/working/2_0_8_WriteTFRecords/3/1024_128/val'
     s_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/train-3/model-10.h5'
     r_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-train-37-model-03.h5'
+    lm_factor = float(sys.argv[1])
 
     # Local
     # setup_local()
@@ -305,4 +308,4 @@ if __name__ == "__main__":
     # test_x = test_x.reshape(1,8,4)
     # print(r_model.predict(test_x))
 
-    predict_beam(s_model, test_dataset, verbose=True, rna_model=r_model)
+    predict_beam(s_model, test_dataset, lm_factor, verbose=True, rna_model=r_model)

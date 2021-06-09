@@ -51,7 +51,7 @@ def applyLM(parentBeam, childBeam, classes, lm):
 		childBeam.lmApplied = True # only apply LM once per beam entry
 
 
-def applyRNAModel(parentBeam, childBeam, classes, lm, true_label, cache):
+def applyRNAModel(parentBeam, childBeam, classes, lm, true_label, cache, lm_factor):
 	"calculate RNA model score of child beam by taking score from parent beam and 6-mer probability of last six chars"
 	if lm and not childBeam.lmApplied:
 		if len(parentBeam.labeling) < 8:
@@ -79,9 +79,9 @@ def applyRNAModel(parentBeam, childBeam, classes, lm, true_label, cache):
 		prob_new_char = probs[0][new_char]
 		# print(f"Prob new char: {prob_new_char}")
 
-		lmFactor = 0.1 # influence of language model
-		prob_new_char = prob_new_char ** lmFactor # probability of seeing k-mer
-		# print(f"Prob new char after factor {lmFactor}: {prob_new_char}\n\n")
+		# lmFactor = 0.1 # influence of language model
+		prob_new_char = prob_new_char ** lm_factor # probability of seeing k-mer
+		# print(f"Prob new char after factor {lm_factor}: {prob_new_char}\n\n")
 
 		childBeam.prText = parentBeam.prText * prob_new_char # probability of whole sequence
 		childBeam.lmApplied = True # only apply LM once per beam entry
@@ -97,7 +97,7 @@ def addBeam(beamState, labeling):
 	if labeling not in beamState.entries:
 		beamState.entries[labeling] = BeamEntry()
 
-def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=2):
+def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=15, lm_factor=0.1):
 	"beam search as described by the paper of Hwang et al. and the paper of Graves et al."
 
 	cache = {}
@@ -167,7 +167,7 @@ def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=2):
 				
 				# apply LM
 				# print("applying model!")
-				applyRNAModel(curr.entries[labeling], curr.entries[newLabeling], classes, lm, true_label, cache)
+				applyRNAModel(curr.entries[labeling], curr.entries[newLabeling], classes, lm, true_label, cache, lm_factor)
  
 		# set new beam state
 		last = curr
