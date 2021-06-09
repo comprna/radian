@@ -6,6 +6,9 @@ This has been adapted from https://github.com/githubharald/CTCDecoder/blob/maste
 from __future__ import division
 from __future__ import print_function
 import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+
 
 
 class BeamEntry:
@@ -48,26 +51,40 @@ def applyLM(parentBeam, childBeam, classes, lm):
 		childBeam.lmApplied = True # only apply LM once per beam entry
 
 
-def applyRNAModel(parentBeam, childBeam, classes, lm):
-    "calculate RNA model score of child beam by taking score from parent beam and 6-mer probability of last six chars"
-    if lm and not childBeam.lmApplied:
-        if len(parentBeam.labeling) < 5:
-            return
-        c1 = classes[parentBeam.labeling[-5]]
-        c2 = classes[parentBeam.labeling[-4]]
-        c3 = classes[parentBeam.labeling[-3]]
-        c4 = classes[parentBeam.labeling[-2]]
-        c5 = classes[parentBeam.labeling[-1]]
-        c6 = classes[childBeam.labeling[-1]]
-        lmFactor = 0.1 # influence of language model
-        kmerProb = lm.get6merProb(c1, c2, c3, c4, c5, c6)
-        # print("Parent beam: {0}".format(convertToSequence(parentBeam.labeling, classes)))
-        # print("Child beam: {0}".format(convertToSequence(childBeam.labeling, classes)))
-        # print("kmer prob before factor: {0}".format(kmerProb))
-        kmerProb = kmerProb ** lmFactor # probability of seeing k-mer
-        # print("kmer prob after factor: {0}".format(kmerProb))
-        childBeam.prText = parentBeam.prText * kmerProb # probability of whole sequence
-        childBeam.lmApplied = True # only apply LM once per beam entry
+def applyRNAModel(parentBeam, childBeam, classes, lm, true_label, cache):
+	"calculate RNA model score of child beam by taking score from parent beam and 6-mer probability of last six chars"
+	if lm and not childBeam.lmApplied:
+		if len(parentBeam.labeling) < 8:
+			return
+
+		# print(f"Ground truth: {true_label}")
+
+		# print(f"Parent beam: {parentBeam.labeling}")
+		# print(f"Last 8 in parent: {parentBeam.labeling[-8:]}")
+		# print(f"Child: {childBeam.labeling}")
+
+		context_tup = parentBeam.labeling[-8:]
+		if context_tup not in cache:
+			context = tf.one_hot(list(parentBeam.labeling[-8:]), 4).numpy()
+			context = context.reshape(1,8,4)
+			probs = lm.predict(context)
+			cache[context_tup] = probs
+		else:
+			probs = cache[context_tup]
+
+		# probs = lm.predict(context) ## INEFFICIENT: CACHE PREVIOUS PROBS???
+		# print(f"LM probs: {probs}")
+
+		new_char = childBeam.labeling[-1]
+		prob_new_char = probs[0][new_char]
+		# print(f"Prob new char: {prob_new_char}")
+
+		lmFactor = 0.1 # influence of language model
+		prob_new_char = prob_new_char ** lmFactor # probability of seeing k-mer
+		# print(f"Prob new char after factor {lmFactor}: {prob_new_char}\n\n")
+
+		childBeam.prText = parentBeam.prText * prob_new_char # probability of whole sequence
+		childBeam.lmApplied = True # only apply LM once per beam entry
 
 def convertToSequence(beam, classes):
 	res = ""
@@ -80,12 +97,16 @@ def addBeam(beamState, labeling):
 	if labeling not in beamState.entries:
 		beamState.entries[labeling] = BeamEntry()
 
-
-def ctcBeamSearch(mat, classes, lm, beamWidth=25):
+def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=2):
 	"beam search as described by the paper of Hwang et al. and the paper of Graves et al."
+
+	cache = {}
 
 	blankIdx = len(classes)
 	maxT, maxC = mat.shape
+
+	# plt.imshow(np.transpose(mat), cmap="gray_r", aspect="auto")
+	# plt.show()
 
 	# initialise beam state
 	last = BeamState()
@@ -146,8 +167,8 @@ def ctcBeamSearch(mat, classes, lm, beamWidth=25):
 				
 				# apply LM
 				# print("applying model!")
-				applyRNAModel(curr.entries[labeling], curr.entries[newLabeling], classes, lm)
-
+				applyRNAModel(curr.entries[labeling], curr.entries[newLabeling], classes, lm, true_label, cache)
+ 
 		# set new beam state
 		last = curr
 
