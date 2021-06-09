@@ -97,7 +97,7 @@ def addBeam(beamState, labeling):
 	if labeling not in beamState.entries:
 		beamState.entries[labeling] = BeamEntry()
 
-def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=15, lm_factor=0.1):
+def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=6, lm_factor=0.1):
 	"beam search as described by the paper of Hwang et al. and the paper of Graves et al."
 
 	cache = {}
