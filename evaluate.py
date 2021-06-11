@@ -71,7 +71,7 @@ def predict_beam(model, dataset, lm_factor, verbose=False, rna_model=None, profi
     input_n = 0
     
     # Header of tsv
-    print(f"Change\tBatch\tInput\tTruth\tPred_Without\tPred_Model\tED_Without\tED_Model")
+    print(f"Change\tBatch\tInput\tTruth\tPred_Without\tPred_Model\tPred_Without_i\tPred_Model_i\tED_Without\tED_Model")
     classes = 'ACGT'
     n_better = 0
     n_worse = 0
@@ -101,27 +101,35 @@ def predict_beam(model, dataset, lm_factor, verbose=False, rna_model=None, profi
             label_seq = _label_to_sequence(label, label_length)
 
             # Predicted label (without RNA model)
-            pred_without = ctcBeamSearch(softmax_out, classes, None, label[:label_length], lm_factor=lm_factor)
-            ed_without = levenshtein.normalized_distance(label_seq, pred_without)
+            pred_wout, pred_wout_i = ctcBeamSearch(softmax_out,
+                                                         classes, 
+                                                         None, 
+                                                         label[:label_length], 
+                                                         lm_factor=lm_factor)
+            ed_without = levenshtein.normalized_distance(label_seq, pred_wout)
             eds_without.append(ed_without)
 
             # Predicted label (with RNA model)
-            pred_model = ctcBeamSearch(softmax_out, classes, rna_model, label[:label_length], lm_factor=lm_factor)
+            pred_model, pred_model_i = ctcBeamSearch(softmax_out,
+                                                     classes, 
+                                                     rna_model, 
+                                                     label[:label_length], 
+                                                     lm_factor=lm_factor)
             ed_model = levenshtein.normalized_distance(label_seq, pred_model)
             eds_model.append(ed_model)
 
             if verbose == True:
                 if ed_model - ed_without < 0:
                     n_better += 1
-                    print(f"Better\t{s}\t{i}\t{label_seq}\t{pred_without}\t{pred_model}\t{ed_without}\t{ed_model}")
+                    print(f"Better\t{s}\t{i}\t{label_seq}\t{pred_wout}\t{pred_model}\t{pred_wout_i}\t{pred_model_i}\t{ed_without}\t{ed_model}")
 
                 elif ed_model - ed_without > 0:
                     n_worse += 1
-                    print(f"Worse\t{s}\t{i}\t{label_seq}\t{pred_without}\t{pred_model}\t{ed_without}\t{ed_model}")
+                    print(f"Worse\t{s}\t{i}\t{label_seq}\t{pred_wout}\t{pred_model}\t{pred_wout_i}\t{pred_model_i}\t{ed_without}\t{ed_model}")
 
                 else:
                     n_same += 1
-                    print(f"Same\t{s}\t{i}\t{label_seq}\t{pred_without}\t{pred_model}\t{ed_without}\t{ed_model}")
+                    print(f"Same\t{s}\t{i}\t{label_seq}\t{pred_wout}\t{pred_model}\t{pred_wout_i}\t{pred_model_i}\t{ed_without}\t{ed_model}")
 
             if profile == True:
                 return
@@ -129,7 +137,7 @@ def predict_beam(model, dataset, lm_factor, verbose=False, rna_model=None, profi
             # plt.imshow(np.transpose(softmax_out), cmap="gray_r", aspect="auto")
             # plt.show()
 
-            plot_softmax(inputs[i], softmax_out, label_seq, pred_model, None, None)
+            plot_softmax(inputs[i], softmax_out, label_seq, pred_model, pred_model_i, pred_wout, pred_wout_i, None, None)
 
     print(f"# better: {n_better}")
     print(f"# worse:  {n_worse}")
@@ -194,7 +202,7 @@ def predict_all(model, dataset, verbose=False, plot=False, model_id=None):
                 greedy_ed, beam_pred, beam_ed, model_pred, model_ed))
 
 
-def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
+def plot_softmax(signal, matrix, actual, pred_model, pred_model_i, pred_wout, pred_wout_i, model_id, data_id):
     # Display timesteps horizontally rather than vertically
     t_matrix = np.transpose(matrix)
 
@@ -218,15 +226,23 @@ def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
     axs[2].set_title("CTC Output (shaded)")
     grid = axs[2].imshow(t_matrix, cmap="gray_r", aspect="auto")
 
-    # Get edit distance
-    ed = levenshtein.normalized_distance(actual, predicted)
+    overlay_prediction(axs[2], pred_model, pred_model_i, "orange", offset=0.5)
+    overlay_prediction(axs[2], pred_wout, pred_wout_i, "blue")
 
-    fig.suptitle("Actual: {}   Predicted: {}   ED: {}".format(actual, predicted, ed))
+    axs[2].text(1024, 3, "With RNA Model", fontsize='x-large', color="orange")
+    axs[2].text(1024, 2, "Without Model", fontsize='x-large', color="blue")
+
+    fig.suptitle(f"Ground truth: {actual}")
     # plt.savefig("{}-{}.png".format(model_id, data_id))
     plt.show()
 
+def overlay_prediction(plot, prediction, indices, color, offset=0):
+    bases = ['A', 'C', 'G', 'T']
+    for i, nt in enumerate(prediction):
+        plot.text(indices[i], bases.index(nt)+offset, nt,  fontsize='x-large', color=color)
+
 def compute_mean_ed_beam(model, dataset, verbose=False, rna_model=None):
-    print(f"Change\tBatch\tInput\tTruth\tPred_Without\tPred_Model\tED_Without\tED_Model")
+    print(f"Change\tBatch\tInput\tTruth\tPred_Without\tPred_Model\tPred_Without_i\tPred_Model_i\tED_Without\tED_Model")
     predict_beam(model, dataset, verbose, rna_model)
 
 def compute_mean_ed_greedy(model, dataset, verbose=False):
