@@ -67,6 +67,9 @@ def predict_greedy(model, dataset, verbose=False, plot=False, model_id=None):
     return predictions
 
 def predict_beam(model, dataset, lm_factor, verbose=False, rna_model=None, profile=False):
+    batch_n = 0
+    input_n = 0
+    
     # Header of tsv
     print(f"Change\tBatch\tInput\tTruth\tPred_Without\tPred_Model\tED_Without\tED_Model")
     classes = 'ACGT'
@@ -76,6 +79,9 @@ def predict_beam(model, dataset, lm_factor, verbose=False, rna_model=None, profi
     eds_without = []
     eds_model = []
     for s, batch in enumerate(dataset):
+        # if s != batch_n:
+        #     continue
+
         inputs = batch[0]["inputs"]
         labels = batch[0]["labels"]
         label_lengths = batch[0]["label_length"]
@@ -85,6 +91,9 @@ def predict_beam(model, dataset, lm_factor, verbose=False, rna_model=None, profi
 
         # Get prediction for each input
         for i, softmax_out in enumerate(softmax_out_batch):
+            # if i != input_n:
+            #     continue
+
             # Actual label
             label = labels[i]
             label_length = label_lengths[i]
@@ -119,6 +128,8 @@ def predict_beam(model, dataset, lm_factor, verbose=False, rna_model=None, profi
 
             # plt.imshow(np.transpose(softmax_out), cmap="gray_r", aspect="auto")
             # plt.show()
+
+            plot_softmax(inputs[i], softmax_out, label_seq, pred_model, None, None)
 
     print(f"# better: {n_better}")
     print(f"# worse:  {n_worse}")
@@ -211,7 +222,8 @@ def plot_softmax(signal, matrix, actual, predicted, model_id, data_id):
     ed = levenshtein.normalized_distance(actual, predicted)
 
     fig.suptitle("Actual: {}   Predicted: {}   ED: {}".format(actual, predicted, ed))
-    plt.savefig("{}-{}.png".format(model_id, data_id))
+    # plt.savefig("{}-{}.png".format(model_id, data_id))
+    plt.show()
 
 def compute_mean_ed_beam(model, dataset, verbose=False, rna_model=None):
     print(f"Change\tBatch\tInput\tTruth\tPred_Without\tPred_Model\tED_Without\tED_Model")
@@ -249,20 +261,20 @@ def _label_to_sequence(label, label_length):
 
 def callback():
     # # Gadi
-    s_config_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/s-config-3.yaml'
-    r_config_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-config-37.yaml'
-    data_dir = '/g/data/xc17/Eyras/alex/working/2_0_8_WriteTFRecords/3/1024_128/val'
-    s_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/train-3/model-10.h5'
-    r_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-train-37-model-03.h5'
-    lm_factor = 0.01
+    # s_config_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/s-config-3.yaml'
+    # r_config_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-config-37.yaml'
+    # data_dir = '/g/data/xc17/Eyras/alex/working/2_0_8_WriteTFRecords/3/1024_128/val'
+    # s_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/train-3/model-10.h5'
+    # r_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-train-37-model-03.h5'
+    lm_factor = 0.5
 
     # # Local
-    # setup_local()
-    # s_config_file = '/home/alex/OneDrive/phd-project/rna-basecaller/experiments/with-rna-model/train-3-37/s-config-3.yaml'
-    # r_config_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-config-37.yaml'
-    # data_dir = '/mnt/sda/basecaller-data/dRNA/2_ProcessTrainingData/0_8_WriteTFRecords/3/1024_128/val'
-    # s_model_file = '/mnt/sda/rna-basecaller/experiments/sig-to-seq/dRNA/train-3/model-10.h5'
-    # r_model_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-train-37-model-03.h5'
+    setup_local()
+    s_config_file = '/home/alex/OneDrive/phd-project/rna-basecaller/experiments/with-rna-model/train-3-37/s-config-3.yaml'
+    r_config_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-config-37.yaml'
+    data_dir = '/mnt/sda/basecaller-data/dRNA/2_ProcessTrainingData/0_8_WriteTFRecords/3/1024_128/val'
+    s_model_file = '/mnt/sda/rna-basecaller/experiments/sig-to-seq/dRNA/train-3/model-10.h5'
+    r_model_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-train-37-model-03.h5'
 
     s_config = get_config(s_config_file)
     r_config = get_config(r_config_file)
@@ -277,23 +289,24 @@ def callback():
 
 if __name__ == "__main__":
 
-    cProfile.run('callback()', sort='cumtime')
+    # cProfile.run('callback()', sort='cumtime')
 
     # # Gadi
-    s_config_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/s-config-3.yaml'
-    r_config_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-config-37.yaml'
-    data_dir = '/g/data/xc17/Eyras/alex/working/2_0_8_WriteTFRecords/3/1024_128/val'
-    s_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/train-3/model-10.h5'
-    r_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-train-37-model-03.h5'
-    lm_factor = float(sys.argv[1])
+    # s_config_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/s-config-3.yaml'
+    # r_config_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-config-37.yaml'
+    # data_dir = '/g/data/xc17/Eyras/alex/working/2_0_8_WriteTFRecords/3/1024_128/val'
+    # s_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/train-3/model-10.h5'
+    # r_model_file = '/g/data/xc17/Eyras/alex/working/rna-basecaller/with-rna-model/train-3-37/r-train-37-model-03.h5'
+    # lm_factor = float(sys.argv[1])
 
     # Local
-    # setup_local()
-    # s_config_file = '/home/alex/OneDrive/phd-project/rna-basecaller/experiments/with-rna-model/train-3-37/s-config-3.yaml'
-    # r_config_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-config-37.yaml'
-    # data_dir = '/mnt/sda/basecaller-data/dRNA/2_ProcessTrainingData/0_8_WriteTFRecords/3/1024_128/val'
-    # s_model_file = '/mnt/sda/rna-basecaller/experiments/sig-to-seq/dRNA/train-3/model-10.h5'
-    # r_model_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-train-37-model-03.h5'
+    setup_local()
+    s_config_file = '/home/alex/OneDrive/phd-project/rna-basecaller/experiments/with-rna-model/train-3-37/s-config-3.yaml'
+    r_config_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-config-37.yaml'
+    data_dir = '/mnt/sda/basecaller-data/dRNA/2_ProcessTrainingData/0_8_WriteTFRecords/3/1024_128/val'
+    s_model_file = '/mnt/sda/rna-basecaller/experiments/sig-to-seq/dRNA/train-3/model-10.h5'
+    r_model_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-train-37-model-03.h5'
+    lm_factor = 0.5
 
     s_config = get_config(s_config_file)
     r_config = get_config(r_config_file)
