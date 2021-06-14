@@ -229,8 +229,18 @@ def plot_softmax(signal, matrix, actual, pred_model, pred_model_i, pred_wout, pr
     overlay_prediction(axs[2], pred_model, pred_model_i, "orange", offset=0.5)
     overlay_prediction(axs[2], pred_wout, pred_wout_i, "blue")
 
-    axs[2].text(1024, 3, "With RNA Model", fontsize='x-large', color="orange")
-    axs[2].text(1024, 2, "Without Model", fontsize='x-large', color="blue")
+    ed_model = levenshtein.normalized_distance(actual, pred_model)
+    ed_without = levenshtein.normalized_distance(actual, pred_wout)
+
+    if ed_model - ed_without < 0:
+        change = "BETTER"
+    elif ed_model - ed_without > 0:
+        change = "WORSE"
+    else:
+        change = "SAME"
+
+    axs[2].text(800, 5.5, f"Without Model: {ed_without:.5f}", fontsize='x-large', color="blue")
+    axs[2].text(800, 6, f"With RNA Model: {ed_model:.5f} {change}", fontsize='x-large', color="orange")
 
     fig.suptitle(f"Ground truth: {actual}")
     # plt.savefig("{}-{}.png".format(model_id, data_id))
