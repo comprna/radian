@@ -31,7 +31,7 @@ def read_tfrecord(example_batch):
 
     return inputs, outputs
 
-def get_dataset(shard_files, batch_size, val = False):
+def get_dataset(shard_files, batch_size, val=False):
     # Dynamically tune the level of parallelism.
     AUTO = tf.data.experimental.AUTOTUNE
 
@@ -49,9 +49,11 @@ def get_dataset(shard_files, batch_size, val = False):
         dataset = dataset.with_options(option_order)
 
     # Process multiple input files concurrently.
+    cycle_length = 1 if val==True else 32
     dataset = dataset.interleave(tf.data.TFRecordDataset,
-                                cycle_length=32, 
-                                num_parallel_calls=AUTO)
+                                 cycle_length=cycle_length,
+                                 num_parallel_calls=AUTO,
+                                 deterministic=True)
 
     # Cache the dataset to save loading time.
     dataset = dataset.cache()
@@ -60,7 +62,7 @@ def get_dataset(shard_files, batch_size, val = False):
     if val == False:
         dataset = dataset.shuffle(buffer_size=WINDOWS_PER_SHARD+1)
         dataset = dataset.repeat()
-    
+
     # Produce batches of data.
     dataset = dataset.batch(batch_size)
 
@@ -74,11 +76,13 @@ def get_dataset(shard_files, batch_size, val = False):
     return dataset
 
 if __name__ == "__main__":
-    shard_dir = "/Users/alexsneddon/Downloads"
+    shard_dir = '/mnt/sda/basecaller-data/dRNA/2_ProcessTrainingData/0_8_WriteTFRecords/3/1024_128/val'
     batch_size = 32
 
     data_files = glob("{}/*.tfrecords".format(shard_dir))
+    print(data_files)
     dataset = get_dataset(data_files, batch_size, val=True)
 
     for sample in dataset:
-        print(sample)
+        for label in sample[0]['labels']:
+            print(label)
