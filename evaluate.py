@@ -196,7 +196,7 @@ def plot_softmax(signal, matrix, actual, pred_model, pred_model_i, pred_wout, pr
     axs[2].text(600, 6.5, f"{ed_model:.5f} ({change})", fontsize='x-large', color="orange")
 
     fig.suptitle(f"Ground truth: {actual}")
-    plt.savefig(f"{change}/{change}-{batch_n}-{input_n}.png")
+    plt.savefig(f"{batch_n}-{input_n}-{change}.png", bbox_inches="tight", pad_inches=0)
     plt.show()
 
 def overlay_prediction(plot, prediction, indices, color, offset=0):
