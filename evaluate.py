@@ -186,8 +186,14 @@ def plot_softmax(signal, matrix, actual, pred_model, pred_model_i, pred_wout, pr
     else:
         change = "same"
 
-    axs[2].text(800, 5.5, f"Without Model: {ed_without:.5f}", fontsize='x-large', color="blue")
-    axs[2].text(800, 6, f"With RNA Model: {ed_model:.5f} {change}", fontsize='x-large', color="orange")
+    axs[2].text(0, 5.5, "GT", fontsize="x-large", color="green")
+    axs[2].text(0, 6, "-M", fontsize="x-large", color="blue")
+    axs[2].text(0, 6.5, "+M", fontsize="x-large", color="orange")
+    axs[2].text(50, 5.5, actual, fontsize="x-large", color="green")
+    axs[2].text(50, 6, pred_wout, fontsize="x-large", color="blue")
+    axs[2].text(50, 6.5, pred_model, fontsize="x-large", color="orange")
+    axs[2].text(600, 6, f"{ed_without:.5f}", fontsize='x-large', color="blue")
+    axs[2].text(600, 6.5, f"{ed_model:.5f} ({change})", fontsize='x-large', color="orange")
 
     fig.suptitle(f"Ground truth: {actual}")
     plt.savefig(f"{change}/{change}-{batch_n}-{input_n}.png")
