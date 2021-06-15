@@ -137,7 +137,7 @@ def predict_beam(model, dataset, lm_factor, verbose=False, rna_model=None, profi
             # plt.imshow(np.transpose(softmax_out), cmap="gray_r", aspect="auto")
             # plt.show()
 
-            plot_softmax(inputs[i], softmax_out, label_seq, pred_model, pred_model_i, pred_wout, pred_wout_i, None, None)
+            plot_softmax(inputs[i], softmax_out, label_seq, pred_model, pred_model_i, pred_wout, pred_wout_i, s, i)
 
     print(f"# better: {n_better}")
     print(f"# worse:  {n_worse}")
@@ -149,7 +149,7 @@ def predict_beam(model, dataset, lm_factor, verbose=False, rna_model=None, profi
     print(f"Average ED without RNA model: {mean(eds_without)}")
     print(f"Average ED with RNA model: {mean(eds_model)}")
 
-def plot_softmax(signal, matrix, actual, pred_model, pred_model_i, pred_wout, pred_wout_i, model_id, data_id):
+def plot_softmax(signal, matrix, actual, pred_model, pred_model_i, pred_wout, pred_wout_i, batch_n, input_n):
     # Display timesteps horizontally rather than vertically
     t_matrix = np.transpose(matrix)
 
@@ -180,17 +180,17 @@ def plot_softmax(signal, matrix, actual, pred_model, pred_model_i, pred_wout, pr
     ed_without = levenshtein.normalized_distance(actual, pred_wout)
 
     if ed_model - ed_without < 0:
-        change = "BETTER"
+        change = "better"
     elif ed_model - ed_without > 0:
-        change = "WORSE"
+        change = "worse"
     else:
-        change = "SAME"
+        change = "same"
 
     axs[2].text(800, 5.5, f"Without Model: {ed_without:.5f}", fontsize='x-large', color="blue")
     axs[2].text(800, 6, f"With RNA Model: {ed_model:.5f} {change}", fontsize='x-large', color="orange")
 
     fig.suptitle(f"Ground truth: {actual}")
-    # plt.savefig("{}-{}.png".format(model_id, data_id))
+    plt.savefig(f"{change}/{change}-{batch_n}-{input_n}.png")
     plt.show()
 
 def overlay_prediction(plot, prediction, indices, color, offset=0):
