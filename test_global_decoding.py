@@ -14,9 +14,21 @@ WINDOW_LEN = 1024
 OVERLAP = WINDOW_LEN-STEP_SIZE
 N_BASES = 4
 
-# def average_normalised_l1(dist_a, dist_b):
-#     result = np.add(dist_a, dist_b)
-#     result = 
+def max_entropy(dist_a, dist_b):
+    entropy_a = entropy(dist_a)
+    entropy_b = entropy(dist_b)
+
+    # Take the column with lowest entropy (least surprise, i.e. 
+    # most confident prediction).
+    if entropy_b > entropy_a:
+        return dist_b
+    else:
+        return dist_a
+
+def conflate(dist_a, dist_b):
+    num = np.multiply(dist_a, dist_b)
+    den = np.sum(num)
+    return np.divide(num, den)
 
 def sum_normalised_l2(dist_a, dist_b):
     result = np.add(dist_a, dist_b)
@@ -72,13 +84,15 @@ def combine(global_softmax, new_softmax):
     for t, _ in enumerate(last):
         # combined[t] = min_entropy(last[t], first[t])
         # combined[t] = sum_normalised_l1(last[t], first[t])
-        combined[t] = sum_normalised_l2(last[t], first[t])
+        # combined[t] = sum_normalised_l2(last[t], first[t])
+        # combined[t] = conflate(last[t], first[t])
+        combined[t] = max_entropy(last[t], first[t])
 
-    fig, axs = plt.subplots(3, 1, sharex="all")
-    axs[0].imshow(np.transpose(last), cmap="gray_r", aspect="auto")
-    axs[1].imshow(np.transpose(first), cmap="gray_r", aspect="auto")
-    axs[2].imshow(np.transpose(combined), cmap="gray_r", aspect="auto")
-    plt.show()
+    # fig, axs = plt.subplots(3, 1, sharex="all")
+    # axs[0].imshow(np.transpose(last), cmap="gray_r", aspect="auto")
+    # axs[1].imshow(np.transpose(first), cmap="gray_r", aspect="auto")
+    # axs[2].imshow(np.transpose(combined), cmap="gray_r", aspect="auto")
+    # plt.show()
 
     # Update the global softmax with the overlap results
     global_softmax[-1*OVERLAP:] = combined
@@ -140,8 +154,6 @@ def main():
 
     global_softmaxes = []
     for j, softmaxes in enumerate(softmaxes_all):
-        if j == 0:
-            continue
         global_softmax = softmaxes[0]
         for i, softmax in enumerate(softmaxes):
             # Already included first softmax before loop
