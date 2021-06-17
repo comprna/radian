@@ -1,5 +1,6 @@
 import numpy as np
 from statistics import mean
+from sklearn.preprocessing import normalize
 
 from matplotlib import pyplot as plt
 from scipy.stats import entropy
@@ -12,6 +13,20 @@ STEP_SIZE = 128
 WINDOW_LEN = 1024
 OVERLAP = WINDOW_LEN-STEP_SIZE
 N_BASES = 4
+
+# def average_normalised_l1(dist_a, dist_b):
+#     result = np.add(dist_a, dist_b)
+#     result = 
+
+def sum_normalised_l2(dist_a, dist_b):
+    result = np.add(dist_a, dist_b)
+    result = normalize([result], norm="l2")[0]
+    return result
+
+def sum_normalised_l1(dist_a, dist_b):
+    result = np.add(dist_a, dist_b)
+    result = normalize([result], norm="l1")[0]
+    return result
 
 def min_entropy(dist_a, dist_b):
     entropy_a = entropy(dist_a)
@@ -55,13 +70,15 @@ def combine(global_softmax, new_softmax):
     # Combine the overlapping regions
     combined = np.zeros((OVERLAP, N_BASES+1))
     for t, _ in enumerate(last):
-        combined[t] = min_entropy(last[t], first[t])
+        # combined[t] = min_entropy(last[t], first[t])
+        # combined[t] = sum_normalised_l1(last[t], first[t])
+        combined[t] = sum_normalised_l2(last[t], first[t])
 
-    # fig, axs = plt.subplots(3, 1, sharex="all")
-    # axs[0].imshow(np.transpose(last), cmap="gray_r", aspect="auto")
-    # axs[1].imshow(np.transpose(first), cmap="gray_r", aspect="auto")
-    # axs[2].imshow(np.transpose(combined), cmap="gray_r", aspect="auto")
-    # plt.show()
+    fig, axs = plt.subplots(3, 1, sharex="all")
+    axs[0].imshow(np.transpose(last), cmap="gray_r", aspect="auto")
+    axs[1].imshow(np.transpose(first), cmap="gray_r", aspect="auto")
+    axs[2].imshow(np.transpose(combined), cmap="gray_r", aspect="auto")
+    plt.show()
 
     # Update the global softmax with the overlap results
     global_softmax[-1*OVERLAP:] = combined
@@ -123,6 +140,8 @@ def main():
 
     global_softmaxes = []
     for j, softmaxes in enumerate(softmaxes_all):
+        if j == 0:
+            continue
         global_softmax = softmaxes[0]
         for i, softmax in enumerate(softmaxes):
             # Already included first softmax before loop
