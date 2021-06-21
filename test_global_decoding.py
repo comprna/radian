@@ -30,6 +30,35 @@ def conflate(dist_a, dist_b):
     den = np.sum(num)
     return np.divide(num, den)
 
+def conflate_list(dists):
+    num = dists[0]
+    for i, dist in enumerate(dists):
+        if i == 0:
+            continue
+        num = np.multiply(num, dist)
+    den = np.sum(num)
+    return np.divide(num, den)
+
+def sum_normalised_list_l2(dists):
+    result = dists[0]
+    for i, dist in enumerate(dists):
+        # Already added first item before loop
+        if i == 0:
+            continue
+        np.add(result, dist)
+    result = normalize([result], norm="l2")[0]
+    return result
+
+def sum_normalised_list_l1(dists):
+    result = dists[0]
+    for i, dist in enumerate(dists):
+        # Already added first item before loop
+        if i == 0:
+            continue
+        np.add(result, dist)
+    result = normalize([result], norm="l1")[0]
+    return result
+
 def sum_normalised_l2(dist_a, dist_b):
     result = np.add(dist_a, dist_b)
     result = normalize([result], norm="l2")[0]
@@ -88,11 +117,11 @@ def combine(global_softmax, new_softmax):
         # combined[t] = conflate(last[t], first[t])
         combined[t] = max_entropy(last[t], first[t])
 
-    # fig, axs = plt.subplots(3, 1, sharex="all")
-    # axs[0].imshow(np.transpose(last), cmap="gray_r", aspect="auto")
-    # axs[1].imshow(np.transpose(first), cmap="gray_r", aspect="auto")
-    # axs[2].imshow(np.transpose(combined), cmap="gray_r", aspect="auto")
-    # plt.show()
+    fig, axs = plt.subplots(3, 1, sharex="all")
+    axs[0].imshow(np.transpose(last), cmap="gray_r", aspect="auto")
+    axs[1].imshow(np.transpose(first), cmap="gray_r", aspect="auto")
+    axs[2].imshow(np.transpose(combined), cmap="gray_r", aspect="auto")
+    plt.show()
 
     # Update the global softmax with the overlap results
     global_softmax[-1*OVERLAP:] = combined
@@ -150,28 +179,60 @@ def main():
 
     ######################## APPROACH 2 ###############################
 
-    # Assemble softmaxes
+    # Stack overlapping softmaxes to reconstruct expanded version of
+    # global softmax (so that there are multiple distributions per
+    # timestep)
 
-    global_softmaxes = []
-    for j, softmaxes in enumerate(softmaxes_all):
-        global_softmax = softmaxes[0]
-        for i, softmax in enumerate(softmaxes):
-            # Already included first softmax before loop
-            if i == 0:
-                continue
-            global_softmax = combine(global_softmax, softmax)
-        global_softmaxes.append(global_softmax)
-    # with open("decoding_test/global_softmaxes_min_entropy.npy", "wb") as f:
-    #     np.save(f, global_softmaxes)
-    # with open("decoding_test/global_softmaxes_min_entropy.npy", "rb") as f:
-    #     global_softmaxes = np.load(f)
+    all_global_expanded = []
+    for softmaxes in softmaxes_all:
+        # Stack all softmaxes together (jagged array - a list per timestep)
+        global_expanded = []
+        t_start = 0
+        # TODO: Is list length a method or attribute of list??? If method, then store variable here
+        for softmax in softmaxes:
+            # Start at the appropriate timestep
+            t_curr = t_start
+
+            for dist in softmax:
+                # Check if current timestep is already in the list
+                if t_curr >= len(global_expanded):
+                    # Add timestep if it isn't already in the list
+                    global_expanded.append([])
+
+                # Add distribution to current timestep
+                global_expanded[t_curr].append(dist)
+
+                # Increment current time
+                t_curr += 1
+
+            # Once all distributions added, increment t_start by 128
+            t_start += 128
+
+        all_global_expanded.append(global_expanded)
+
+    # Collapse stack of softmaxes to get final global softmax so that 
+    # there is only one distribution per timestep
+
+    all_global_collapsed = []
+    for global_expanded in all_global_expanded:
+        global_collapsed = []
+        for t, dist_list in enumerate(global_expanded):
+            # Combine all distributions at the current timestep
+            if len(dist_list) > 1:
+                # global_collapsed.append(sum_normalised_list_l2(dist_list))
+                global_collapsed.append(sum_normalised_list_l1(dist_list))
+                global_collapsed.append(conflate_list(dist_list))
+            else:
+                global_collapsed.append(dist_list[0])
+        global_collapsed = np.asarray(global_collapsed)
+        all_global_collapsed.append(global_collapsed)
 
     # Decode global matrix with beam search
 
     classes = 'ACGT'
     rna_model = None
     preds_global = []
-    for softmax in global_softmaxes:
+    for softmax in all_global_collapsed:
         pred, _ = ctcBeamSearch(softmax, classes, rna_model, None)
         preds_global.append(pred)
     # with open("decoding_test/preds_global_min_entropy.npy", "wb") as f:
