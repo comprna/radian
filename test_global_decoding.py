@@ -135,15 +135,16 @@ def combine(global_softmax, new_softmax):
 def main():
     # Read test data from file
 
-    with open("decoding_test/orig_signals.npy", "rb") as f:
+    data_dir = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/data"
+    with open(f"{data_dir}/orig_signals.npy", "rb") as f:
         orig_signals = np.load(f)
-    with open("decoding_test/gt_labels.npy", "rb") as f:
+    with open(f"{data_dir}/gt_labels.npy", "rb") as f:
         gt_labels = np.load(f)
-    with open("decoding_test/windows_all.npy", "rb") as f:
+    with open(f"{data_dir}/windows_all.npy", "rb") as f:
         windows_all = np.load(f)
-    with open("decoding_test/window_labels_all.npy", "rb") as f:
+    with open(f"{data_dir}/window_labels_all.npy", "rb") as f:
         window_labels_all = np.load(f)
-    with open("decoding_test/softmaxes_all.npy", "rb") as f:
+    with open(f"{data_dir}/softmaxes_all.npy", "rb") as f:
         softmaxes_all = np.load(f)
 
 
@@ -160,9 +161,9 @@ def main():
     #         pred, _ = ctcBeamSearch(softmax, classes, rna_model, None)
     #         preds.append(pred)
     #     preds_all.append(preds)
-    # with open("decoding_test/preds_all.npy", "wb") as f:
+    # with open(f"{data_dir}/preds_all.npy", "wb") as f:
     #     np.save(f, preds_all)
-    with open("decoding_test/preds_all.npy", "rb") as f:
+    with open(f"{data_dir}/preds_all.npy", "rb") as f:
         preds_all = np.load(f)
 
     # Assemble window predictions
@@ -172,9 +173,9 @@ def main():
     #     consensus = simple_assembly(preds)
     #     consensus_seq = index2base(np.argmax(consensus, axis=0))
     #     preds_windows.append(consensus_seq)
-    # with open("decoding_test/preds_windows.npy", "wb") as f:
+    # with open(f"{data_dir}/preds_windows.npy", "wb") as f:
     #     np.save(f, preds_windows)
-    with open("decoding_test/preds_windows.npy", "rb") as f:
+    with open(f"{data_dir}/preds_windows.npy", "rb") as f:
         preds_windows = np.load(f)
 
     ######################## APPROACH 2 ###############################
@@ -220,7 +221,7 @@ def main():
             # Combine all distributions at the current timestep
             if len(dist_list) > 1:
                 # global_collapsed.append(sum_normalised_list_l2(dist_list))
-                global_collapsed.append(sum_normalised_list_l1(dist_list))
+                # global_collapsed.append(sum_normalised_list_l1(dist_list))
                 global_collapsed.append(conflate_list(dist_list))
             else:
                 global_collapsed.append(dist_list[0])
@@ -235,9 +236,9 @@ def main():
     for softmax in all_global_collapsed:
         pred, _ = ctcBeamSearch(softmax, classes, rna_model, None)
         preds_global.append(pred)
-    # with open("decoding_test/preds_global_min_entropy.npy", "wb") as f:
+    # with open(f"{data_dir}/preds_global_min_entropy.npy", "wb") as f:
     #     np.save(f, preds_global)
-    # with open("decoding_test/preds_global_min_entropy.npy", "rb") as f:
+    # with open(f"{data_dir}/preds_global_min_entropy.npy", "rb") as f:
     #     preds_global = np.load(f)
 
     ########################## ANALYSIS ###############################
