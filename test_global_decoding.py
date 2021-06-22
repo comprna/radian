@@ -131,6 +131,11 @@ def combine(global_softmax, new_softmax):
 
     return global_softmax
 
+def visualise_assembly(softmax_windows, global_softmax):
+    fig, axs = plt.subplots(len(softmax_windows), 1)
+    for i, softmax in enumerate(softmax_windows):
+        axs[i].imshow(np.transpose(softmax), cmap="gray_r", aspect="auto")
+    plt.show()
 
 def main():
     # Read test data from file
@@ -211,12 +216,6 @@ def main():
 
         all_global_expanded.append(global_expanded)
 
-        
-        fig, axs = plt.subplots(len(softmaxes), 1)
-        for i, softmax in enumerate(softmaxes):
-            axs[i].imshow(np.transpose(softmax), cmap="gray_r", aspect="auto")
-        plt.show()
-
     # Collapse stack of softmaxes to get final global softmax so that 
     # there is only one distribution per timestep
 
@@ -248,6 +247,10 @@ def main():
     #     preds_global = np.load(f)
 
     ########################## ANALYSIS ###############################
+
+    # Visualise softmax assembly
+    for i, _ in enumerate(softmaxes_all):
+        visualise_assembly(softmaxes_all[i], all_global_collapsed[i])
 
     # Compute edit distances
 
