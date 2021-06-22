@@ -217,12 +217,12 @@ def main():
     all_global_collapsed = []
     for global_expanded in all_global_expanded:
         global_collapsed = []
-        for t, dist_list in enumerate(global_expanded):
+        for t, dist_list in enumerate(global_expanded):         
             # Combine all distributions at the current timestep
-            if len(dist_list) > 1:
-                # global_collapsed.append(sum_normalised_list_l2(dist_list))
-                # global_collapsed.append(sum_normalised_list_l1(dist_list))
-                global_collapsed.append(conflate_list(dist_list))
+            if len(dist_list) > 2:
+                # global_collapsed.append(sum_normalised_list_l2(dist_list[:-1]))
+                global_collapsed.append(sum_normalised_list_l1(dist_list[:-1]))
+                # global_collapsed.append(conflate_list(dist_list[:-1]))
             else:
                 global_collapsed.append(dist_list[0])
         global_collapsed = np.asarray(global_collapsed)
