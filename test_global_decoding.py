@@ -211,6 +211,12 @@ def main():
 
         all_global_expanded.append(global_expanded)
 
+        
+        fig, axs = plt.subplots(len(softmaxes), 1)
+        for i, softmax in enumerate(softmaxes):
+            axs[i].imshow(np.transpose(softmax), cmap="gray_r", aspect="auto")
+        plt.show()
+
     # Collapse stack of softmaxes to get final global softmax so that 
     # there is only one distribution per timestep
 
