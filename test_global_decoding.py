@@ -13,6 +13,7 @@ STEP_SIZE = 128
 WINDOW_LEN = 1024
 OVERLAP = WINDOW_LEN-STEP_SIZE
 N_BASES = 4
+N_WINDOWS = 30
 
 def max_entropy(dist_a, dist_b):
     entropy_a = entropy(dist_a)
@@ -132,9 +133,24 @@ def combine(global_softmax, new_softmax):
     return global_softmax
 
 def visualise_assembly(softmax_windows, global_softmax):
-    fig, axs = plt.subplots(len(softmax_windows), 1)
-    for i, softmax in enumerate(softmax_windows):
+    len_global = WINDOW_LEN + (N_WINDOWS - 1) * STEP_SIZE
+    pad_size_before = 0
+    pad_size_after = len_global - WINDOW_LEN
+    padded_windows = []
+    for softmax in softmax_windows:
+        # Pad before
+        # Pad after
+        padded_window = # TODO
+        padded_windows.append(padded_window)
+        pad_size_before += STEP_SIZE
+        pad_size_after -= STEP_SIZE
+    plot_assembly(padded_windows, global_softmax)
+
+def plot_assembly(padded_windows, global_softmax):
+    _, axs = plt.subplots(len(padded_windows)+1, 1)
+    for i, softmax in enumerate(padded_windows):
         axs[i].imshow(np.transpose(softmax), cmap="gray_r", aspect="auto")
+    axs[-1].imshow(global_softmax)
     plt.show()
 
 def main():
@@ -233,6 +249,10 @@ def main():
         global_collapsed = np.asarray(global_collapsed)
         all_global_collapsed.append(global_collapsed)
 
+    # Visualise softmax assembly
+    for i, _ in enumerate(softmaxes_all):
+        visualise_assembly(softmaxes_all[i], all_global_collapsed[i])
+
     # Decode global matrix with beam search
 
     classes = 'ACGT'
@@ -247,10 +267,6 @@ def main():
     #     preds_global = np.load(f)
 
     ########################## ANALYSIS ###############################
-
-    # Visualise softmax assembly
-    for i, _ in enumerate(softmaxes_all):
-        visualise_assembly(softmaxes_all[i], all_global_collapsed[i])
 
     # Compute edit distances
 
