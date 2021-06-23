@@ -26,6 +26,22 @@ def max_entropy(dist_a, dist_b):
     else:
         return dist_a
 
+def max_entropy_list(dists):
+    entropies = []
+    for dist in dists:
+        entropies.append(entropy(dist))
+    
+    max_entropy = max(entropies)
+    return dists[entropies.index(max_entropy)]
+
+def min_entropy_list(dists):
+    entropies = []
+    for dist in dists:
+        entropies.append(entropy(dist))
+    
+    min_entropy = min(entropies)
+    return dists[entropies.index(min_entropy)]
+
 def conflate(dist_a, dist_b):
     num = np.multiply(dist_a, dist_b)
     den = np.sum(num)
@@ -158,8 +174,8 @@ def plot_assembly(padded_windows, global_softmax):
 def main():
     # Read test data from file
 
-    # data_dir = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/data"
-    data_dir = "decoding_test"
+    data_dir = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/data"
+    # data_dir = "decoding_test"
     with open(f"{data_dir}/orig_signals.npy", "rb") as f:
         orig_signals = np.load(f)
     with open(f"{data_dir}/gt_labels.npy", "rb") as f:
@@ -245,9 +261,11 @@ def main():
             # Combine all distributions at the current timestep
             # Approach 2:
             if len(dist_list) > 1:
-                global_collapsed.append(sum_normalised_list_l2(dist_list))
+                # global_collapsed.append(sum_normalised_list_l2(dist_list))
                 # global_collapsed.append(sum_normalised_list_l1(dist_list))
                 # global_collapsed.append(conflate_list(dist_list))
+                # global_collapsed.append(max_entropy_list(dist_list))
+                global_collapsed.append(min_entropy_list(dist_list))
             # Approach 3: Exclude last dist, which has most uncertainty
             # if len(dist_list) > 2:
             #     # global_collapsed.append(sum_normalised_list_l2(dist_list[:-1]))
@@ -259,8 +277,8 @@ def main():
         all_global_collapsed.append(global_collapsed)
 
     # Visualise softmax assembly
-    for i, _ in enumerate(softmaxes_all):
-        visualise_assembly(softmaxes_all[i], all_global_collapsed[i])
+    # for i, _ in enumerate(softmaxes_all):
+    #     visualise_assembly(softmaxes_all[i], all_global_collapsed[i])
 
     # Decode global matrix with beam search
 
