@@ -138,25 +138,28 @@ def visualise_assembly(softmax_windows, global_softmax):
     pad_size_after = len_global - WINDOW_LEN
     padded_windows = []
     for softmax in softmax_windows:
-        # Pad before
-        # Pad after
-        padded_window = # TODO
+        padded_window = np.pad(softmax, ((pad_size_before, pad_size_after), (0,0)), "constant")
         padded_windows.append(padded_window)
         pad_size_before += STEP_SIZE
         pad_size_after -= STEP_SIZE
     plot_assembly(padded_windows, global_softmax)
 
 def plot_assembly(padded_windows, global_softmax):
-    _, axs = plt.subplots(len(padded_windows)+1, 1)
+    # Only show first n windows for ease of viewing
+    n_windows_to_view = 5
+    _, axs = plt.subplots(n_windows_to_view+1, 1, sharex="all")
     for i, softmax in enumerate(padded_windows):
+        if i >= n_windows_to_view:
+            break
         axs[i].imshow(np.transpose(softmax), cmap="gray_r", aspect="auto")
-    axs[-1].imshow(global_softmax)
+    axs[-1].imshow(np.transpose(global_softmax), cmap="gray_r", aspect="auto")
     plt.show()
 
 def main():
     # Read test data from file
 
-    data_dir = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/data"
+    # data_dir = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/data"
+    data_dir = "decoding_test"
     with open(f"{data_dir}/orig_signals.npy", "rb") as f:
         orig_signals = np.load(f)
     with open(f"{data_dir}/gt_labels.npy", "rb") as f:
@@ -240,10 +243,16 @@ def main():
         global_collapsed = []
         for t, dist_list in enumerate(global_expanded):         
             # Combine all distributions at the current timestep
-            if len(dist_list) > 2:
-                # global_collapsed.append(sum_normalised_list_l2(dist_list[:-1]))
-                global_collapsed.append(sum_normalised_list_l1(dist_list[:-1]))
-                # global_collapsed.append(conflate_list(dist_list[:-1]))
+            # Approach 2:
+            if len(dist_list) > 1:
+                global_collapsed.append(sum_normalised_list_l2(dist_list))
+                # global_collapsed.append(sum_normalised_list_l1(dist_list))
+                # global_collapsed.append(conflate_list(dist_list))
+            # Approach 3: Exclude last dist, which has most uncertainty
+            # if len(dist_list) > 2:
+            #     # global_collapsed.append(sum_normalised_list_l2(dist_list[:-1]))
+            #     global_collapsed.append(sum_normalised_list_l1(dist_list[:-1]))
+            #     # global_collapsed.append(conflate_list(dist_list[:-1]))
             else:
                 global_collapsed.append(dist_list[0])
         global_collapsed = np.asarray(global_collapsed)
