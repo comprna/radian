@@ -31,6 +31,7 @@ def main():
             print(j)
             j += 1
         read_preds_all.append(preds)
+        i += 1
     
     # Save any remaining decoded reads
     with open(f"{data_dir}/heart_read_preds_all_{i}.npy", "wb") as f:
