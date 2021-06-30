@@ -14,7 +14,14 @@ def main():
     classes = 'ACGT'
     rna_model = None
     read_preds_all = []
+    i = 1
     for read in read_softmaxes_all:
+        # Every 100 reads write predictions to file
+        if i % 100 == 0:
+            with open(f"{data_dir}/hek293_read_preds_all_{i}.npy", "wb") as f:
+                np.save(f, read_preds_all)
+            read_preds_all = []
+
         print(len(read))
         preds = []
         j = 1
@@ -24,7 +31,9 @@ def main():
             print(j)
             j += 1
         read_preds_all.append(preds)
-    with open(f"{data_dir}/hek293_read_preds_all.npy", "wb") as f:
+    
+    # Save any remaining decoded reads
+    with open(f"{data_dir}/hek293_read_preds_all_{i}.npy", "wb") as f:
         np.save(f, read_preds_all)
 
 
