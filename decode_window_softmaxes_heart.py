@@ -26,7 +26,7 @@ def main():
         preds = []
         j = 1
         for softmax in read:
-            pred, _ = ctcBeamSearch(softmax, classes, rna_model, None)
+            pred = ctcBeamSearch(softmax, classes, rna_model, None)
             preds.append(pred)
             print(j)
             j += 1
