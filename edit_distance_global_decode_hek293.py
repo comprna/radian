@@ -31,7 +31,7 @@ def main():
         pred = preds_hek293[i]
         ed = levenshtein.normalized_distance(gt, pred)
         eds_hek293.append(ed)
-        print(f"{read}\t{ed}")
+        print(f"{read}\t{gt}\t{pred}\t{ed}")
     print(f"Average ED: {mean(eds_hek293)}")
 
 if __name__ == "__main__":

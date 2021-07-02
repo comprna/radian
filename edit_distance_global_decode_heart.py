@@ -31,7 +31,7 @@ def main():
         pred = preds_heart[i]
         ed = levenshtein.normalized_distance(gt, pred)
         eds_heart.append(ed)
-        print(f"{read}\t{ed}")
+        print(f"{read}\t{gt}\t{pred}\t{ed}")
     print(f"Average ED: {mean(eds_heart)}")
 
 if __name__ == "__main__":
