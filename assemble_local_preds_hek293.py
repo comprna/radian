@@ -12,7 +12,7 @@ def main():
 
     # Combine all reads together so we can iterate more easily
 
-    npy_paths = sorted(Path(data_dir).iterdir(), key=os.path.getmtime)
+    npy_paths = sorted(Path(data_dir).iterdir(), key=os.path.getctime) # ctime is last change to metadata (e.g. filename)
     with open(npy_paths[0], "rb") as f:
         read_local_preds = np.load(f, allow_pickle=True)
     for path in npy_paths[1:]:
