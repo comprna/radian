@@ -16,8 +16,13 @@ def main():
     read_preds_all = []
     i = 1
     for read in read_softmaxes_all:
+        # First 3099 already written to file (ready to process 3100)
+        if i < 3100:
+            i += 1
+            continue
+
         # Every 100 reads write predictions to file
-        if i % 100 == 0:
+        if i % 100 == 0 and i != 3100:
             with open(f"{data_dir}/heart_read_preds_all_{i}.npy", "wb") as f:
                 np.save(f, read_preds_all)
             read_preds_all = []
