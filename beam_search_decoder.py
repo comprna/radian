@@ -8,7 +8,7 @@ from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-# from copy import deepcopy
+from copy import deepcopy
 
 
 class BeamEntry:
@@ -20,7 +20,7 @@ class BeamEntry:
 		self.prText = 1 # LM score
 		self.lmApplied = False # flag if LM was already applied to this beam
 		self.labeling = () # beam-labeling
-		# self.indices = []
+		self.indices = () # indices of each character in beam
 
 
 class BeamState:
@@ -38,8 +38,8 @@ class BeamState:
 		"return beam-labelings, sorted by probability"
 		beams = [v for (_, v) in self.entries.items()]
 		sortedBeams = sorted(beams, reverse=True, key=lambda x: x.prTotal*x.prText)
-		# return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams]
-		return [x.labeling for x in sortedBeams]
+		return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams]
+		# return [x.labeling for x in sortedBeams]
 
 
 def applyLM(parentBeam, childBeam, classes, lm):
@@ -122,8 +122,8 @@ def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=6, lm_factor=0.1):
 		curr = BeamState()
 
 		# get beam-labelings of best beams
-		# bestLabelings = last.sort()[0][0:beamWidth]
-		bestLabelings = last.sort()[0:beamWidth]
+		bestLabelings = last.sort()[0][0:beamWidth]
+		# bestLabelings = last.sort()[0:beamWidth]
 
 		# go over best beams
 		for labeling in bestLabelings:
@@ -154,7 +154,7 @@ def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=6, lm_factor=0.1):
 			curr.entries[labeling].prTotal += prBlank + prNonBlank
 			curr.entries[labeling].prText = last.entries[labeling].prText # beam-labeling not changed, therefore also LM score unchanged from
 			curr.entries[labeling].lmApplied = True # LM already applied at previous time-step for this beam-labeling
-			# curr.entries[labeling].indices = last.entries[labeling].indices
+			curr.entries[labeling].indices = last.entries[labeling].indices
 
 			# extend current beam-labeling
 			for c in range(maxC - 1):
@@ -164,6 +164,7 @@ def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=6, lm_factor=0.1):
 				# keep track of matrix index that new char is located at
 				# newIndices = deepcopy(curr.entries[labeling].indices)
 				# newIndices.append(t)
+				newIndices = curr.entries[labeling].indices + (t,)
 
 				# if new labeling contains duplicate char at the end, only 
 				# consider paths ending with a blank
@@ -186,7 +187,7 @@ def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=6, lm_factor=0.1):
 				curr.entries[newLabeling].labeling = newLabeling
 				curr.entries[newLabeling].prNonBlank += prNonBlank
 				curr.entries[newLabeling].prTotal += prNonBlank
-				# curr.entries[newLabeling].indices = newIndices
+				curr.entries[newLabeling].indices = newIndices
 				
 				# apply LM
 				# print("applying model!")
@@ -199,20 +200,20 @@ def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=6, lm_factor=0.1):
 	last.norm()
 
 	# sort by probability
-	# bestBeam = last.sort()
-	# bestLabeling = bestBeam[0][0] # get most probable labeling
-	bestLabeling = last.sort()[0] # get most probable labeling
+	bestBeam = last.sort()
+	bestLabeling = bestBeam[0][0] # get most probable labeling
+	# bestLabeling = last.sort()[0] # get most probable labeling
 
 	# get indices corresponding to labeling
-	# bestLabelingIndices = bestBeam[1][0]
+	bestLabelingIndices = bestBeam[1][0]
 
 	# map labels to chars
 	res = ''
 	for l in bestLabeling:
 		res += classes[l]
 
-	# return res, bestLabelingIndices
-	return res
+	return res, bestLabelingIndices
+	# return res
 
 
 def testBeamSearch():
