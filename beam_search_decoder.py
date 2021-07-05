@@ -8,7 +8,7 @@ from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from copy import deepcopy
+# from copy import deepcopy
 
 
 class BeamEntry:
@@ -20,7 +20,7 @@ class BeamEntry:
 		self.prText = 1 # LM score
 		self.lmApplied = False # flag if LM was already applied to this beam
 		self.labeling = () # beam-labeling
-		self.indices = []
+		self.indices = () # indices of each character in beam
 
 
 class BeamState:
@@ -160,8 +160,9 @@ def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=6, lm_factor=0.1):
 				newLabeling = labeling + (c,)
 
 				# keep track of matrix index that new char is located at
-				newIndices = deepcopy(curr.entries[labeling].indices)
-				newIndices.append(t)
+				# newIndices = deepcopy(curr.entries[labeling].indices)
+				# newIndices.append(t)
+				newIndices = curr.entries[labeling].indices + (t,)
 
 				# if new labeling contains duplicate char at the end, only 
 				# consider paths ending with a blank
