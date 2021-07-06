@@ -24,18 +24,18 @@ def main():
 
     # Data directory
 
-    data_dir = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/val_test/8_TestGlobalDecoding/1_CombineSoftmaxes/hek293"
+    data_dir = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/val_test/8_TestGlobalDecoding/1_CombineSoftmaxes/heart"
 
     # Load read IDs
 
-    id_file = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/val_test/5_WriteToNumpy/hek293/hek293_read_ids.npy"
+    id_file = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/val_test/5_WriteToNumpy/heart/heart_read_ids.npy"
     with open(id_file, "rb") as f:
         read_ids = np.load(f, allow_pickle=True)
     print(len(read_ids))
 
     # Load ground truth sequences
 
-    gt_file = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/val_test/4_Construct_GT_Label_Per_Read/hek293_read_gt_labels.json"
+    gt_file = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/val_test/4_Construct_GT_Label_Per_Read/heart_read_gt_labels.json"
     with open(gt_file, "r") as f:
         gts = json.load(f)
 
@@ -50,8 +50,13 @@ def main():
 
     # Decode global softmax with RNA model
 
+
     classes = 'ACGT'
     for i, softmax in enumerate(global_softmaxes):
+        if i < 10:
+            continue
+        if i == 15:
+            break
         print(f"GT:   {gts[read_ids[i]]}\n")
         pred_wout, _ = ctcBeamSearch(softmax, classes, None, None)
         print(f"Wout: {pred_wout}\n")
@@ -69,7 +74,7 @@ def main():
             print("SAME\n\n")
 
 # def callback():
-#     npy_file = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/val_test/8_TestGlobalDecoding/1_CombineSoftmaxes/hek293/hek293_global_softmaxes_100.npy"
+#     npy_file = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/val_test/8_TestGlobalDecoding/1_CombineSoftmaxes/heart/heart_global_softmaxes_100.npy"
 
 #     with open(npy_file, "rb") as f:
 #         global_softmaxes = np.load(f, allow_pickle=True)

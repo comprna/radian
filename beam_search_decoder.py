@@ -7,6 +7,7 @@ from __future__ import division
 from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import entropy
 import tensorflow as tf
 from copy import deepcopy
 
@@ -38,7 +39,7 @@ class BeamState:
 		"return beam-labelings, sorted by probability"
 		beams = [v for (_, v) in self.entries.items()]
 		sortedBeams = sorted(beams, reverse=True, key=lambda x: x.prTotal*x.prText)
-		return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams]
+		return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams], [x.prTotal*x.prText for x in sortedBeams]
 		# return [x.labeling for x in sortedBeams]
 
 
@@ -191,7 +192,11 @@ def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=6, lm_factor=0.1):
 				
 				# apply LM
 				# print("applying model!")
-				applyRNAModel(curr.entries[labeling], curr.entries[newLabeling], classes, lm, true_label, cache, lm_factor)
+				dist = mat[t]
+				total = np.sum(dist)
+				t_entropy = entropy(dist)
+				if t_entropy > 0.9:
+					applyRNAModel(curr.entries[labeling], curr.entries[newLabeling], classes, lm, true_label, cache, lm_factor)
  
 		# set new beam state
 		last = curr
@@ -201,6 +206,10 @@ def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=6, lm_factor=0.1):
 
 	# sort by probability
 	bestBeam = last.sort()
+	for i in range(len(bestBeam[0])):
+		print(f"{bestBeam[0][i]}\t{bestBeam[2][i]}\n")
+
+
 	bestLabeling = bestBeam[0][0] # get most probable labeling
 	# bestLabeling = last.sort()[0] # get most probable labeling
 
