@@ -53,10 +53,8 @@ def main():
     classes = 'ACGT'
     eds = []
     for i, softmax in enumerate(global_softmaxes):
-        if i == 100:
-            break
-        # pred, _ = ctcBeamSearch(softmax, classes, None, None)
-        pred, _ = ctcBeamSearch(softmax, classes, r_model, None, lm_factor=factor)
+        pred, _ = ctcBeamSearch(softmax, classes, None, None)
+        # pred, _ = ctcBeamSearch(softmax, classes, r_model, None, lm_factor=factor)
         ed = levenshtein.normalized_distance(gts[read_ids[i]], pred)
         eds.append(ed)
         print(f"{read_ids[i]}\t{gts[read_ids[i]]}\t{pred}\t{ed}")
