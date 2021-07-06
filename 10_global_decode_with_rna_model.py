@@ -19,8 +19,8 @@ def main():
     # setup_local()
     # r_config_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-config-37.yaml'
     # r_model_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/train-3-37/r-train-37-model-03.h5'
-    r_config_file = '/g/data/xc17/Eyras/alex/working/test_decoding/r-config-38.yaml'
-    r_model_file = '/g/data/xc17/Eyras/alex/working/test_decoding/r-train-38-model-01.h5'
+    r_config_file = '/g/data/xc17/Eyras/alex/working/test_decoding/r-config-37.yaml'
+    r_model_file = '/g/data/xc17/Eyras/alex/working/test_decoding/r-train-37-model-03.h5'
     r_config = get_config(r_config_file)
     r_model = get_rna_prediction_model(r_model_file, r_config)
     factor = 0.5
@@ -53,8 +53,8 @@ def main():
     classes = 'ACGT'
     eds = []
     for i, softmax in enumerate(global_softmaxes):
-        pred, _ = ctcBeamSearch(softmax, classes, None, None)
-        # pred, _ = ctcBeamSearch(softmax, classes, r_model, None, lm_factor=factor)
+        # pred, _ = ctcBeamSearch(softmax, classes, None, None)
+        pred, _ = ctcBeamSearch(softmax, classes, r_model, None, lm_factor=factor)
         ed = levenshtein.normalized_distance(gts[read_ids[i]], pred)
         eds.append(ed)
         print(f"{read_ids[i]}\t{gts[read_ids[i]]}\t{pred}\t{ed}")

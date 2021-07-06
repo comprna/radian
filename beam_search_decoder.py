@@ -58,7 +58,7 @@ def applyLM(parentBeam, childBeam, classes, lm):
 def applyRNAModel(parentBeam, childBeam, classes, lm, true_label, cache, lm_factor):
 	"calculate RNA model score of child beam by taking score from parent beam and 6-mer probability of last six chars"
 	if lm and not childBeam.lmApplied:
-		if len(parentBeam.labeling) < 29:
+		if len(parentBeam.labeling) < 8:
 			return
 
 		# print(f"Ground truth: {true_label}")
@@ -67,10 +67,10 @@ def applyRNAModel(parentBeam, childBeam, classes, lm, true_label, cache, lm_fact
 		# print(f"Last 8 in parent: {parentBeam.labeling[-8:]}")
 		# print(f"Child: {childBeam.labeling}")
 
-		context_tup = parentBeam.labeling[-29:]
+		context_tup = parentBeam.labeling[-8:]
 		if context_tup not in cache:
-			context = tf.one_hot(list(parentBeam.labeling[-29:]), 4).numpy()
-			context = context.reshape(1,29,4)
+			context = tf.one_hot(list(parentBeam.labeling[-8:]), 4).numpy()
+			context = context.reshape(1,8,4)
 			probs = lm.predict(context)
 			cache[context_tup] = probs
 		else:
