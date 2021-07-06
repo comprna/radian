@@ -39,7 +39,8 @@ class BeamState:
 		"return beam-labelings, sorted by probability"
 		beams = [v for (_, v) in self.entries.items()]
 		sortedBeams = sorted(beams, reverse=True, key=lambda x: x.prTotal*x.prText)
-		return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams], [x.prTotal*x.prText for x in sortedBeams]
+		return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams]
+		# return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams], [x.prTotal*x.prText for x in sortedBeams]
 		# return [x.labeling for x in sortedBeams]
 
 
@@ -206,8 +207,8 @@ def ctcBeamSearch(mat, classes, lm, true_label, beamWidth=6, lm_factor=0.1):
 
 	# sort by probability
 	bestBeam = last.sort()
-	for i in range(len(bestBeam[0])):
-		print(f"{bestBeam[0][i]}\t{bestBeam[2][i]}\n")
+	# for i in range(len(bestBeam[0])):
+	# 	print(f"{bestBeam[0][i]}\t{bestBeam[2][i]}\n")
 
 
 	bestLabeling = bestBeam[0][0] # get most probable labeling
