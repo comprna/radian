@@ -59,7 +59,6 @@ def main():
         # pred_with, _ = ctcBeamSearch(softmax, classes, r_model, None, lm_factor=factor)
         ed = levenshtein.normalized_distance(gts[read_ids[i]], pred)
         eds.append(ed)
-        print(ed)
         print(f"{read_ids[i]}\t{gts[read_ids[i]]}\t{pred}\t{ed}")
     print(mean(eds))
 
