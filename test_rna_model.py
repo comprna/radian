@@ -1,7 +1,4 @@
-import cProfile
 import json
-import os
-from pathlib import Path
 from statistics import mean
 
 import numpy as np
@@ -66,7 +63,6 @@ def main():
                                 d_config.lm_factor,
                                 d_config.entropy_threshold,
                                 d_config.len_context)
-        print(pred)
         ed = levenshtein.normalized_distance(gts[read_ids[i]], pred)
         eds.append(ed)
         print(f"{read_ids[i]}\t{gts[read_ids[i]]}\t{pred}\t{ed}")
