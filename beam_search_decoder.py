@@ -107,9 +107,6 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh):
 	blankIdx = len(classes)
 	maxT, maxC = mat.shape
 
-	# plt.imshow(np.transpose(mat), cmap="gray_r", aspect="auto")
-	# plt.show()
-
 	# initialise beam state
 	last = BeamState()
 	labeling = ()
@@ -190,10 +187,7 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh):
 				curr.entries[newLabeling].indices = newIndices
 				
 				# apply LM
-				# print("applying model!")
-				dist = mat[t]
-				total = np.sum(dist)
-				tEntropy = entropy(dist)
+				tEntropy = entropy(mat[t])
 				if tEntropy > entropyThresh:
 					applyRNAModel(curr.entries[labeling], curr.entries[newLabeling], lm, cache, lmFactor)
  
@@ -205,9 +199,6 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh):
 
 	# sort by probability
 	bestBeam = last.sort()
-	# for i in range(len(bestBeam[0])):
-	# 	print(f"{bestBeam[0][i]}\t{bestBeam[2][i]}\n")
-
 
 	bestLabeling = bestBeam[0][0] # get most probable labeling
 	# bestLabeling = last.sort()[0] # get most probable labeling
