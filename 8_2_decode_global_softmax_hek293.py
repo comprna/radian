@@ -26,9 +26,12 @@ def main():
     with open(npy_paths[0], "rb") as f:
         read_global_softmaxes = np.load(f, allow_pickle=True)
     for path in npy_paths[1:]:
+        print(path)
         with open(path, "rb") as f:
             read_global_softmaxes = np.concatenate((read_global_softmaxes, np.load(f, allow_pickle=True)))
     print(len(read_global_softmaxes))
+    with open(f"{data_dir}/hek293_global_softmaxes_all.npy", "wb") as f:
+        np.save(f, read_global_softmaxes)
 
     classes = 'ACGT'
     rna_model = None
