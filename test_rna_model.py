@@ -62,7 +62,6 @@ def main():
         pred, _ = ctcBeamSearch(softmax,
                                 classes,
                                 r_model,
-                                None,
                                 d_config.beam_width,
                                 d_config.lm_factor)
         print(pred)
