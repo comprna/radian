@@ -99,7 +99,7 @@ def addBeam(beamState, labeling):
 	if labeling not in beamState.entries:
 		beamState.entries[labeling] = BeamEntry()
 
-def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor):
+def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh):
 	"beam search as described by the paper of Hwang et al. and the paper of Graves et al."
 
 	cache = {}
@@ -193,8 +193,8 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor):
 				# print("applying model!")
 				dist = mat[t]
 				total = np.sum(dist)
-				t_entropy = entropy(dist)
-				if t_entropy > 0.9:
+				tEntropy = entropy(dist)
+				if tEntropy > entropyThresh:
 					applyRNAModel(curr.entries[labeling], curr.entries[newLabeling], lm, cache, lmFactor)
  
 		# set new beam state

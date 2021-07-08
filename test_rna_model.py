@@ -63,7 +63,8 @@ def main():
                                 classes,
                                 r_model,
                                 d_config.beam_width,
-                                d_config.lm_factor)
+                                d_config.lm_factor,
+                                d_config.entropy_threshold)
         print(pred)
         ed = levenshtein.normalized_distance(gts[read_ids[i]], pred)
         eds.append(ed)
