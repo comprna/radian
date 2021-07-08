@@ -21,17 +21,18 @@ def main():
     # Load config
 
     dataset = sys.argv[2]
-
-    r_config_file = f"{base_dir}/tmp/r-config-38.yaml"  # TODO: CL param
-    r_config = get_config(r_config_file)
-
-    d_config_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/global/all_val/decode-1/d-config-1.yaml' # TODO: CL param
+    d_config_file = sys.argv[3]
     d_config = get_config(d_config_file)
 
     # Load RNA model
 
-    r_model_file = f"{base_dir}/tmp/r-train-38-model-01.h5" # TODO: CL param
-    r_model = get_rna_prediction_model(r_model_file, r_config)
+    if d_config.use_rna_model == False:
+        r_model = None
+    else:
+        r_config_file = sys.argv[4]
+        r_config = get_config(r_config_file)
+        r_model_file = sys.argv[5]
+        r_model = get_rna_prediction_model(r_model_file, r_config)
 
     # Load read IDs
 
@@ -56,8 +57,6 @@ def main():
 
     classes = 'ACGT'
     eds = []
-    if d_config.use_rna_model == False:
-        r_model = None
     for i, softmax in enumerate(global_softmaxes):
         pred, _ = ctcBeamSearch(softmax,
                                 classes,
