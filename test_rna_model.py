@@ -39,7 +39,6 @@ def main():
     id_file = f"{base_dir}/{dataset}_read_ids.npy"
     with open(id_file, "rb") as f:
         read_ids = np.load(f, allow_pickle=True)
-    print(len(read_ids))
 
     # Load ground truth sequences
 
