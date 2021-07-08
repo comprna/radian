@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import entropy
 import tensorflow as tf
-from copy import deepcopy
+# from copy import deepcopy
 
 
 class BeamEntry:
