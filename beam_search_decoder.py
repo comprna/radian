@@ -55,7 +55,7 @@ def applyLM(parentBeam, childBeam, classes, lm):
 		childBeam.lmApplied = True # only apply LM once per beam entry
 
 
-def applyRNAModel(parentBeam, childBeam, classes, lm, cache, lmFactor):
+def applyRNAModel(parentBeam, childBeam, lm, cache, lmFactor):
 	"calculate RNA model score of child beam by taking score from parent beam and 6-mer probability of last six chars"
 	if lm and not childBeam.lmApplied:
 		if len(parentBeam.labeling) < 29:
@@ -195,7 +195,7 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor):
 				total = np.sum(dist)
 				t_entropy = entropy(dist)
 				if t_entropy > 0.9:
-					applyRNAModel(curr.entries[labeling], curr.entries[newLabeling], classes, lm, cache, lmFactor)
+					applyRNAModel(curr.entries[labeling], curr.entries[newLabeling], lm, cache, lmFactor)
  
 		# set new beam state
 		last = curr
