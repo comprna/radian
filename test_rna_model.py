@@ -1,5 +1,6 @@
 import json
 from statistics import mean
+import sys
 
 import numpy as np
 from textdistance import levenshtein
@@ -11,13 +12,15 @@ from utilities import get_config, setup_local
 def main():
     # Run locally or on gadi
 
-    local_dir = '/mnt/sda/rna-basecaller/experiments/with-rna-model/global/all_val/copied_files'
-    gadi_dir = '/g/data/xc17/Eyras/alex/working/with-rna-model/global/all_val/copied_files'
+    # setup_local()
+    # local_dir = '/mnt/sda/rna-basecaller/experiments/with-rna-model/global/all_val/copied_files'
+    # gadi_dir = '/g/data/xc17/Eyras/alex/working/with-rna-model/global/all_val/copied_files'
 
-    base_dir = local_dir
-    setup_local()
+    base_dir = sys.argv[1]
 
     # Load config
+
+    dataset = sys.argv[2]
 
     r_config_file = f"{base_dir}/tmp/r-config-38.yaml"  # TODO: CL param
     r_config = get_config(r_config_file)
@@ -32,20 +35,20 @@ def main():
 
     # Load read IDs
 
-    id_file = f"{base_dir}/heart_read_ids.npy"
+    id_file = f"{base_dir}/{dataset}_read_ids.npy"
     with open(id_file, "rb") as f:
         read_ids = np.load(f, allow_pickle=True)
     print(len(read_ids))
 
     # Load ground truth sequences
 
-    gt_file = f"{base_dir}/heart_read_gt_labels.json"
+    gt_file = f"{base_dir}/{dataset}_read_gt_labels.json"
     with open(gt_file, "r") as f:
         gts = json.load(f)
 
     # Load global softmaxes
 
-    gs_file = f"{base_dir}/heart_global_softmaxes_all.npy"
+    gs_file = f"{base_dir}/{dataset}_global_softmaxes_all.npy"
     with open(gs_file, "rb") as f:
         global_softmaxes = np.load(f, allow_pickle=True)
 
