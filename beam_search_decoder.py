@@ -11,6 +11,7 @@ from scipy.stats import entropy
 import tensorflow as tf
 # from copy import deepcopy
 
+N_BASES = 4
 
 class BeamEntry:
 	"information about one single beam at specific time-step"
@@ -67,8 +68,8 @@ def applyRNAModel(parentBeam, childBeam, lm, cache, lmFactor):
 
 		context_tup = parentBeam.labeling[-29:]
 		if context_tup not in cache:
-			context = tf.one_hot(list(parentBeam.labeling[-29:]), 4).numpy()
-			context = context.reshape(1,29,4)
+			context = tf.one_hot(list(parentBeam.labeling[-29:]), N_BASES).numpy()
+			context = context.reshape(1, 29, N_BASES)
 			probs = lm.predict(context)
 			cache[context_tup] = probs
 		else:
