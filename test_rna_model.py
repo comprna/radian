@@ -59,8 +59,7 @@ def main():
     if d_config.use_rna_model == False:
         r_model = None
     for i, softmax in enumerate(global_softmaxes):
-        pred, _ = ctcBeamSearch(softmax, classes, r_model, None)
-        # pred, _ = ctcBeamSearch(softmax, classes, r_model, None, lm_factor=d_config.lm_factor)
+        pred, _ = ctcBeamSearch(softmax, classes, r_model, None, lm_factor=d_config.lm_factor)
         print(pred)
         ed = levenshtein.normalized_distance(gts[read_ids[i]], pred)
         eds.append(ed)
