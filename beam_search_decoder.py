@@ -56,20 +56,20 @@ def applyLM(parentBeam, childBeam, classes, lm):
 		childBeam.lmApplied = True # only apply LM once per beam entry
 
 
-def applyRNAModel(parentBeam, childBeam, lm, cache, lmFactor):
+def applyRNAModel(parentBeam, childBeam, lm, cache, lmFactor, lenContext):
 	"calculate RNA model score of child beam by taking score from parent beam and 6-mer probability of last six chars"
 	if lm and not childBeam.lmApplied:
-		if len(parentBeam.labeling) < 29:
+		if len(parentBeam.labeling) < lenContext:
 			return
 
 		# print(f"Parent beam: {parentBeam.labeling}")
 		# print(f"Last 8 in parent: {parentBeam.labeling[-8:]}")
 		# print(f"Child: {childBeam.labeling}")
 
-		context_tup = parentBeam.labeling[-29:]
+		context_tup = parentBeam.labeling[-lenContext:]
 		if context_tup not in cache:
-			context = tf.one_hot(list(parentBeam.labeling[-29:]), N_BASES).numpy()
-			context = context.reshape(1, 29, N_BASES)
+			context = tf.one_hot(list(parentBeam.labeling[-lenContext:]), N_BASES).numpy()
+			context = context.reshape(1, lenContext, N_BASES)
 			probs = lm.predict(context)
 			cache[context_tup] = probs
 		else:
@@ -100,7 +100,7 @@ def addBeam(beamState, labeling):
 	if labeling not in beamState.entries:
 		beamState.entries[labeling] = BeamEntry()
 
-def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh):
+def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenContext):
 	"beam search as described by the paper of Hwang et al. and the paper of Graves et al."
 
 	cache = {}
@@ -190,7 +190,12 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh):
 				# apply LM
 				tEntropy = entropy(mat[t])
 				if tEntropy > entropyThresh:
-					applyRNAModel(curr.entries[labeling], curr.entries[newLabeling], lm, cache, lmFactor)
+					applyRNAModel(curr.entries[labeling],
+								  curr.entries[newLabeling],
+								  lm,
+								  cache,
+								  lmFactor,
+								  lenContext)
  
 		# set new beam state
 		last = curr
