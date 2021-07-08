@@ -12,14 +12,19 @@ from rna_model import get_rna_prediction_model
 from utilities import get_config, setup_local
 
 def main():
-    # Set up RNA model
+    # Load config
 
-    gadi_dir = '/g/data/xc17/Eyras/alex/working/test_decoding'
-    r_config_file = f"{gadi_dir}/r-config-38.yaml"
-    r_model_file = f"{gadi_dir}/r-train-38-model-01.h5"
+    gadi_dir = '/g/data/xc17/Eyras/alex/working/test_decoding' # TODO: CL param
+    r_config_file = f"{gadi_dir}/r-config-38.yaml"  # TODO: CL param
     r_config = get_config(r_config_file)
+
+    d_config_file = '/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/val_test/10_AddRnaModel/all_val/d-config-1.yaml' # TODO: CL param
+    d_config = get_config(d_config_file)
+
+    # Load RNA model
+
+    r_model_file = f"{gadi_dir}/r-train-38-model-01.h5" # TODO: CL param
     r_model = get_rna_prediction_model(r_model_file, r_config)
-    factor = 0.5
 
     # Load read IDs
 
@@ -46,7 +51,7 @@ def main():
     eds = []
     for i, softmax in enumerate(global_softmaxes):
         # pred, _ = ctcBeamSearch(softmax, classes, None, None)
-        pred, _ = ctcBeamSearch(softmax, classes, r_model, None, lm_factor=factor)
+        pred, _ = ctcBeamSearch(softmax, classes, r_model, None, lm_factor=d_config.lm_factor)
         ed = levenshtein.normalized_distance(gts[read_ids[i]], pred)
         eds.append(ed)
         print(f"{read_ids[i]}\t{gts[read_ids[i]]}\t{pred}\t{ed}")
