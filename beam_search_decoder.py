@@ -62,31 +62,20 @@ def applyRNAModel(parentBeam, childBeam, lm, cache, lmFactor, lenContext):
 		if len(parentBeam.labeling) < lenContext:
 			return
 
-		# print(f"Parent beam: {parentBeam.labeling}")
-		# print(f"Last 8 in parent: {parentBeam.labeling[-8:]}")
-		# print(f"Child: {childBeam.labeling}")
-
-		context_tup = parentBeam.labeling[-lenContext:]
-		if context_tup not in cache:
+		contextTup = parentBeam.labeling[-lenContext:] # context tuple
+		if contextTup not in cache:
 			context = tf.one_hot(list(parentBeam.labeling[-lenContext:]), N_BASES).numpy()
 			context = context.reshape(1, lenContext, N_BASES)
 			probs = lm.predict(context)
-			cache[context_tup] = probs
+			cache[contextTup] = probs
 		else:
-			probs = cache[context_tup]
+			probs = cache[contextTup]
 
-		# probs = lm.predict(context) ## INEFFICIENT: CACHE PREVIOUS PROBS???
-		# print(f"LM probs: {probs}")
+		newChar = childBeam.labeling[-1]
+		probNewChar = probs[0][newChar]
 
-		new_char = childBeam.labeling[-1]
-		prob_new_char = probs[0][new_char]
-		# print(f"Prob new char: {prob_new_char}")
-
-		# lmFactor = 0.1 # influence of language model
-		prob_new_char = prob_new_char ** lmFactor # probability of seeing k-mer
-		# print(f"Prob new char after factor {lmFactor}: {prob_new_char}\n\n")
-
-		childBeam.prText = parentBeam.prText * prob_new_char # probability of whole sequence
+		probNewChar = probNewChar ** lmFactor # probability of seeing k-mer
+		childBeam.prText = parentBeam.prText * probNewChar # probability of whole sequence
 		childBeam.lmApplied = True # only apply LM once per beam entry
 
 def convertToSequence(beam, classes):
