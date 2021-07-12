@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from beam_search_decoder import ctcBeamSearch
+from easy_assembler import simple_assembly, index2base
 from utilities import setup_local
 
 def overlay_prediction(plot, prediction, indices, x_min, x_max, color, offset=0):
@@ -68,6 +69,8 @@ def main():
     classes = 'ACGT'
     for i, read in enumerate(local_softmaxes):
         
+        print(read_ids[i])
+
         # # Global decoding
 
         # pred, inds = ctcBeamSearch(global_softmaxes[i],
@@ -78,6 +81,23 @@ def main():
         #                            0.9,
         #                            8)
 
+        # # Visualise softmax and global decoding
+
+        # plt.figure(figsize=(20, 3))
+        # plt.imshow(np.transpose(global_softmaxes[i]), cmap="gray_r", aspect="auto")
+
+        # # Save plot in chunks
+
+        # chunk_size = 341
+        # n_chunks = 6
+        # for k in range(n_chunks):
+        #     start = k * chunk_size
+        #     end = start + chunk_size
+        #     plt.xlim(start, end)
+        #     texts = overlay_prediction(plt, pred, inds, start, end, 'blue')
+        #     plt.savefig(f"glob-read-{read_ids[i]}-{k}.png", bbox_inches="tight", pad_inches=0)
+        #     clear_texts(texts)
+
         # # Visualise alignment
 
         # alignments = pairwise2.align.globalxx(global_gts[read_ids[i]], pred)
@@ -85,8 +105,9 @@ def main():
         #     print(format_alignment(*alignment))
         #     break # Only print the first alignment for now
 
-        # Local decoding
+        # Visualise individual local decoding
 
+        local_preds = []
         for j, softmax in enumerate(read):
             pred, inds = ctcBeamSearch(softmax,
                                        classes,
@@ -94,7 +115,9 @@ def main():
                                        30,
                                        0.5,
                                        0.9,
-                                       8)
+                                       8,
+                                       local_gts[i][j])
+            local_preds.append(pred)
 
             # Visualise alignment
 
@@ -103,7 +126,7 @@ def main():
                 print(format_alignment(*alignment))
                 break # Only print the first alignment for now
 
-            # Visualise softmax and decoding
+            # Visualise softmax and local decoding
 
             plt.figure(figsize=(20, 3))
             plt.imshow(np.transpose(softmax), cmap="gray_r", aspect="auto")
@@ -117,9 +140,20 @@ def main():
                 end = start + chunk_size
                 plt.xlim(start, end)
                 texts = overlay_prediction(plt, pred, inds, start, end, 'blue')
-                plt.savefig(f"read-{read_ids[i]}-{j}-{k}.png", bbox_inches="tight", pad_inches=0)
+                plt.savefig(f"loc-read-{read_ids[i]}-{j}-{k}.png", bbox_inches="tight", pad_inches=0)
                 clear_texts(texts)
-            plt.show()
+
+        # # Assemble local predictions
+
+        # consensus = simple_assembly(local_preds)
+        # consensus_seq = index2base(np.argmax(consensus, axis=0))
+
+        # # Visualise alignment of assembly to ground truth
+
+        # alignments = pairwise2.align.globalxx(global_gts[read_ids[i]], consensus_seq)
+        # for alignment in alignments:
+        #     print(format_alignment(*alignment))
+        #     break # Only print the first alignment for now
 
 
 if __name__ == "__main__":
