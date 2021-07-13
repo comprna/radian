@@ -5,6 +5,7 @@ This has been adapted from https://github.com/githubharald/CTCDecoder/blob/maste
 
 from __future__ import division
 from __future__ import print_function
+from math import log
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import entropy
@@ -89,7 +90,7 @@ def addBeam(beamState, labeling):
 	if labeling not in beamState.entries:
 		beamState.entries[labeling] = BeamEntry()
 
-def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenContext):
+def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenContext, gt):
 	"beam search as described by the paper of Hwang et al. and the paper of Graves et al."
 
 	cache = {}
@@ -106,11 +107,16 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 
 	# go over all time-steps
 	for t in range(maxT):
+		if t < 30:
+			continue
 		curr = BeamState()
 
 		# get beam-labelings of best beams
 		bestLabelings = last.sort()[0][0:beamWidth]
 		# bestLabelings = last.sort()[0:beamWidth]
+
+		dummy_var = 0
+		# Print out top 30 seqs (from bestLabelings) & their probs (from last)
 
 		# go over best beams
 		for labeling in bestLabelings:
@@ -195,6 +201,16 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 	# sort by probability
 	bestBeam = last.sort()
 
+	# is the GT one of the possible beams??
+	gt_tup = ()
+	for c in gt:
+		gt_tup += (classes.index(c),)
+	
+	candidates = bestBeam[0]
+	for candidate in candidates:
+		print(gt_tup == candidate)
+
+
 	bestLabeling = bestBeam[0][0] # get most probable labeling
 	# bestLabeling = last.sort()[0] # get most probable labeling
 
@@ -204,7 +220,7 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 	# map labels to chars
 	res = ''
 	for l in bestLabeling:
-		res += classes[l]
+		res += classes[l] # TODO: Improve efficiency
 
 	return res, bestLabelingIndices
 	# return res
