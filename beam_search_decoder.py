@@ -45,18 +45,6 @@ class BeamState:
 		# return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams], [x.prTotal*x.prText for x in sortedBeams]
 		# return [x.labeling for x in sortedBeams]
 
-
-def applyLM(parentBeam, childBeam, classes, lm):
-	"calculate LM score of child beam by taking score from parent beam and bigram probability of last two chars"
-	if lm and not childBeam.lmApplied:
-		c1 = classes[parentBeam.labeling[-1] if parentBeam.labeling else classes.index(' ')] # first char
-		c2 = classes[childBeam.labeling[-1]] # second char
-		lmFactor = 0.01 # influence of language model
-		bigramProb = lm.getCharBigram(c1, c2) ** lmFactor # probability of seeing first and second char next to each other
-		childBeam.prText = parentBeam.prText * bigramProb # probability of char sequence
-		childBeam.lmApplied = True # only apply LM once per beam entry
-
-
 def applyRNAModel(parentBeam, childBeam, lm, cache, lmFactor, lenContext):
 	"calculate RNA model score of child beam by taking score from parent beam and 6-mer probability of last six chars"
 	if lm and not childBeam.lmApplied:
