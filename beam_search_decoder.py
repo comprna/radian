@@ -109,6 +109,8 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 		# go over best beams
 		for labeling in bestLabelings:
 
+			# COPY BEAM: https://towardsdatascience.com/beam-search-decoding-in-ctc-trained-neural-networks-5a889a3d85a7 
+
 			# probability of paths ending with a non-blank
 			prNonBlank = 0
 			# in case of non-empty beam
@@ -136,6 +138,8 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 			curr.entries[labeling].prText = last.entries[labeling].prText # beam-labeling not changed, therefore also LM score unchanged from
 			curr.entries[labeling].lmApplied = True # LM already applied at previous time-step for this beam-labeling
 			curr.entries[labeling].indices = last.entries[labeling].indices
+
+			# EXTEND BEAM
 
 			# extend current beam-labeling
 			for c in range(maxC - 1):
