@@ -193,14 +193,14 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 	# sort by probability
 	bestBeam = last.sort()
 
-	# is the GT one of the possible beams??
-	gt_tup = ()
-	for c in gt:
-		gt_tup += (classes.index(c),)
+	# # is the GT one of the possible beams??
+	# gt_tup = ()
+	# for c in gt:
+	# 	gt_tup += (classes.index(c),)
 	
-	candidates = bestBeam[0]
-	for candidate in candidates:
-		print(gt_tup == candidate)
+	# candidates = bestBeam[0]
+	# for candidate in candidates:
+	# 	print(gt_tup == candidate)
 
 
 	bestLabeling = bestBeam[0][0] # get most probable labeling
