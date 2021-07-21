@@ -38,10 +38,9 @@ class BeamState:
 			self.entries[k].prText = (1.0 / (labelingLen if labelingLen else 1.0)) * self.entries[k].prText
 
 	def sort(self):
-		"return beam-labelings, sorted by probability (when dealing with logs, smaller probability is ranked higher)"
+		"return beam-labelings, sorted by probability (when dealing with logs, larger probability (i.e. less negative) is ranked higher)"
 		beams = [v for (_, v) in self.entries.items()]
-		# sort in ascending order to minimise log probs
-		sortedBeams = sorted(beams, reverse=False, key=lambda x: x.prTotal + x.prText) # prTotal & prText are both positive, so sum
+		sortedBeams = sorted(beams, reverse=True, key=lambda x: x.prTotal + x.prText)
 		return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams]
 		# return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams], [x.prTotal + x.prText for x in sortedBeams]
 		# return [x.labeling for x in sortedBeams]
@@ -65,7 +64,7 @@ def applyRNAModel(parentBeam, childBeam, lm, cache, lmFactor, lenContext):
 		probNewChar = np.log(probs[0][newChar])
 
 		probNewChar = lmFactor * probNewChar # probability of seeing k-mer
-		childBeam.prText = parentBeam.prText - probNewChar # probability of whole sequence # probNewChar is negative, so subtract
+		childBeam.prText = parentBeam.prText + probNewChar # probability of whole sequence
 		childBeam.lmApplied = True # only apply LM once per beam entry
 
 def convertToSequence(beam, classes):
@@ -122,11 +121,11 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 				# last char gets merged and therefore does not change the 
 				# labeling, so we need to include the probability of a repeated
 				# last char in the probability of the labeling)
-				prNonBlank = last.entries[labeling].prNonBlank - np.log(mat[t, labeling[-1]]) # log prob is negative so subtract
+				prNonBlank = last.entries[labeling].prNonBlank + np.log(mat[t, labeling[-1]])
 
 			# probability of paths ending with a blank
 			# this is computed for same logic as repeated last char
-			prBlank = (last.entries[labeling].prTotal) - np.log(mat[t, blankIdx]) # log prob is negative so subtract
+			prBlank = last.entries[labeling].prTotal + np.log(mat[t, blankIdx])
 
 			# TODO: What happens if the prob is 0? log of 0 doesn't compute
 
@@ -164,12 +163,12 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 					# in a beam with duplicated char at the end if the previous
 					# char was a blank (otherwise the repeated char would get
 					# merged, as above), so we multiply by the blank probability
-					prNonBlank = last.entries[labeling].prBlank - np.log(mat[t, c])
+					prNonBlank = last.entries[labeling].prBlank + np.log(mat[t, c])
 				else:
 					# we can extend a beam with a different char regardless of
 					# whether the previous char was a blank, so we multiply
 					# by the total probability
-					prNonBlank = last.entries[labeling].prTotal - np.log(mat[t, c])
+					prNonBlank = last.entries[labeling].prTotal + np.log(mat[t, c])
 
 				# add beam at current time-step if needed
 				addBeam(curr, newLabeling)
@@ -177,9 +176,9 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 				# fill in data
 				curr.entries[newLabeling].labeling = newLabeling
 				# curr.entries[newLabeling].prNonBlank += prNonBlank
-				curr.entries[labeling].prNonBlank = np.logaddexp(curr.entries[labeling].prNonBlank, prNonBlank) # TODO: negative prob?
+				curr.entries[newLabeling].prNonBlank = np.logaddexp(curr.entries[newLabeling].prNonBlank, prNonBlank)
 				# curr.entries[newLabeling].prTotal += prNonBlank
-				curr.entries[labeling].prTotal = np.logaddexp(curr.entries[labeling].prTotal, prNonBlank) # TODO: negative prob?
+				curr.entries[newLabeling].prTotal = np.logaddexp(curr.entries[newLabeling].prTotal, prNonBlank)
 				curr.entries[newLabeling].indices = newIndices
 				
 				# apply LM
