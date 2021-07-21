@@ -20,7 +20,7 @@ class BeamEntry:
 		self.prTotal = 0 # blank and non-blank
 		self.prNonBlank = 0 # non-blank
 		self.prBlank = 0 # blank
-		self.prText = 0 # LM score
+		self.prText = 1 # LM score
 		self.lmApplied = False # flag if LM was already applied to this beam
 		self.labeling = () # beam-labeling
 		self.indices = () # indices of each character in beam
@@ -35,15 +35,14 @@ class BeamState:
 		"length-normalise LM score"
 		for (k, _) in self.entries.items():
 			labelingLen = len(self.entries[k].labeling)
-			self.entries[k].prText = (1.0 / (labelingLen if labelingLen else 1.0)) * self.entries[k].prText
+			self.entries[k].prText = self.entries[k].prText ** (1.0 / (labelingLen if labelingLen else 1.0))
 
 	def sort(self):
-		"return beam-labelings, sorted by probability (when dealing with logs, smaller probability is ranked higher)"
+		"return beam-labelings, sorted by probability"
 		beams = [v for (_, v) in self.entries.items()]
-		# sort in ascending order to minimise log probs
-		sortedBeams = sorted(beams, reverse=False, key=lambda x: x.prTotal + x.prText) # prTotal & prText are both positive, so sum
+		sortedBeams = sorted(beams, reverse=True, key=lambda x: x.prTotal*x.prText)
 		return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams]
-		# return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams], [x.prTotal + x.prText for x in sortedBeams]
+		# return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams], [x.prTotal*x.prText for x in sortedBeams]
 		# return [x.labeling for x in sortedBeams]
 
 def applyRNAModel(parentBeam, childBeam, lm, cache, lmFactor, lenContext):
@@ -62,10 +61,10 @@ def applyRNAModel(parentBeam, childBeam, lm, cache, lmFactor, lenContext):
 			probs = cache[contextTup]
 
 		newChar = childBeam.labeling[-1]
-		probNewChar = np.log(probs[0][newChar])
+		probNewChar = probs[0][newChar]
 
-		probNewChar = lmFactor * probNewChar # probability of seeing k-mer
-		childBeam.prText = parentBeam.prText - probNewChar # probability of whole sequence # probNewChar is negative, so subtract
+		probNewChar = probNewChar ** lmFactor # probability of seeing k-mer
+		childBeam.prText = parentBeam.prText * probNewChar # probability of whole sequence
 		childBeam.lmApplied = True # only apply LM once per beam entry
 
 def convertToSequence(beam, classes):
@@ -91,8 +90,8 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 	last = BeamState()
 	labeling = ()
 	last.entries[labeling] = BeamEntry()
-	last.entries[labeling].prBlank = 0 # Start from 0 since we are summing log probs
-	last.entries[labeling].prTotal = 0 # Start from 0 since we are summing log probs
+	last.entries[labeling].prBlank = 1
+	last.entries[labeling].prTotal = 1
 
 	# go over all time-steps
 	for t in range(maxT):
@@ -122,25 +121,20 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 				# last char gets merged and therefore does not change the 
 				# labeling, so we need to include the probability of a repeated
 				# last char in the probability of the labeling)
-				prNonBlank = last.entries[labeling].prNonBlank - np.log(mat[t, labeling[-1]]) # log prob is negative so subtract
+				prNonBlank = last.entries[labeling].prNonBlank * mat[t, labeling[-1]]
 
 			# probability of paths ending with a blank
 			# this is computed for same logic as repeated last char
-			prBlank = (last.entries[labeling].prTotal) - np.log(mat[t, blankIdx]) # log prob is negative so subtract
-
-			# TODO: What happens if the prob is 0? log of 0 doesn't compute
+			prBlank = (last.entries[labeling].prTotal) * mat[t, blankIdx]
 
 			# add beam at current time-step if needed
 			addBeam(curr, labeling)
 
 			# fill in data
 			curr.entries[labeling].labeling = labeling
-			# curr.entries[labeling].prNonBlank += prNonBlank
-			curr.entries[labeling].prNonBlank = np.logaddexp(curr.entries[labeling].prNonBlank, prNonBlank) # TODO: negative prob?
-			# curr.entries[labeling].prBlank += prBlank
-			curr.entries[labeling].prBlank = np.logaddexp(curr.entries[labeling].prBlank, prBlank) # TODO: negative prob?
-			# curr.entries[labeling].prTotal += prBlank + prNonBlank
-			curr.entries[labeling].prTotal = np.logaddexp(curr.entries[labeling].prTotal, np.logaddexp(prBlank, prNonBlank)) # TODO: negative prob?
+			curr.entries[labeling].prNonBlank += prNonBlank
+			curr.entries[labeling].prBlank += prBlank
+			curr.entries[labeling].prTotal += prBlank + prNonBlank
 			curr.entries[labeling].prText = last.entries[labeling].prText # beam-labeling not changed, therefore also LM score unchanged from
 			curr.entries[labeling].lmApplied = True # LM already applied at previous time-step for this beam-labeling
 			curr.entries[labeling].indices = last.entries[labeling].indices
@@ -164,22 +158,20 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 					# in a beam with duplicated char at the end if the previous
 					# char was a blank (otherwise the repeated char would get
 					# merged, as above), so we multiply by the blank probability
-					prNonBlank = last.entries[labeling].prBlank - np.log(mat[t, c])
+					prNonBlank = mat[t, c] * last.entries[labeling].prBlank
 				else:
 					# we can extend a beam with a different char regardless of
 					# whether the previous char was a blank, so we multiply
 					# by the total probability
-					prNonBlank = last.entries[labeling].prTotal - np.log(mat[t, c])
+					prNonBlank = mat[t, c] * last.entries[labeling].prTotal
 
 				# add beam at current time-step if needed
 				addBeam(curr, newLabeling)
 				
 				# fill in data
 				curr.entries[newLabeling].labeling = newLabeling
-				# curr.entries[newLabeling].prNonBlank += prNonBlank
-				curr.entries[labeling].prNonBlank = np.logaddexp(curr.entries[labeling].prNonBlank, prNonBlank) # TODO: negative prob?
-				# curr.entries[newLabeling].prTotal += prNonBlank
-				curr.entries[labeling].prTotal = np.logaddexp(curr.entries[labeling].prTotal, prNonBlank) # TODO: negative prob?
+				curr.entries[newLabeling].prNonBlank += prNonBlank
+				curr.entries[newLabeling].prTotal += prNonBlank
 				curr.entries[newLabeling].indices = newIndices
 				
 				# apply LM

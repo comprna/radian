@@ -58,7 +58,6 @@ def main():
 
     # Global decoding
 
-    print("\n\n\nGLOBAL DECODING\n\n\n")
     pred, _ = ctcBeamSearch(global_softmaxes[i],
                             classes,
                             r_model,
@@ -70,10 +69,7 @@ def main():
 
     # Local decoding
 
-    print("\n\n\nLOCAL DECODING\n\n\n")
     for i, softmax in enumerate(local_softmaxes[i]):
-        print(f"\n\nLocal decoding {i}")
-
         pred, _ = ctcBeamSearch(softmax,
                                 classes,
                                 r_model,
