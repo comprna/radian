@@ -193,6 +193,15 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 	# sort by probability
 	bestBeam = last.sort()
 
+	# print out top 30 beams and their probabilities
+	for i, beam in enumerate(bestBeam[0]):
+		print(beam)
+		print(last.entries[beam].prTotal)
+		print(np.log(last.entries[beam].prTotal))
+
+		if i == 6:
+			break
+
 	# # is the GT one of the possible beams??
 	# gt_tup = ()
 	# for c in gt:

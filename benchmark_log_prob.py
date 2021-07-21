@@ -8,7 +8,8 @@ import numpy as np
 
 from beam_search_decoder import ctcBeamSearch
 from easy_assembler import simple_assembly, index2base
-from utilities import setup_local
+from rna_model import get_rna_prediction_model
+from utilities import get_config, setup_local
 
 def main():
     # Run locally or on gadi
@@ -50,14 +51,51 @@ def main():
     with open(gs_file, "rb") as f:
         global_softmaxes = np.load(f, allow_pickle=True)
 
-    # Decode  first read in heart dataset without RNA model
+    # Set up RNA model
 
-    r_model= None
+    r_config_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/global/all_val/copied_files/tmp/r-config-37.yaml'
+    r_config = get_config(r_config_file)
+    r_model_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/global/all_val/copied_files/tmp/r-train-37-model-03.h5'
+    r_model = get_rna_prediction_model(r_model_file, r_config)
+
+    # Decode  first read in heart dataset WITHOUT RNA model
+
+    print("WITHOUT RNA Model\n\n")
     classes = 'ACGT'
     i = 0
 
     # Global decoding
 
+    print("GLOBAL\n\n")
+    pred, _ = ctcBeamSearch(global_softmaxes[i],
+                            classes,
+                            None,
+                            6,
+                            0.5,
+                            0.9,
+                            8,
+                            None)
+
+    # Local decoding
+
+    print("LOCAL\n\n")
+    for j, softmax in enumerate(local_softmaxes[i]):
+        print(f"\nWindow {j}")
+        pred, _ = ctcBeamSearch(softmax,
+                                classes,
+                                None,
+                                6,
+                                0.5,
+                                0.9,
+                                8,
+                                None)
+    
+    # Now decode first read in heart dataset WITH RNA model
+    print("\n\nWITH RNA MODEL\n\n")
+
+    # Global decoding
+
+    print("GLOBAL\n\n")
     pred, _ = ctcBeamSearch(global_softmaxes[i],
                             classes,
                             r_model,
@@ -69,7 +107,9 @@ def main():
 
     # Local decoding
 
-    for i, softmax in enumerate(local_softmaxes[i]):
+    print("LOCAL\n\n")
+    for j, softmax in enumerate(local_softmaxes[i]):
+        print(f"\nWindow {j}")
         pred, _ = ctcBeamSearch(softmax,
                                 classes,
                                 r_model,
