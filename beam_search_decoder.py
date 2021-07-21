@@ -103,6 +103,10 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 		bestLabelings = last.sort()[0][0:beamWidth]
 		# bestLabelings = last.sort()[0:beamWidth]
 
+		for labeling in bestLabelings:
+			print(labeling)
+			print(last.entries[labeling].prTotal)
+
 		dummy_var = 0
 		# Print out top 30 seqs (from bestLabelings) & their probs (from last)
 
@@ -122,10 +126,12 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 				# labeling, so we need to include the probability of a repeated
 				# last char in the probability of the labeling)
 				prNonBlank = last.entries[labeling].prNonBlank + np.log(mat[t, labeling[-1]])
+				print(prNonBlank)
 
 			# probability of paths ending with a blank
 			# this is computed for same logic as repeated last char
 			prBlank = last.entries[labeling].prTotal + np.log(mat[t, blankIdx])
+			print(prBlank)
 
 			# TODO: What happens if the prob is 0? log of 0 doesn't compute
 
@@ -134,15 +140,19 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 
 			# fill in data
 			curr.entries[labeling].labeling = labeling
-			# curr.entries[labeling].prNonBlank += prNonBlank
-			curr.entries[labeling].prNonBlank = np.logaddexp(curr.entries[labeling].prNonBlank, prNonBlank) # TODO: negative prob?
-			# curr.entries[labeling].prBlank += prBlank
-			curr.entries[labeling].prBlank = np.logaddexp(curr.entries[labeling].prBlank, prBlank) # TODO: negative prob?
-			# curr.entries[labeling].prTotal += prBlank + prNonBlank
-			curr.entries[labeling].prTotal = np.logaddexp(curr.entries[labeling].prTotal, np.logaddexp(prBlank, prNonBlank)) # TODO: negative prob?
+			curr.entries[labeling].prNonBlank += prNonBlank
+			# curr.entries[labeling].prNonBlank = np.logaddexp(curr.entries[labeling].prNonBlank, prNonBlank) # TODO: negative prob?
+			curr.entries[labeling].prBlank += prBlank
+			# curr.entries[labeling].prBlank = np.logaddexp(curr.entries[labeling].prBlank, prBlank) # TODO: negative prob?
+			curr.entries[labeling].prTotal += prBlank + prNonBlank
+			# curr.entries[labeling].prTotal = np.logaddexp(curr.entries[labeling].prTotal, np.logaddexp(prBlank, prNonBlank)) # TODO: negative prob?
 			curr.entries[labeling].prText = last.entries[labeling].prText # beam-labeling not changed, therefore also LM score unchanged from
 			curr.entries[labeling].lmApplied = True # LM already applied at previous time-step for this beam-labeling
 			curr.entries[labeling].indices = last.entries[labeling].indices
+
+			print(curr.entries[labeling].prNonBlank)
+			print(curr.entries[labeling].prBlank)
+			print(curr.entries[labeling].prTotal)
 
 			# EXTEND BEAM
 
@@ -175,12 +185,16 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 				
 				# fill in data
 				curr.entries[newLabeling].labeling = newLabeling
-				# curr.entries[newLabeling].prNonBlank += prNonBlank
-				curr.entries[newLabeling].prNonBlank = np.logaddexp(curr.entries[newLabeling].prNonBlank, prNonBlank)
-				# curr.entries[newLabeling].prTotal += prNonBlank
-				curr.entries[newLabeling].prTotal = np.logaddexp(curr.entries[newLabeling].prTotal, prNonBlank)
+				curr.entries[newLabeling].prNonBlank += prNonBlank
+				# curr.entries[newLabeling].prNonBlank = np.logaddexp(curr.entries[newLabeling].prNonBlank, prNonBlank)
+				curr.entries[newLabeling].prTotal += prNonBlank
+				# curr.entries[newLabeling].prTotal = np.logaddexp(curr.entries[newLabeling].prTotal, prNonBlank)
 				curr.entries[newLabeling].indices = newIndices
 				
+				print(curr.entries[labeling].prNonBlank)
+				print(curr.entries[labeling].prBlank)
+				print(curr.entries[labeling].prTotal)
+
 				# apply LM
 				tEntropy = entropy(mat[t])
 				if tEntropy > entropyThresh:
