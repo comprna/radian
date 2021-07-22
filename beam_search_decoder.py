@@ -42,8 +42,8 @@ class BeamState:
 		"return beam-labelings, sorted by probability (when dealing with logs, larger probability (i.e. less negative) is ranked higher)"
 		beams = [v for (_, v) in self.entries.items()]
 		sortedBeams = sorted(beams, reverse=True, key=lambda x: x.prTotal + x.prText if x.prText > float("-inf") else x.prTotal) # prText only has a value if we are using the RNA model
-		for x in sortedBeams:
-			print(f"{x.labeling}\t{np.exp(x.prTotal)}\t{np.exp(x.prText)}")
+		# for x in sortedBeams:
+		# 	print(f"{x.labeling}\t{np.exp(x.prTotal)}\t{np.exp(x.prText)}")
 		return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams]
 		# return [x.labeling for x in sortedBeams], [x.indices for x in sortedBeams], [x.prTotal + x.prText for x in sortedBeams]
 		# return [x.labeling for x in sortedBeams]
@@ -111,9 +111,9 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 		bestLabelings = last.sort()[0][0:beamWidth]
 		# bestLabelings = last.sort()[0:beamWidth]
 
-		for labeling in bestLabelings:
-			print(labeling)
-			print(last.entries[labeling].prTotal)
+		# for labeling in bestLabelings:
+		# 	print(labeling)
+		# 	print(last.entries[labeling].prTotal)
 
 		# go over best beams
 		for labeling in bestLabelings:
@@ -156,9 +156,9 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 			curr.entries[labeling].lmApplied = True # LM already applied at previous time-step for this beam-labeling
 			curr.entries[labeling].indices = last.entries[labeling].indices
 
-			print(np.exp(curr.entries[labeling].prNonBlank))
-			print(np.exp(curr.entries[labeling].prBlank))
-			print(np.exp(curr.entries[labeling].prTotal))
+			# print(np.exp(curr.entries[labeling].prNonBlank))
+			# print(np.exp(curr.entries[labeling].prBlank))
+			# print(np.exp(curr.entries[labeling].prTotal))
 
 			# EXTEND BEAM
 
@@ -178,11 +178,10 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 					# we can only extend a beam with the same char and it result
 					# in a beam with duplicated char at the end if the previous
 					# char was a blank (otherwise the repeated char would get
-					# merged, as above), so we multiply by the blank probability
-					if last.entries[labeling].prBlank == float("-inf"):
-						prNonBlank = np.log(mat[t, c])
-					else:
-						prNonBlank = last.entries[labeling].prBlank + np.log(mat[t, c])
+					# merged, as above), so we multiply by the blank probability.
+					# if prBlank is 0 (i.e. -inf in log-space) then we cannot 
+					# extend the beam with a dupe char, so prNonBlank is 0 (i.e. -inf).
+					prNonBlank = last.entries[labeling].prBlank + np.log(mat[t, c])
 				else:
 					# we can extend a beam with a different char regardless of
 					# whether the previous char was a blank, so we multiply
@@ -192,7 +191,7 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 					else:
 						prNonBlank = last.entries[labeling].prTotal + np.log(mat[t, c])
 
-				print(np.exp(prNonBlank))
+				# print(np.exp(prNonBlank))
 
 				# add beam at current time-step if needed
 				addBeam(curr, newLabeling)
@@ -203,8 +202,8 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 				curr.entries[newLabeling].prTotal = np.logaddexp(curr.entries[newLabeling].prTotal, prNonBlank)
 				curr.entries[newLabeling].indices = newIndices
 
-				print(np.exp(curr.entries[newLabeling].prNonBlank))
-				print(np.exp(curr.entries[newLabeling].prTotal))
+				# print(np.exp(curr.entries[newLabeling].prNonBlank))
+				# print(np.exp(curr.entries[newLabeling].prTotal))
 
 				# apply LM
 				tEntropy = entropy(mat[t])
@@ -228,8 +227,8 @@ def ctcBeamSearch(mat, classes, lm, beamWidth, lmFactor, entropyThresh, lenConte
 	# print out top 30 beams and their probabilities
 	for i, beam in enumerate(bestBeam[0]):
 		print(beam)
+		print(np.exp(last.entries[beam].prTotal))
 		print(last.entries[beam].prTotal)
-		print(np.log(last.entries[beam].prTotal))
 
 		if i == 6:
 			break
