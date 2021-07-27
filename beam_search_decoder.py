@@ -27,6 +27,7 @@ class BeamEntry:
     pr_text: float = log(1)  # LM score
     lm_applied: bool = False  # flag if LM was already applied to this beam
     labeling: tuple = ()  # beam-labeling
+    indices: tuple = ()  # indices of each character in beam
 
 
 class BeamList:
@@ -45,7 +46,7 @@ class BeamList:
         """Return beam-labelings, sorted by probability."""
         beams = self.entries.values()
         sorted_beams = sorted(beams, reverse=True, key=lambda x: x.pr_total + x.pr_text)
-        return [x.labeling for x in sorted_beams]
+        return [x.labeling for x in sorted_beams], [x.indices for x in sorted_beams]
 
 def apply_rna_model(
     parent_beam: BeamEntry,
@@ -72,7 +73,6 @@ def apply_rna_model(
         probs = cache[context]
 
     new_char = child_beam.labeling[-1]
-    # TODO: Why probs[0]???
     child_beam.pr_text = parent_beam.pr_text + factor * log(probs[0][new_char])  # probability of sequence
     child_beam.lm_applied = True  # only apply LM once per beam entry
 
@@ -121,10 +121,12 @@ def beam_search(
         curr = BeamList()
 
         # get beam-labelings of best beams
-        best_labelings = last.sort_labelings()[:beam_width]
+        best_labelings = last.sort_labelings()[0][:beam_width]
 
         # go over best beams
         for labeling in best_labelings:
+
+            # COPY BEAM: https://towardsdatascience.com/beam-search-decoding-in-ctc-trained-neural-networks-5a889a3d85a7
 
             # probability of paths ending with a non-blank
             pr_non_blank = log(0)
@@ -144,16 +146,29 @@ def beam_search(
                                                            np.logaddexp(pr_blank, pr_non_blank))
             curr.entries[labeling].pr_text = last.entries[labeling].pr_text
             curr.entries[labeling].lm_applied = True  # LM already applied at previous time-step for this beam-labeling
+            curr.entries[labeling].indices = last.entries[labeling].indices
+
+            # EXTEND BEAM
 
             # extend current beam-labeling
             for c in range(max_C - 1):
                 # add new char to current beam-labeling
                 new_labeling = labeling + (c,)
 
+                # keep track of matrix index that new char is located at
+                new_indices = curr.entries[labeling].indices + (t,)
+
                 # if new labeling contains duplicate char at the end, only consider paths ending with a blank
                 if labeling and labeling[-1] == c:
+                    # we can only extend a beam with the same char and it result
+					# in a beam with duplicated char at the end if the previous
+					# char was a blank (otherwise the repeated char would get
+					# merged, as above), so we multiply by the blank probability
                     pr_non_blank = last.entries[labeling].pr_blank + log(mat[t, c])
                 else:
+                    # we can extend a beam with a different char regardless of
+					# whether the previous char was a blank, so we multiply
+					# by the total probability
                     pr_non_blank = last.entries[labeling].pr_total + log(mat[t, c])
 
                 # fill in data
@@ -161,6 +176,7 @@ def beam_search(
                 curr.entries[new_labeling].pr_non_blank = np.logaddexp(curr.entries[new_labeling].pr_non_blank,
                                                                        pr_non_blank)
                 curr.entries[new_labeling].pr_total = np.logaddexp(curr.entries[new_labeling].pr_total, pr_non_blank)
+                curr.entries[new_labeling].indices = new_indices
 
                 # apply LM
                 t_entropy = entropy(mat[t])
@@ -178,8 +194,8 @@ def beam_search(
     # normalise LM scores according to beam-labeling-length
     last.normalize()
 
-    # for debugging
-    best_labelings = last.sort_labelings()
+    # for testing
+    best_labelings = last.sort_labelings()[0]
     for i, beam in enumerate(best_labelings):
             print(beam)
             print(np.exp(last.entries[beam].pr_total))
@@ -189,8 +205,10 @@ def beam_search(
                 break
 
     # sort by probability
-    best_labeling = last.sort_labelings()[0]  # get most probable labeling
+    sorted_labels = last.sort_labelings()
+    best_labeling = sorted_labels[0][0]  # get most probable labeling
+    indices = sorted_labels[1][0]
 
-    # map label string to char string
-    res = ''.join([bases[label] for label in best_labeling])
-    return res
+    # map label string to sequence of bases
+    best_seq = ''.join([bases[label] for label in best_labeling])
+    return best_seq, indices
