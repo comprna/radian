@@ -1,13 +1,8 @@
 import json
-import time
 
-from Bio import pairwise2
-from Bio.pairwise2 import format_alignment
-import matplotlib.pyplot as plt
 import numpy as np
 
-from beam_search_decoder import ctcBeamSearch
-from easy_assembler import simple_assembly, index2base
+from beam_search_decoder import beam_search
 from rna_model import get_rna_prediction_model
 from utilities import get_config, setup_local
 
@@ -58,37 +53,42 @@ def main():
     r_model_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/global/all_val/copied_files/tmp/r-train-37-model-03.h5'
     r_model = get_rna_prediction_model(r_model_file, r_config)
 
+    # Decoding params
+
+    beam_width = 6
+    factor = 0.5
+    threshold = 0.9
+    len_context = 8
+
     # Decode  first read in heart dataset WITHOUT RNA model
 
     print("WITHOUT RNA Model\n\n")
-    classes = 'ACGT'
+    bases = 'ACGT'
     i = 0
 
     # Global decoding
 
     print("GLOBAL\n\n")
-    pred, _ = ctcBeamSearch(global_softmaxes[i],
-                            classes,
-                            None,
-                            6,
-                            0.5,
-                            0.9,
-                            8,
-                            None)
+    pred, _ = beam_search(global_softmaxes[i],
+                          bases,
+                          beam_width,
+                          None,
+                          factor,
+                          threshold,
+                          len_context)
 
     # Local decoding
 
     print("LOCAL\n\n")
     for j, softmax in enumerate(local_softmaxes[i]):
         print(f"\nWindow {j}")
-        pred, _ = ctcBeamSearch(softmax,
-                                classes,
-                                None,
-                                6,
-                                0.5,
-                                0.9,
-                                8,
-                                None)
+        pred, _ = beam_search(softmax,
+                              bases,
+                              beam_width,
+                              None,
+                              factor,
+                              threshold,
+                              len_context)
     
     # Now decode first read in heart dataset WITH RNA model
     print("\n\nWITH RNA MODEL\n\n")
@@ -96,28 +96,26 @@ def main():
     # Global decoding
 
     print("GLOBAL\n\n")
-    pred, _ = ctcBeamSearch(global_softmaxes[i],
-                            classes,
-                            r_model,
-                            6,
-                            0.5,
-                            0.9,
-                            8,
-                            None)
+    pred, _ = beam_search(global_softmaxes[i],
+                          bases,
+                          beam_width,
+                          r_model,
+                          factor,
+                          threshold,
+                          len_context)
 
     # Local decoding
 
     print("LOCAL\n\n")
     for j, softmax in enumerate(local_softmaxes[i]):
         print(f"\nWindow {j}")
-        pred, _ = ctcBeamSearch(softmax,
-                                classes,
-                                r_model,
-                                6,
-                                0.5,
-                                0.9,
-                                8,
-                                None)
+        pred, _ = beam_search(softmax,
+                              bases,
+                              beam_width,
+                              r_model,
+                              factor,
+                              threshold,
+                              len_context)
 
 
 if __name__ == "__main__":
