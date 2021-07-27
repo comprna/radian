@@ -211,4 +211,6 @@ def beam_search(
 
     # map label string to sequence of bases
     best_seq = ''.join([bases[label] for label in best_labeling])
-    return best_seq, indices
+
+    # return best_seq, indices
+    return sorted_labels[0][:beam_width]
