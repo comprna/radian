@@ -178,16 +178,18 @@ def beam_search(
     # normalise LM scores according to beam-labeling-length
     last.normalize()
 
-    # sort by probability
-    best_labeling = last.sort_labelings()[0]  # get most probable labeling
-
-    for i, beam in enumerate(best_labeling):
+    # for debugging
+    best_labelings = last.sort_labelings()
+    for i, beam in enumerate(best_labelings):
             print(beam)
             print(np.exp(last.entries[beam].pr_total))
             print(last.entries[beam].pr_total)
 
             if i == 6:
                 break
+
+    # sort by probability
+    best_labeling = last.sort_labelings()[0]  # get most probable labeling
 
     # map label string to char string
     res = ''.join([bases[label] for label in best_labeling])
