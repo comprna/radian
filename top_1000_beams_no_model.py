@@ -75,7 +75,7 @@ def main():
             for k, beam in enumerate(top_beams):
                 beam_seq = ''.join([bases[label] for label in beam])
                 ed = levenshtein.normalized_distance(global_gts[read_ids[i]], beam_seq)
-                print(f"{read_ids[i]}\t{k}\t{global_gts[read_ids[i]]}\t{beam_seq}\t{ed}")
+                f.write(f"{read_ids[i]}\t{k}\t{global_gts[read_ids[i]]}\t{beam_seq}\t{ed}")
 
 
 
