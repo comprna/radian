@@ -12,7 +12,7 @@ def main():
 
     # setup_local()
     # base_dir = '/mnt/sda/rna-basecaller/experiments/with-rna-model/global/all_val/copied_files'
-    base_dir = '/g/data/xc17/Eyras/alex/working/with-rna-model/global/all_val'
+    base_dir = '/g/data/xc17/Eyras/alex/working/with-rna-model/global/all_val/copied_files'
 
     # Load config
 
