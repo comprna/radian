@@ -1,7 +1,4 @@
-from ast import literal_eval as make_tuple
 import glob
-
-from textdistance import levenshtein
 
 def main():
     tsv_dir = "/mnt/sda/rna-basecaller/experiments/with-rna-model/global/all_val/investigate_softmax"
