@@ -1,0 +1,144 @@
+Read: 0017d72c-3529-47c7-a619-7e48326db0de
+Beams [631, 830, 848] have lowest ED of 0.344
+Beams [93, 95, 135, 139, 273, 277, 535, 544, 768, 770, 840, 849, 850, 859, 867, 868, 871, 893, 980, 996] have highest ED of 0.358
+The top beam has ED 0.351 which is 579th best
+
+
+Read: 000e15d0-63a9-4e93-b25d-cf920ca8112b
+Beams [331, 359, 514, 548, 558, 592, 614, 653] have lowest ED of 0.252
+Beams [112, 119, 212, 236, 237, 256, 265, 289, 431, 469, 525, 565, 780, 839, 841, 888, 894, 901, 928, 935, 951, 959, 993] have highest ED of 0.278
+The top beam has ED 0.265 which is 243th best
+
+
+Read: 000ecea3-7979-4d4d-82ff-ee46826fdcdb
+Beams [685, 694, 701, 711, 712, 721, 740, 752, 755, 917, 921, 934] have lowest ED of 0.351
+Beams [206, 212, 214, 219, 220, 227, 241, 246, 252, 290, 301, 303, 306, 315, 316, 323, 327, 329, 331, 339, 342, 345, 347, 348, 351, 355, 356, 357, 360, 367, 393, 404, 406, 408, 413, 418, 420, 422, 428, 429, 430, 439, 490, 494, 498, 504, 506, 518, 533, 543, 548, 610, 612, 618, 619, 620, 623, 626, 630, 638, 639, 642, 643, 644, 647, 659, 661, 664, 670, 671, 676, 677, 681, 684, 686, 688, 690, 695, 696, 697, 699, 700, 703, 705, 707, 709, 710, 715, 716, 719, 727, 749, 756, 757, 759, 760, 769, 770, 777, 778, 791, 794, 802, 804, 810, 812, 815, 819, 821, 822, 823, 824, 825, 827, 833, 834, 835, 836, 837, 839, 841, 842, 843, 845, 848, 849, 851, 852, 853, 856, 857, 859, 861, 864, 867, 869, 871, 876, 881, 883, 885, 886, 888, 891, 893, 896, 897, 902, 903, 930, 972, 981, 986, 996, 999] have highest ED of 0.358
+The top beam has ED 0.354 which is 385th best
+
+
+Read: 00165f66-68ef-41a3-a2d8-31171d1d2bb1
+Beams [199, 336, 337, 341, 343, 471, 785] have lowest ED of 0.210
+Beams [218, 219, 500, 501, 808, 921, 923, 961, 962] have highest ED of 0.234
+The top beam has ED 0.221 which is 441th best
+
+
+Read: 00097d95-f60f-4dd2-9cbf-e4ae613b8217
+Beams [247, 273, 374, 394] have lowest ED of 0.055
+Beams [533, 545, 563, 652, 661, 681, 782, 797, 834] have highest ED of 0.077
+The top beam has ED 0.061 which is 200th best
+
+
+Read: 000c25e6-d505-4bcb-bddf-402f43367d0d
+Beams [32, 33, 56, 59, 62, 66, 218, 219, 274, 277, 279, 281, 311, 317, 319, 327, 353, 360, 367, 376, 400, 408, 414, 420, 422, 428, 645, 656, 657, 667, 879, 887, 952, 955] have lowest ED of 0.272
+Beams [390, 396, 403, 411, 473, 481, 489, 502, 728, 733, 870, 881, 908, 914] have highest ED of 0.291
+The top beam has ED 0.276 which is 161th best
+
+
+Read: 00127dda-826c-4999-9890-accb4dd59784
+Beams [592, 900, 917, 934] have lowest ED of 0.150
+Beams [671, 683, 713, 722] have highest ED of 0.171
+The top beam has ED 0.165 which is 724th best
+
+
+Read: 00095727-e369-44d4-8bc0-3a78640ee963
+Beams [27, 33, 128, 139, 783] have lowest ED of 0.304
+Beams [425, 495, 577, 636, 769, 857, 895] have highest ED of 0.325
+The top beam has ED 0.310 which is 301th best
+
+
+Read: 000fae2a-7ff2-443e-81f3-dde25ce9aa2a
+Beams [112, 156, 204, 255, 289, 290, 293, 307, 331, 355, 364, 400, 409, 423, 433, 450, 465, 502, 508, 517, 562, 563, 623, 755, 756, 778, 782, 789, 799] have lowest ED of 0.422
+Beams [468, 566, 634, 643, 644, 653, 684, 766, 863, 943, 974, 975, 990] have highest ED of 0.428
+The top beam has ED 0.425 which is 159th best
+
+
+Read: 0018cbae-ecfe-4c34-b5db-6924e5215bb1
+Beams [752, 768, 777] have lowest ED of 0.168
+Beams [46, 74, 107, 165, 172, 198, 259, 279, 334, 350, 826, 865, 881, 903, 912, 919, 930, 932, 943, 950, 976] have highest ED of 0.181
+The top beam has ED 0.174 which is 703th best
+
+
+Read: 001098f1-f446-4aea-aa66-5a0d88ae377e
+Beams [407, 409, 442, 474, 475, 486, 489, 491, 495, 498, 500, 501, 513, 515, 516, 519, 520, 523, 525, 539, 540, 543, 545, 550, 552, 558, 559, 560, 568, 570, 571, 574, 577, 578, 588, 590, 692, 693, 737, 762, 763, 768, 772, 776, 780, 785, 824, 825, 831, 836, 843, 846, 849, 852, 857, 858, 860, 915, 935, 936, 944, 947, 949, 953, 956, 958, 959, 971, 973, 974, 977, 978, 981, 983] have lowest ED of 0.273
+Beams [164, 165, 188, 189, 208, 211, 566, 567, 601, 602, 615, 618, 777, 779, 992, 993, 995] have highest ED of 0.280
+The top beam has ED 0.277 which is 800th best
+
+
+Read: 000d91c3-782e-423f-94b1-50b15e34251c
+Beams [720, 723, 765, 768, 775, 778] have lowest ED of 0.311
+Beams [570, 990] have highest ED of 0.324
+The top beam has ED 0.317 which is 581th best
+
+
+Read: 0010c7a2-1c12-40c1-a1a2-e105b4b333cb
+Beams [82, 350, 906] have lowest ED of 0.090
+Beams [535, 544, 545, 670, 677, 680] have highest ED of 0.106
+The top beam has ED 0.101 which is 456th best
+
+
+Read: 0017b3ed-76db-493e-ad5c-8dbf285927cc
+Beams [317, 323, 326, 328, 374, 376, 379, 383, 399, 400, 411, 415, 609, 610, 612, 614, 637, 638, 641, 644, 653, 655, 657, 662, 684, 686, 689] have lowest ED of 0.153
+Beams [707, 712, 715, 719, 726, 728, 730, 731, 790, 792, 794, 796, 890, 894, 897, 898, 901, 903, 905, 906, 932, 935, 942, 944, 949, 950, 951, 952, 955, 957, 960, 961] have highest ED of 0.176
+The top beam has ED 0.161 which is 319th best
+
+
+Read: 000bccee-eeb9-4a0d-a427-465ea688ae23
+Beams [431, 432, 501, 502, 509, 510, 583, 585, 587, 589] have lowest ED of 0.182
+Beams [224, 225, 359, 362, 863, 864] have highest ED of 0.201
+The top beam has ED 0.191 which is 630th best
+
+
+Read: 000e47b2-1105-4441-90b6-8e324954fbe8
+Beams [398, 400, 405, 408] have lowest ED of 0.277
+Beams [479, 482, 487, 491, 870, 875, 882, 887] have highest ED of 0.284
+The top beam has ED 0.280 which is 332th best
+
+
+Read: 00138e5d-1217-4d7a-9161-31462c5cc4d9
+Beams [251, 300, 301] have lowest ED of 0.281
+Beams [884] have highest ED of 0.301
+The top beam has ED 0.287 which is 462th best
+
+
+Read: 0007aa97-aab4-4132-b47c-0d825dcb9519
+Beams [806] have lowest ED of 0.147
+Beams [926, 943] have highest ED of 0.176
+The top beam has ED 0.163 which is 255th best
+
+
+Read: 0017fa3c-b166-4d81-9b02-cac30ea33945
+Beams [97, 132, 195, 237, 306, 319, 564] have lowest ED of 0.308
+Beams [800, 819, 835, 857, 920, 939, 950, 954, 972, 985] have highest ED of 0.324
+The top beam has ED 0.312 which is 427th best
+
+
+Read: 0005d4a2-3701-47e4-b6f3-f07fbc4db563
+Beams [21, 118, 223, 249, 268, 399, 523, 633, 708, 745, 957] have lowest ED of 0.164
+Beams [654] have highest ED of 0.175
+The top beam has ED 0.167 which is 17th best
+
+
+Read: 001031e9-40fb-47b0-aaf3-5dac6fb09080
+Beams [280, 282, 446, 449, 511, 514] have lowest ED of 0.268
+Beams [142, 161, 176, 177, 276, 289, 439, 443, 500, 502, 584, 587, 691, 692, 744, 748, 749, 753, 941, 960, 975, 976] have highest ED of 0.281
+The top beam has ED 0.276 which is 674th best
+
+
+Read: 0015bf49-1980-4411-a3c9-6d05f32301a3
+Beams [86, 180, 186, 240, 255, 510, 535, 537, 656, 666, 759, 825, 845, 877, 918] have lowest ED of 0.234
+Beams [408] have highest ED of 0.254
+The top beam has ED 0.243 which is 833th best
+
+
+Read: 0015aab0-d932-472f-8880-2efdc3079754
+Beams [677, 754] have lowest ED of 0.232
+Beams [275, 308, 324, 330, 356, 624, 702, 703, 728, 733, 775, 776, 779, 786, 793, 797, 799, 860, 862, 868, 874, 892, 917, 924] have highest ED of 0.254
+The top beam has ED 0.241 which is 258th best
+
+
+Read: 0004e4d4-d036-4919-aeaa-7190bf04133e
+Beams [26, 34, 197, 205, 242, 334, 344, 368, 381, 523, 631, 634, 639, 646, 672, 704, 707, 744, 934, 941, 951, 959] have lowest ED of 0.277
+Beams [580, 598, 617, 684, 745, 750, 778, 791, 833, 849] have highest ED of 0.296
+The top beam has ED 0.283 which is 110th best
+
+
