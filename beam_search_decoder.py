@@ -42,11 +42,37 @@ class BeamList:
             labeling_len = len(self.entries[k].labeling)
             self.entries[k].pr_text = (1.0 / (labeling_len if labeling_len else 1.0)) * self.entries[k].pr_text
 
-    def sort_labelings(self) -> List[Tuple[int]]:
+    def sort_labelings(self, gt=None) -> List[Tuple[int]]:
         """Return beam-labelings, sorted by probability."""
         beams = self.entries.values()
+
         sorted_beams = sorted(beams, reverse=True, key=lambda x: x.pr_total + x.pr_text)
-        return [x.labeling for x in sorted_beams], [x.indices for x in sorted_beams]
+
+        # return [x.labeling for x in sorted_beams], [x.indices for x in sorted_beams]
+
+        # return [x.labeling for x in sorted_beams]
+
+        # Filter to retain beams that match GT (for testing)
+
+        if gt:
+            filtered_beams = []
+            for i, beam in enumerate(sorted_beams):
+                if len(beam.labeling) >= 5:
+                    if bytes(beam.labeling) in bytes(gt[:len(beam.labeling) + 5]) \
+                        or bytes(beam.labeling[1:]) in bytes(gt[:len(beam.labeling) + 5]) \
+                        or bytes(beam.labeling[2:]) in bytes(gt[:len(beam.labeling) + 5]) \
+                        or bytes(beam.labeling[3:]) in bytes(gt[:len(beam.labeling) + 5]):
+                        filtered_beams.append(beam)
+                else:
+                    filtered_beams.append(beam)
+
+            if len(filtered_beams) == 0:
+                print("No beams left that match GT")
+        else:
+            filtered_beams = sorted_beams
+
+        return [x.labeling for x in filtered_beams], [x.indices for x in sorted_beams]
+
 
 def apply_rna_model(
     parent_beam: BeamEntry,
@@ -84,7 +110,8 @@ def beam_search(
     lm: tf.keras.Model,
     factor: int,
     threshold: int,
-    len_context: int
+    len_context: int,
+    gt: tuple
 ) -> str:
     """Beam search decoder.
 
@@ -121,10 +148,13 @@ def beam_search(
         curr = BeamList()
 
         # get beam-labelings of best beams
-        best_labelings = last.sort_labelings()[0][:beam_width]
+        best_labelings = last.sort_labelings(gt)[0][:beam_width]
+        # best_labelings = last.sort_labelings(gt)[:beam_width]
 
         # go over best beams
         for labeling in best_labelings:
+
+            # print(labeling)
 
             # COPY BEAM: https://towardsdatascience.com/beam-search-decoding-in-ctc-trained-neural-networks-5a889a3d85a7
 
@@ -158,35 +188,40 @@ def beam_search(
                 # keep track of matrix index that new char is located at
                 new_indices = curr.entries[labeling].indices + (t,)
 
+                # testing: only extend beam if the new char has a non-zero
+                # probability
+                mat_t_c = mat[t, c]
+                # if mat_t_c > 0.01:
+
                 # if new labeling contains duplicate char at the end, only consider paths ending with a blank
                 if labeling and labeling[-1] == c:
                     # we can only extend a beam with the same char and it result
-					# in a beam with duplicated char at the end if the previous
-					# char was a blank (otherwise the repeated char would get
-					# merged, as above), so we multiply by the blank probability
+                    # in a beam with duplicated char at the end if the previous
+                    # char was a blank (otherwise the repeated char would get
+                    # merged, as above), so we multiply by the blank probability
                     pr_non_blank = last.entries[labeling].pr_blank + log(mat[t, c])
                 else:
                     # we can extend a beam with a different char regardless of
-					# whether the previous char was a blank, so we multiply
-					# by the total probability
+                    # whether the previous char was a blank, so we multiply
+                    # by the total probability
                     pr_non_blank = last.entries[labeling].pr_total + log(mat[t, c])
 
                 # fill in data
                 curr.entries[new_labeling].labeling = new_labeling
                 curr.entries[new_labeling].pr_non_blank = np.logaddexp(curr.entries[new_labeling].pr_non_blank,
-                                                                       pr_non_blank)
+                                                                    pr_non_blank)
                 curr.entries[new_labeling].pr_total = np.logaddexp(curr.entries[new_labeling].pr_total, pr_non_blank)
                 curr.entries[new_labeling].indices = new_indices
 
                 # apply LM
-                t_entropy = entropy(mat[t])
-                if t_entropy > threshold:
-                    apply_rna_model(curr.entries[labeling],
-                                    curr.entries[new_labeling],
-                                    lm,
-                                    cache,
-                                    factor,
-                                    len_context)
+                # t_entropy = entropy(mat[t])
+                # if t_entropy > threshold:
+                #     apply_rna_model(curr.entries[labeling],
+                #                     curr.entries[new_labeling],
+                #                     lm,
+                #                     cache,
+                #                     factor,
+                #                     len_context)
 
         # set new beam state
         last = curr
@@ -195,14 +230,14 @@ def beam_search(
     last.normalize()
 
     # for testing
-    best_labelings = last.sort_labelings()[0]
-    for i, beam in enumerate(best_labelings):
-            print(beam)
-            print(np.exp(last.entries[beam].pr_total))
-            print(last.entries[beam].pr_total)
+    # best_labelings = last.sort_labelings()[0]
+    # for i, beam in enumerate(best_labelings):
+    #     print(beam)
+    #     print(np.exp(last.entries[beam].pr_total))
+    #     print(last.entries[beam].pr_total)
 
-            if i == 6:
-                break
+    #     if i == 6:
+    #         break
 
     # sort by probability
     sorted_labels = last.sort_labelings()
@@ -212,5 +247,5 @@ def beam_search(
     # map label string to sequence of bases
     best_seq = ''.join([bases[label] for label in best_labeling])
 
-    # return best_seq, indices
-    return sorted_labels[0][:beam_width]
+    return best_seq, indices
+    # return sorted_labels[0][:beam_width]
