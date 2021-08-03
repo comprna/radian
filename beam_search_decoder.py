@@ -133,6 +133,9 @@ def beam_search(
             # in case of non-empty beam
             if labeling:
                 # probability of paths with repeated last char at the end
+                # TODO: Apply RNA model (context should exclude last char in beam)
+                orig_p = mat[t, labeling[-1]]
+                # trans_p = orig_p * rna_model(context) # Determine some way to combine (and apply a weighting???)
                 pr_non_blank = last.entries[labeling].pr_non_blank + log(mat[t, labeling[-1]])
 
             # probability of paths ending with a blank
