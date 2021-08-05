@@ -76,6 +76,34 @@ def apply_rna_model(
     child_beam.pr_text = parent_beam.pr_text + factor * log(probs[0][new_char])  # probability of sequence
     child_beam.lm_applied = True  # only apply LM once per beam entry
 
+def get_context(labeling, len_context, exclude_last=False):
+    # whether or not to include last char in beam as part of context
+    if exclude_last == True:
+        start_i = -(len_context+1)
+    else:
+        start_i = -len_context
+
+    # get context sequence
+    context = labeling[start_i:start_i + len_context]
+
+    # convert context into RNA model input format
+    context = tf.one_hot(list(context), N_BASES).numpy()
+    context = context.reshape(1, len_context, N_BASES)
+
+    return context
+
+def apply_rna_model_to_prob(pr_orig, char, context, model):
+    if model is None:
+        return pr_orig
+
+    # predict the prob of the char given the RNA model
+    pr_lm = log(model.predict(context)[0][char])
+
+    # combine the model probability with the original probability
+    mod_pr = (pr_lm + pr_orig) / 2
+
+    return mod_pr
+
 
 def beam_search(
     mat: np.ndarray,
@@ -133,10 +161,13 @@ def beam_search(
             # in case of non-empty beam
             if labeling:
                 # probability of paths with repeated last char at the end
-                # TODO: Apply RNA model (context should exclude last char in beam)
-                orig_p = mat[t, labeling[-1]]
-                # trans_p = orig_p * rna_model(context) # Determine some way to combine (and apply a weighting???)
-                pr_non_blank = last.entries[labeling].pr_non_blank + log(mat[t, labeling[-1]])
+                if len(labeling) >= len_context+1:
+                    context = get_context(labeling, len_context, exclude_last=True)
+                    char = labeling[-1]
+                    pr_char = log(mat[t, char])
+                    pr_mod = apply_rna_model_to_prob(pr_char, char, context, lm)
+                
+                pr_non_blank = last.entries[labeling].pr_non_blank + pr_mod
 
             # probability of paths ending with a blank
             pr_blank = last.entries[labeling].pr_total + log(mat[t, blank_idx])
@@ -161,18 +192,24 @@ def beam_search(
                 # keep track of matrix index that new char is located at
                 new_indices = curr.entries[labeling].indices + (t,)
 
+                # TODO: Clean up if statements
+                if len(labeling) >= len_context:
+                    context = get_context(labeling, len_context, exclude_last=False)
+                    pr_char = log(mat[t, c])
+                    pr_mod = apply_rna_model_to_prob(pr_char, c, context, lm)
+
                 # if new labeling contains duplicate char at the end, only consider paths ending with a blank
                 if labeling and labeling[-1] == c:
                     # we can only extend a beam with the same char and it result
 					# in a beam with duplicated char at the end if the previous
 					# char was a blank (otherwise the repeated char would get
 					# merged, as above), so we multiply by the blank probability
-                    pr_non_blank = last.entries[labeling].pr_blank + log(mat[t, c])
+                    pr_non_blank = last.entries[labeling].pr_blank + pr_mod
                 else:
                     # we can extend a beam with a different char regardless of
 					# whether the previous char was a blank, so we multiply
 					# by the total probability
-                    pr_non_blank = last.entries[labeling].pr_total + log(mat[t, c])
+                    pr_non_blank = last.entries[labeling].pr_total + pr_mod
 
                 # fill in data
                 curr.entries[new_labeling].labeling = new_labeling
@@ -182,14 +219,14 @@ def beam_search(
                 curr.entries[new_labeling].indices = new_indices
 
                 # apply LM
-                t_entropy = entropy(mat[t])
-                if t_entropy > threshold:
-                    apply_rna_model(curr.entries[labeling],
-                                    curr.entries[new_labeling],
-                                    lm,
-                                    cache,
-                                    factor,
-                                    len_context)
+                # t_entropy = entropy(mat[t])
+                # if t_entropy > threshold:
+                #     apply_rna_model(curr.entries[labeling],
+                #                     curr.entries[new_labeling],
+                #                     lm,
+                #                     cache,
+                #                     factor,
+                #                     len_context)
 
         # set new beam state
         last = curr
