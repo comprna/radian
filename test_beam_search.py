@@ -53,29 +53,51 @@ def main():
 
     classes = 'ACGT'
     eds = []
-    beam_width = 100
+    beam_width = 30
     lm_factor = 0.5
     entropy_threshold = 0.9
     len_context = 8
     for i, softmax in enumerate(global_softmaxes):
+        if i == 0:
+            continue
         # Predict without model
+        pred_a, _ = beam_search(softmax,
+                                classes,
+                                beam_width,
+                                None,
+                                None,
+                                entropy_threshold,
+                                len_context)
+        ed_a = levenshtein.normalized_distance(gts[read_ids[i]], pred_a)
+        print(ed_a)
 
         # Predict with model & no entropy threshold
-
-        # Predict with model & with entropy threshold
-
-
-        pred, _ = beam_search(softmax,
+        pred_b, _ = beam_search(softmax,
                                 classes,
                                 beam_width,
                                 r_model,
-                                lm_factor,
+                                None,
+                                0,
+                                len_context)
+        ed_b = levenshtein.normalized_distance(gts[read_ids[i]], pred_b)
+        print(ed_b)
+
+        # Predict with model & with entropy threshold
+        pred_c, _ = beam_search(softmax,
+                                classes,
+                                beam_width,
+                                r_model,
+                                None,
                                 entropy_threshold,
                                 len_context)
-        ed = levenshtein.normalized_distance(gts[read_ids[i]], pred)
-        eds.append(ed)
-        print(f"{read_ids[i]}\t{gts[read_ids[i]]}\t{pred}\t{ed}")
-    print(mean(eds))
+        ed_c = levenshtein.normalized_distance(gts[read_ids[i]], pred_c)
+        print(ed_c)
+
+        print("\n\n")
+        print(ed_a)
+        print(ed_b)
+        print(ed_c)
+        print("\n\n")
 
 
 if __name__ == "__main__":

@@ -77,34 +77,39 @@ def apply_rna_model_to_seq(
     child_beam.lm_applied = True  # only apply LM once per beam entry
 
 def get_context(labeling, len_context, exclude_last=False):
-    # whether or not to include last char in beam as part of context
+    # the context is the last portion of the beam
     if exclude_last == True:
-        start_i = -(len_context+1)
+        context = labeling[-(len_context+1):-1]
     else:
-        start_i = -len_context
-
-    # get context sequence
-    context = labeling[start_i:start_i + len_context]
-
-    # convert context into RNA model input format
-    context = tf.one_hot(list(context), N_BASES).numpy()
-    context = context.reshape(1, len_context, N_BASES)
+        context = labeling[-len_context:]
 
     return context
 
-def apply_rna_model(pr_orig, char, context, model):
+def apply_rna_model(pr_orig, char, context, model, cache):
     if model is None:
         return pr_orig
 
+    # update the cache if needed
+    if context not in cache:
+        # convert context into RNA model input format
+        context_arr = tf.one_hot(list(context), N_BASES).numpy()
+        context_arr = context_arr.reshape(1, len(context), N_BASES)
+
+        # predict the distribution of the next base given the context
+        pr_dist = model.predict(context_arr)[0]
+        cache[context] = pr_dist
+    else:
+        pr_dist = cache[context]
+
     # predict the prob of the char given the RNA model
-    pr_lm = log(model.predict(context)[0][char])
+    pr_lm = log(pr_dist[char])
 
     # combine the model probability with the original probability
     mod_pr = (pr_lm + pr_orig) / 2
 
     return mod_pr
 
-
+# TODO: Define class for decoding params
 def beam_search(
     mat: np.ndarray,
     bases: str,
@@ -151,6 +156,10 @@ def beam_search(
         # get beam-labelings of best beams
         best_labelings = last.sort_labelings()[0][:beam_width]
 
+        # get the entropy of the current timestep
+        dist = mat[t]
+        t_entropy = entropy(mat[t])
+
         # go over best beams
         for labeling in best_labelings:
 
@@ -165,9 +174,9 @@ def beam_search(
                 pr_char = log(mat[t, c])
 
                 # apply RNA model
-                if len(labeling) >= len_context+1:
+                if len(labeling) >= len_context+1 and t_entropy > threshold:
                     context = get_context(labeling, len_context, exclude_last=True)
-                    pr_char = apply_rna_model(pr_char, c, context, lm)
+                    pr_char = apply_rna_model(pr_char, c, context, lm, cache)
 
                 pr_non_blank = last.entries[labeling].pr_non_blank + pr_char
 
@@ -195,9 +204,10 @@ def beam_search(
                 new_indices = curr.entries[labeling].indices + (t,)
 
                 pr_char = log(mat[t, c])
-                if len(labeling) >= len_context:
+                # TODO: Allow len_context and threshold to be None (i.e. no lm applied)
+                if len(labeling) >= len_context and t_entropy > threshold:
                     context = get_context(labeling, len_context, exclude_last=False)
-                    pr_char = apply_rna_model(pr_char, c, context, lm)
+                    pr_char = apply_rna_model(pr_char, c, context, lm, cache)
 
                 # if new labeling contains duplicate char at the end, only consider paths ending with a blank
                 if labeling and labeling[-1] == c:
@@ -219,16 +229,6 @@ def beam_search(
     # normalise LM scores according to beam-labeling-length
     last.normalize()
 
-    # for testing
-    best_labelings = last.sort_labelings()[0]
-    for i, beam in enumerate(best_labelings):
-            print(beam)
-            print(np.exp(last.entries[beam].pr_total))
-            print(last.entries[beam].pr_total)
-
-            if i == 6:
-                break
-
     # sort by probability
     sorted_labels = last.sort_labelings()
     best_labeling = sorted_labels[0][0]  # get most probable labeling
@@ -237,5 +237,4 @@ def beam_search(
     # map label string to sequence of bases
     best_seq = ''.join([bases[label] for label in best_labeling])
 
-    # return best_seq, indices
-    return sorted_labels[0][:beam_width]
+    return best_seq, indices
