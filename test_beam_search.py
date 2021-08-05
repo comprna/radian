@@ -37,11 +37,23 @@ def main():
     with open(id_file, "rb") as f:
         read_ids = np.load(f, allow_pickle=True)
 
-    # Load ground truth sequences
+    # Load local ground truth sequences
+
+    gt_heart_file = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/val_test/5_WriteToNumpy/heart/heart_read_labels_all.npy"
+    with open(gt_heart_file, "rb") as f:
+        local_gts = np.load(f, allow_pickle=True)
+
+    # Load local softmaxes
+
+    softmaxes_file = "/mnt/sda/rna-basecaller/experiments/global-decoding/train-3-37/val_test/6_WriteSoftmaxes/softmaxes_per_read_heart.npy"
+    with open(softmaxes_file, "rb") as f:
+        local_softmaxes = np.load(f, allow_pickle=True)
+
+    # Load global ground truth sequences
 
     gt_file = f"{base_dir}/{dataset}_read_gt_labels.json"
     with open(gt_file, "r") as f:
-        gts = json.load(f)
+        global_gts = json.load(f)
 
     # Load global softmaxes
 
@@ -58,47 +70,36 @@ def main():
     r_threshold = 0.6
     len_context = 8
     cache = {}
-    for i, softmax in enumerate(global_softmaxes):
-        if i == 0:
-            continue
-        # Predict without model
-        pred_a, _ = beam_search(softmax,
-                                classes,
-                                beam_width,
-                                None,
-                                None,
-                                s_threshold,
-                                r_threshold,
-                                len_context,
-                                cache)
-        ed_a = levenshtein.normalized_distance(gts[read_ids[i]], pred_a)
-        print(ed_a)
+    for i, read in enumerate(local_softmaxes):
+        for j, softmax in enumerate(read):
+            # Ground truth
+            gt = local_gts[i][j]
 
-        # Predict with model & no thresholds
-        pred_b, _ = beam_search(softmax,
-                                classes,
-                                beam_width,
-                                r_model,
-                                None,
-                                float("-inf"),
-                                float("+inf"),
-                                len_context,
-                                cache)
-        ed_b = levenshtein.normalized_distance(gts[read_ids[i]], pred_b)
-        print(ed_b)
+            # Predict without model
+            pred_a, _ = beam_search(softmax,
+                                    classes,
+                                    beam_width,
+                                    None,
+                                    None,
+                                    s_threshold,
+                                    r_threshold,
+                                    len_context,
+                                    cache)
+            ed_a = levenshtein.normalized_distance(gt, pred_a)
+            print(ed_a)
 
-        # Predict with model & with thresholds
-        pred_c, _ = beam_search(softmax,
-                                classes,
-                                beam_width,
-                                r_model,
-                                None,
-                                s_threshold,
-                                r_threshold,
-                                len_context,
-                                cache)
-        ed_c = levenshtein.normalized_distance(gts[read_ids[i]], pred_c)
-        print(ed_c)
+            # Predict with model & with thresholds
+            pred_c, _ = beam_search(softmax,
+                                    classes,
+                                    beam_width,
+                                    r_model,
+                                    None,
+                                    s_threshold,
+                                    r_threshold,
+                                    len_context,
+                                    cache)
+            ed_c = levenshtein.normalized_distance(gt, pred_c)
+            print(ed_c)
 
 
 
