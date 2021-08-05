@@ -201,19 +201,11 @@ def beam_search(
 
                 # if new labeling contains duplicate char at the end, only consider paths ending with a blank
                 if labeling and labeling[-1] == c:
-                    # we can only extend a beam with the same char and it result
-					# in a beam with duplicated char at the end if the previous
-					# char was a blank (otherwise the repeated char would get
-					# merged, as above), so we multiply by the blank probability
                     pr_non_blank = last.entries[labeling].pr_blank + pr_char
                 else:
-                    # we can extend a beam with a different char regardless of
-					# whether the previous char was a blank, so we multiply
-					# by the total probability
                     pr_non_blank = last.entries[labeling].pr_total + pr_char
 
-                # TODO: Refactor
-                # fill in data
+                # fill in data TODO: Refactor
                 curr.entries[new_labeling].labeling = new_labeling
                 curr.entries[new_labeling].pr_non_blank = np.logaddexp(curr.entries[new_labeling].pr_non_blank,
                                                                        pr_non_blank)
