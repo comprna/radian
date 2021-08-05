@@ -57,6 +57,7 @@ def main():
     s_threshold = 0.6
     r_threshold = 0.6
     len_context = 8
+    cache = {}
     for i, softmax in enumerate(global_softmaxes):
         if i == 0:
             continue
@@ -68,7 +69,8 @@ def main():
                                 None,
                                 s_threshold,
                                 r_threshold,
-                                len_context)
+                                len_context,
+                                cache)
         ed_a = levenshtein.normalized_distance(gts[read_ids[i]], pred_a)
         print(ed_a)
 
@@ -80,7 +82,8 @@ def main():
                                 None,
                                 float("-inf"),
                                 float("+inf"),
-                                len_context)
+                                len_context,
+                                cache)
         ed_b = levenshtein.normalized_distance(gts[read_ids[i]], pred_b)
         print(ed_b)
 
@@ -92,7 +95,8 @@ def main():
                                 None,
                                 s_threshold,
                                 r_threshold,
-                                len_context)
+                                len_context,
+                                cache)
         ed_c = levenshtein.normalized_distance(gts[read_ids[i]], pred_c)
         print(ed_c)
 

@@ -121,7 +121,8 @@ def beam_search(
     factor: int,
     s_threshold: int,
     r_threshold: int,
-    len_context: int
+    len_context: int,
+    cache: dict,
 ) -> str:
     """Beam search decoder.
 
@@ -136,8 +137,6 @@ def beam_search(
     Returns:
         The decoded text.
     """
-
-    cache = {}
 
     blank_idx = len(bases)
     max_T, max_C = mat.shape
