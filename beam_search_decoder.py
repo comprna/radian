@@ -48,7 +48,7 @@ class BeamList:
         sorted_beams = sorted(beams, reverse=True, key=lambda x: x.pr_total + x.pr_text)
         return [x.labeling for x in sorted_beams], [x.indices for x in sorted_beams]
 
-def apply_rna_model(
+def apply_rna_model_to_seq(
     parent_beam: BeamEntry,
     child_beam: BeamEntry,
     lm: tf.keras.Model,
@@ -92,7 +92,7 @@ def get_context(labeling, len_context, exclude_last=False):
 
     return context
 
-def apply_rna_model_to_prob(pr_orig, char, context, model):
+def apply_rna_model(pr_orig, char, context, model):
     if model is None:
         return pr_orig
 
@@ -161,13 +161,15 @@ def beam_search(
             # in case of non-empty beam
             if labeling:
                 # probability of paths with repeated last char at the end
+                c = labeling[-1]
+                pr_char = log(mat[t, c])
+
+                # apply RNA model
                 if len(labeling) >= len_context+1:
                     context = get_context(labeling, len_context, exclude_last=True)
-                    char = labeling[-1]
-                    pr_char = log(mat[t, char])
-                    pr_mod = apply_rna_model_to_prob(pr_char, char, context, lm)
-                
-                pr_non_blank = last.entries[labeling].pr_non_blank + pr_mod
+                    pr_char = apply_rna_model(pr_char, c, context, lm)
+
+                pr_non_blank = last.entries[labeling].pr_non_blank + pr_char
 
             # probability of paths ending with a blank
             pr_blank = last.entries[labeling].pr_total + log(mat[t, blank_idx])
@@ -192,11 +194,10 @@ def beam_search(
                 # keep track of matrix index that new char is located at
                 new_indices = curr.entries[labeling].indices + (t,)
 
-                # TODO: Clean up if statements
+                pr_char = log(mat[t, c])
                 if len(labeling) >= len_context:
                     context = get_context(labeling, len_context, exclude_last=False)
-                    pr_char = log(mat[t, c])
-                    pr_mod = apply_rna_model_to_prob(pr_char, c, context, lm)
+                    pr_char = apply_rna_model(pr_char, c, context, lm)
 
                 # if new labeling contains duplicate char at the end, only consider paths ending with a blank
                 if labeling and labeling[-1] == c:
@@ -204,13 +205,14 @@ def beam_search(
 					# in a beam with duplicated char at the end if the previous
 					# char was a blank (otherwise the repeated char would get
 					# merged, as above), so we multiply by the blank probability
-                    pr_non_blank = last.entries[labeling].pr_blank + pr_mod
+                    pr_non_blank = last.entries[labeling].pr_blank + pr_char
                 else:
                     # we can extend a beam with a different char regardless of
 					# whether the previous char was a blank, so we multiply
 					# by the total probability
-                    pr_non_blank = last.entries[labeling].pr_total + pr_mod
+                    pr_non_blank = last.entries[labeling].pr_total + pr_char
 
+                # TODO: Refactor
                 # fill in data
                 curr.entries[new_labeling].labeling = new_labeling
                 curr.entries[new_labeling].pr_non_blank = np.logaddexp(curr.entries[new_labeling].pr_non_blank,
@@ -218,19 +220,10 @@ def beam_search(
                 curr.entries[new_labeling].pr_total = np.logaddexp(curr.entries[new_labeling].pr_total, pr_non_blank)
                 curr.entries[new_labeling].indices = new_indices
 
-                # apply LM
-                # t_entropy = entropy(mat[t])
-                # if t_entropy > threshold:
-                #     apply_rna_model(curr.entries[labeling],
-                #                     curr.entries[new_labeling],
-                #                     lm,
-                #                     cache,
-                #                     factor,
-                #                     len_context)
-
         # set new beam state
         last = curr
 
+    # TODO: Remove, not needed with new approach
     # normalise LM scores according to beam-labeling-length
     last.normalize()
 

@@ -58,6 +58,13 @@ def main():
     entropy_threshold = 0.9
     len_context = 8
     for i, softmax in enumerate(global_softmaxes):
+        # Predict without model
+
+        # Predict with model & no entropy threshold
+
+        # Predict with model & with entropy threshold
+
+
         pred, _ = beam_search(softmax,
                                 classes,
                                 beam_width,
