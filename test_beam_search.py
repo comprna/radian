@@ -70,10 +70,14 @@ def main():
     r_threshold = 0.6
     len_context = 8
     cache = {}
-    for i, read in enumerate(local_softmaxes):
-        for j, softmax in enumerate(read):
+
+    decode_type = 'global'
+
+    if decode_type == 'global':
+        for i, softmax in enumerate(global_softmaxes):
             # Ground truth
-            gt = local_gts[i][j]
+            gt = global_gts[read_ids[i]]
+            print(gt)
 
             # Predict without model
             pred_a, _ = beam_search(softmax,
@@ -86,6 +90,7 @@ def main():
                                     len_context,
                                     cache)
             ed_a = levenshtein.normalized_distance(gt, pred_a)
+            print(pred_a)
             print(ed_a)
 
             # Predict with model & with thresholds
@@ -100,6 +105,39 @@ def main():
                                     cache)
             ed_c = levenshtein.normalized_distance(gt, pred_c)
             print(ed_c)
+    else:
+        for i, read in enumerate(local_softmaxes):
+            for j, softmax in enumerate(read):
+                # Ground truth
+                gt = local_gts[i][j]
+                print(gt)
+
+                # Predict without model
+                pred_a, _ = beam_search(softmax,
+                                        classes,
+                                        beam_width,
+                                        None,
+                                        None,
+                                        s_threshold,
+                                        r_threshold,
+                                        len_context,
+                                        cache)
+                ed_a = levenshtein.normalized_distance(gt, pred_a)
+                print(pred_a)
+                print(ed_a)
+
+                # Predict with model & with thresholds
+                pred_c, _ = beam_search(softmax,
+                                        classes,
+                                        beam_width,
+                                        r_model,
+                                        None,
+                                        s_threshold,
+                                        r_threshold,
+                                        len_context,
+                                        cache)
+                ed_c = levenshtein.normalized_distance(gt, pred_c)
+                print(ed_c)
 
 
 
