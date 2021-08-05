@@ -85,7 +85,7 @@ def get_context(labeling, len_context, exclude_last=False):
 
     return context
 
-def apply_rna_model(pr_orig, char, context, model, cache):
+def apply_rna_model(pr_orig, char, context, model, cache, threshold):
     if model is None:
         return pr_orig
 
@@ -101,13 +101,16 @@ def apply_rna_model(pr_orig, char, context, model, cache):
     else:
         pr_dist = cache[context]
 
+    model_entropy = entropy(pr_dist)
+
     # predict the prob of the char given the RNA model
     pr_lm = log(pr_dist[char])
 
     # combine the model probability with the original probability
-    mod_pr = (pr_lm + pr_orig) / 2
-
-    return mod_pr
+    if model_entropy < threshold:
+        return (pr_lm + pr_orig) / 2
+    else:
+        return pr_orig
 
 # TODO: Define class for decoding params
 def beam_search(
@@ -116,7 +119,8 @@ def beam_search(
     beam_width: int,
     lm: tf.keras.Model,
     factor: int,
-    threshold: int,
+    s_threshold: int,
+    r_threshold: int,
     len_context: int
 ) -> str:
     """Beam search decoder.
@@ -159,6 +163,7 @@ def beam_search(
         # get the entropy of the current timestep
         dist = mat[t]
         t_entropy = entropy(mat[t])
+        print(t_entropy)
 
         # go over best beams
         for labeling in best_labelings:
@@ -174,9 +179,9 @@ def beam_search(
                 pr_char = log(mat[t, c])
 
                 # apply RNA model
-                if len(labeling) >= len_context+1 and t_entropy > threshold:
+                if len(labeling) >= len_context+1 and t_entropy > s_threshold:
                     context = get_context(labeling, len_context, exclude_last=True)
-                    pr_char = apply_rna_model(pr_char, c, context, lm, cache)
+                    pr_char = apply_rna_model(pr_char, c, context, lm, cache, r_threshold)
 
                 pr_non_blank = last.entries[labeling].pr_non_blank + pr_char
 
@@ -205,9 +210,9 @@ def beam_search(
 
                 pr_char = log(mat[t, c])
                 # TODO: Allow len_context and threshold to be None (i.e. no lm applied)
-                if len(labeling) >= len_context and t_entropy > threshold:
+                if len(labeling) >= len_context and t_entropy > s_threshold:
                     context = get_context(labeling, len_context, exclude_last=False)
-                    pr_char = apply_rna_model(pr_char, c, context, lm, cache)
+                    pr_char = apply_rna_model(pr_char, c, context, lm, cache, r_threshold)
 
                 # if new labeling contains duplicate char at the end, only consider paths ending with a blank
                 if labeling and labeling[-1] == c:

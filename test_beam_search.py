@@ -52,10 +52,10 @@ def main():
     # Decode global softmax with RNA model
 
     classes = 'ACGT'
-    eds = []
     beam_width = 30
     lm_factor = 0.5
-    entropy_threshold = 0.9
+    s_threshold = 0.6
+    r_threshold = 0.6
     len_context = 8
     for i, softmax in enumerate(global_softmaxes):
         if i == 0:
@@ -66,38 +66,36 @@ def main():
                                 beam_width,
                                 None,
                                 None,
-                                entropy_threshold,
+                                s_threshold,
+                                r_threshold,
                                 len_context)
         ed_a = levenshtein.normalized_distance(gts[read_ids[i]], pred_a)
         print(ed_a)
 
-        # Predict with model & no entropy threshold
+        # Predict with model & no thresholds
         pred_b, _ = beam_search(softmax,
                                 classes,
                                 beam_width,
                                 r_model,
                                 None,
-                                0,
+                                float("-inf"),
+                                float("+inf"),
                                 len_context)
         ed_b = levenshtein.normalized_distance(gts[read_ids[i]], pred_b)
         print(ed_b)
 
-        # Predict with model & with entropy threshold
+        # Predict with model & with thresholds
         pred_c, _ = beam_search(softmax,
                                 classes,
                                 beam_width,
                                 r_model,
                                 None,
-                                entropy_threshold,
+                                s_threshold,
+                                r_threshold,
                                 len_context)
         ed_c = levenshtein.normalized_distance(gts[read_ids[i]], pred_c)
         print(ed_c)
 
-        print("\n\n")
-        print(ed_a)
-        print(ed_b)
-        print(ed_c)
-        print("\n\n")
 
 
 if __name__ == "__main__":
