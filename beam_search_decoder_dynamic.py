@@ -25,8 +25,6 @@ class BeamEntry:
     pr_total: float = log(0)  # blank and non-blank
     pr_non_blank: float = log(0)  # non-blank
     pr_blank: float = log(0)  # blank
-    pr_text: float = log(1)  # LM score
-    lm_applied: bool = False  # flag if LM was already applied to this beam
     labeling: tuple = ()  # beam-labeling
     indices: tuple = ()  # indices of each character in beam
 
@@ -37,45 +35,12 @@ class BeamList:
     def __init__(self) -> None:
         self.entries = defaultdict(BeamEntry)
 
-    def normalize(self) -> None:
-        """Length-normalise LM score."""
-        for k in self.entries.keys():
-            labeling_len = len(self.entries[k].labeling)
-            self.entries[k].pr_text = (1.0 / (labeling_len if labeling_len else 1.0)) * self.entries[k].pr_text
-
     def sort_labelings(self) -> List[Tuple[int]]:
         """Return beam-labelings, sorted by probability."""
         beams = self.entries.values()
-        sorted_beams = sorted(beams, reverse=True, key=lambda x: x.pr_total + x.pr_text)
+        sorted_beams = sorted(beams, reverse=True, key=lambda x: x.pr_total)
         return [x.labeling for x in sorted_beams], [x.indices for x in sorted_beams]
 
-def apply_rna_model_to_seq(
-    parent_beam: BeamEntry,
-    child_beam: BeamEntry,
-    lm: tf.keras.Model,
-    cache: dict,
-    factor: int,
-    len_context: int
-) -> None:
-    """Calculate LM score of child beam by taking score from parent beam and RNA model probability."""
-    if not lm or child_beam.lm_applied:
-        return
-    
-    if len(parent_beam.labeling) < len_context:
-        return
-
-    context = parent_beam.labeling[-len_context:]
-    if context not in cache:
-        context = tf.one_hot(list(parent_beam.labeling[-len_context:]), N_BASES).numpy()
-        context = context.reshape(1, len_context, N_BASES)
-        probs = lm.predict(context)
-        cache[context] = probs
-    else:
-        probs = cache[context]
-
-    new_char = child_beam.labeling[-1]
-    child_beam.pr_text = parent_beam.pr_text + factor * log(probs[0][new_char])  # probability of sequence
-    child_beam.lm_applied = True  # only apply LM once per beam entry
 
 def get_context(labeling, len_context, exclude_last=False):
     # the context is the last portion of the beam
@@ -85,6 +50,7 @@ def get_context(labeling, len_context, exclude_last=False):
         context = labeling[-len_context:]
 
     return context
+
 
 def get_next_base_prob(context, model, cache):
     if context not in cache:
@@ -99,6 +65,7 @@ def get_next_base_prob(context, model, cache):
         dist = cache[context]
     
     return dist
+
 
 def combine_dists(r_dist, s_dist):
     # get the base (i.e. non-blank) distribution from the signal model
@@ -115,6 +82,7 @@ def combine_dists(r_dist, s_dist):
 
     return c_dist
 
+
 def apply_rna_model(s_dist, context, model, cache, r_threshold, s_threshold):
     if model is None:
         return s_dist
@@ -128,6 +96,7 @@ def apply_rna_model(s_dist, context, model, cache, r_threshold, s_threshold):
         return combine_dists(r_dist, s_dist)
     else:
         return s_dist
+
 
 # TODO: Define class for decoding params
 def beam_search(
@@ -199,8 +168,6 @@ def beam_search(
             curr.entries[labeling].pr_blank = np.logaddexp(curr.entries[labeling].pr_blank, pr_blank)
             curr.entries[labeling].pr_total = np.logaddexp(curr.entries[labeling].pr_total,
                                                            np.logaddexp(pr_blank, pr_non_blank))
-            curr.entries[labeling].pr_text = last.entries[labeling].pr_text
-            curr.entries[labeling].lm_applied = True  # LM already applied at previous time-step for this beam-labeling
             curr.entries[labeling].indices = last.entries[labeling].indices
 
             # EXTEND BEAM
@@ -235,10 +202,6 @@ def beam_search(
 
         # set new beam state
         last = curr
-
-    # TODO: Remove, not needed with new approach
-    # normalise LM scores according to beam-labeling-length
-    # last.normalize()
 
     # sort by probability
     sorted_labels = last.sort_labelings()

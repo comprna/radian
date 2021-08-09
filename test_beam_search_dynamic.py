@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from textdistance import levenshtein
 
-from beam_search_decoder import beam_search
+from beam_search_decoder_score_beams import beam_search
 from rna_model import get_rna_prediction_model
 from utilities import get_config, setup_local
 
@@ -63,7 +63,7 @@ def main():
 
     # Decode global softmax with RNA model
 
-    classes = 'ACGT'
+    bases = 'ACGT'
     beam_width = 6
     lm_factor = 0.5
     s_threshold = 0.6
@@ -79,32 +79,18 @@ def main():
             gt = global_gts[read_ids[i]]
             print(gt)
 
-            # Predict without model
-            # pred_a, _ = beam_search(softmax,
-            #                         classes,
-            #                         beam_width,
-            #                         None,
-            #                         None,
-            #                         s_threshold,
-            #                         r_threshold,
-            #                         len_context,
-            #                         cache)
-            # ed_a = levenshtein.normalized_distance(gt, pred_a)
-            # print(pred_a)
-            # print(ed_a)
-
             # Predict with model & with thresholds
-            pred_c, _ = beam_search(softmax,
-                                    classes,
-                                    beam_width,
-                                    r_model,
-                                    None,
-                                    s_threshold,
-                                    r_threshold,
-                                    len_context,
-                                    cache)
-            ed_c = levenshtein.normalized_distance(gt, pred_c)
-            print(ed_c)
+            pred, _ = beam_search(softmax,
+                                  bases,
+                                  beam_width,
+                                  r_model,
+                                  None,
+                                  s_threshold,
+                                  r_threshold,
+                                  len_context,
+                                  cache)
+            ed = levenshtein.normalized_distance(gt, pred)
+            print(ed)
     else:
         for i, read in enumerate(local_softmaxes):
             for j, softmax in enumerate(read):
@@ -112,23 +98,9 @@ def main():
                 gt = local_gts[i][j]
                 print(gt)
 
-                # Predict without model
-                pred_a, _ = beam_search(softmax,
-                                        classes,
-                                        beam_width,
-                                        None,
-                                        None,
-                                        s_threshold,
-                                        r_threshold,
-                                        len_context,
-                                        cache)
-                ed_a = levenshtein.normalized_distance(gt, pred_a)
-                print(pred_a)
-                print(ed_a)
-
                 # Predict with model & with thresholds
-                pred_c, _ = beam_search(softmax,
-                                        classes,
+                pred, _ = beam_search(softmax,
+                                        bases,
                                         beam_width,
                                         r_model,
                                         None,
@@ -136,9 +108,9 @@ def main():
                                         r_threshold,
                                         len_context,
                                         cache)
-                ed_c = levenshtein.normalized_distance(gt, pred_c)
-                print(pred_c)
-                print(ed_c)
+                ed = levenshtein.normalized_distance(gt, pred)
+                print(pred)
+                print(ed)
                 print("\n\n")
 
 
