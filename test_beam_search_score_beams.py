@@ -81,7 +81,7 @@ def main():
             pred, _ = beam_search(softmax,
                                   bases,
                                   beam_width,
-                                  None,
+                                  r_model,
                                   lm_factor,
                                   len_context,
                                   cache)

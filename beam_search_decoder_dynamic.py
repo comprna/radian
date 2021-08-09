@@ -104,7 +104,6 @@ def beam_search(
     bases: str,
     beam_width: int,
     lm: tf.keras.Model,
-    factor: int,
     s_threshold: int,
     r_threshold: int,
     len_context: int,
@@ -136,6 +135,9 @@ def beam_search(
 
     # go over all time-steps
     for t in range(max_T):
+        # TODO: Remove (test to skip confusion at start of matrix)
+        if t < 30:
+            continue
         curr = BeamList()
 
         # get beam-labelings of best beams
@@ -157,7 +159,7 @@ def beam_search(
                 else:
                     pr_dist = mat[t]
 
-                pr_non_blank = last.entries[labeling].pr_non_blank + pr_dist[labeling[-1]]
+                pr_non_blank = last.entries[labeling].pr_non_blank + log(pr_dist[labeling[-1]])
 
             # probability of paths ending with a blank
             pr_blank = last.entries[labeling].pr_total + log(mat[t, blank_idx])
@@ -189,9 +191,9 @@ def beam_search(
 
                 # if new labeling contains duplicate char at the end, only consider paths ending with a blank
                 if labeling and labeling[-1] == c:
-                    pr_non_blank = last.entries[labeling].pr_blank + pr_dist[c]
+                    pr_non_blank = last.entries[labeling].pr_blank + log(pr_dist[c])
                 else:
-                    pr_non_blank = last.entries[labeling].pr_total + pr_dist[c]
+                    pr_non_blank = last.entries[labeling].pr_total + log(pr_dist[c])
 
                 # fill in data TODO: Refactor
                 curr.entries[new_labeling].labeling = new_labeling

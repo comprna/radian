@@ -53,21 +53,14 @@ def callback():
     len_context = 8
     cache = {}
 
-    decode_type = 'global'
-
-    if decode_type == 'global':
-        for i, softmax in enumerate(global_softmaxes):
-            # Ground truth
-            gt = global_gts[read_ids[i]]
-
-            # Predict with model & with thresholds
-            pred, _ = beam_search(softmax,
-                                  bases,
-                                  beam_width,
-                                  r_model,
-                                  lm_factor,
-                                  len_context,
-                                  cache)
+    # Predict with model & with thresholds
+    beam_search(global_softmaxes[0],
+                bases,
+                beam_width,
+                r_model,
+                lm_factor,
+                len_context,
+                cache)
 
 
 if __name__ == "__main__":

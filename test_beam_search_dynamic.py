@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from textdistance import levenshtein
 
-from beam_search_decoder_score_beams import beam_search
+from beam_search_decoder_dynamic import beam_search
 from rna_model import get_rna_prediction_model
 from utilities import get_config, setup_local
 
@@ -65,7 +65,6 @@ def main():
 
     bases = 'ACGT'
     beam_width = 6
-    lm_factor = 0.5
     s_threshold = 0.6
     r_threshold = 10
     len_context = 8
@@ -84,7 +83,6 @@ def main():
                                   bases,
                                   beam_width,
                                   r_model,
-                                  None,
                                   s_threshold,
                                   r_threshold,
                                   len_context,
@@ -100,14 +98,13 @@ def main():
 
                 # Predict with model & with thresholds
                 pred, _ = beam_search(softmax,
-                                        bases,
-                                        beam_width,
-                                        r_model,
-                                        None,
-                                        s_threshold,
-                                        r_threshold,
-                                        len_context,
-                                        cache)
+                                      bases,
+                                      beam_width,
+                                      r_model,
+                                      s_threshold,
+                                      r_threshold,
+                                      len_context,
+                                      cache)
                 ed = levenshtein.normalized_distance(gt, pred)
                 print(pred)
                 print(ed)
