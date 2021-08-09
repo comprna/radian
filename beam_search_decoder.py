@@ -103,21 +103,23 @@ def apply_rna_model(s_dist, context, model, cache, threshold):
         r_dist = cache[context]
 
     r_entropy = entropy(r_dist)
-    s_entropy = entropy(s_dist)
-
-    if context == (1,2,3,1,1,0,3,2):
-        print("here")
+    s_entropy = entropy(s_dist[:-1]) # exclude the blank from the entropy calc
 
     # combine the probability distributions from the RNA and sig2seq models
     if r_entropy < threshold:
         
         s_base_prob = np.sum(s_dist[:-1])
+        s_base_dist = s_dist[:-1] / s_base_prob
         # alter the signal probs according to the rna model probs 
 
+        s_A = (s_base_dist[0] + r_dist[0]) / 2
 
-        c_dist = np.add(r_dist, s_dist[:-1])
-        c_dist = normalize([c_dist], norm="l1")[0]
-        return c_dist
+        s_dist_mod = np.add(r_dist, s_base_dist)
+        s_dist_mod = normalize([s_dist_mod], norm="l1")[0]
+        s_dist_mod = s_dist_mod * s_base_prob
+        s_dist_mod = np.append(s_dist_mod, s_dist[-1])
+
+        return s_dist_mod
     else:
         return s_dist
 
@@ -176,6 +178,7 @@ def beam_search(
         for labeling in best_labelings:
 
             # apply RNA model to the posteriors
+            # TODO: test t_entropy condition inside apply_rna_model
             if len(labeling) >= len_context and t_entropy > s_threshold:
                 context = get_context(labeling, len_context, exclude_last=False)
                 pr_dist = apply_rna_model(mat[t], context, lm, cache, r_threshold)
