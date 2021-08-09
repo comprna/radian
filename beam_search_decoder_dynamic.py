@@ -73,8 +73,7 @@ def combine_dists(r_dist, s_dist):
     s_base_dist = s_dist[:-1] / s_base_prob
 
     # average the signal and rna model probs
-    c_dist = np.add(r_dist, s_base_dist)
-    c_dist = normalize([c_dist], norm="l1")[0]
+    c_dist = np.add(r_dist, s_base_dist) / 2
 
     # reconstruct the signal model distribution (including blank)
     c_dist = c_dist * s_base_prob

@@ -48,7 +48,7 @@ def callback():
     # Decode global softmax with RNA model
 
     bases = 'ACGT'
-    beam_width = 6
+    beam_width = 30
     s_threshold = 0.6
     r_threshold = 10
     len_context = 8
