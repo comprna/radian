@@ -8,6 +8,7 @@ from typing import List, Tuple
 
 import numpy as np
 from scipy.stats import entropy
+from sklearn.preprocessing import normalize
 import tensorflow as tf
 
 
@@ -85,9 +86,9 @@ def get_context(labeling, len_context, exclude_last=False):
 
     return context
 
-def apply_rna_model(pr_orig, char, context, model, cache, threshold):
+def apply_rna_model(s_dist, context, model, cache, threshold):
     if model is None:
-        return pr_orig
+        return s_dist
 
     # update the cache if needed
     if context not in cache:
@@ -96,21 +97,29 @@ def apply_rna_model(pr_orig, char, context, model, cache, threshold):
         context_arr = context_arr.reshape(1, len(context), N_BASES)
 
         # predict the distribution of the next base given the context
-        pr_dist = model.predict(context_arr)[0]
-        cache[context] = pr_dist
+        r_dist = model.predict(context_arr)[0]
+        cache[context] = r_dist
     else:
-        pr_dist = cache[context]
+        r_dist = cache[context]
 
-    model_entropy = entropy(pr_dist)
+    r_entropy = entropy(r_dist)
+    s_entropy = entropy(s_dist)
 
-    # predict the prob of the char given the RNA model
-    pr_lm = log(pr_dist[char])
+    if context == (1,2,3,1,1,0,3,2):
+        print("here")
 
-    # combine the model probability with the original probability
-    if model_entropy < threshold:
-        return (pr_lm + pr_orig) / 2
+    # combine the probability distributions from the RNA and sig2seq models
+    if r_entropy < threshold:
+        
+        s_base_prob = np.sum(s_dist[:-1])
+        # alter the signal probs according to the rna model probs 
+
+
+        c_dist = np.add(r_dist, s_dist[:-1])
+        c_dist = normalize([c_dist], norm="l1")[0]
+        return c_dist
     else:
-        return pr_orig
+        return s_dist
 
 # TODO: Define class for decoding params
 def beam_search(
@@ -162,10 +171,16 @@ def beam_search(
         # get the entropy of the current timestep
         dist = mat[t]
         t_entropy = entropy(mat[t])
-        print(t_entropy)
 
         # go over best beams
         for labeling in best_labelings:
+
+            # apply RNA model to the posteriors
+            if len(labeling) >= len_context and t_entropy > s_threshold:
+                context = get_context(labeling, len_context, exclude_last=False)
+                pr_dist = apply_rna_model(mat[t], context, lm, cache, r_threshold)
+            else:
+                pr_dist = mat[t]
 
             # COPY BEAM: https://towardsdatascience.com/beam-search-decoding-in-ctc-trained-neural-networks-5a889a3d85a7
 
@@ -175,12 +190,13 @@ def beam_search(
             if labeling:
                 # probability of paths with repeated last char at the end
                 c = labeling[-1]
+                # TODO: Update (note that RNA model prob above was calculated using incorrect beam)
                 pr_char = log(mat[t, c])
 
                 # apply RNA model
-                if len(labeling) >= len_context+1 and t_entropy > s_threshold:
-                    context = get_context(labeling, len_context, exclude_last=True)
-                    pr_char = apply_rna_model(pr_char, c, context, lm, cache, r_threshold)
+                # if len(labeling) >= len_context+1 and t_entropy > s_threshold:
+                #     context = get_context(labeling, len_context, exclude_last=True)
+                #     pr_char = apply_rna_model(pr_char, c, context, lm, cache, r_threshold)
 
                 pr_non_blank = last.entries[labeling].pr_non_blank + pr_char
 
@@ -207,17 +223,11 @@ def beam_search(
                 # keep track of matrix index that new char is located at
                 new_indices = curr.entries[labeling].indices + (t,)
 
-                pr_char = log(mat[t, c])
-                # TODO: Allow len_context and threshold to be None (i.e. no lm applied)
-                if len(labeling) >= len_context and t_entropy > s_threshold:
-                    context = get_context(labeling, len_context, exclude_last=False)
-                    pr_char = apply_rna_model(pr_char, c, context, lm, cache, r_threshold)
-
                 # if new labeling contains duplicate char at the end, only consider paths ending with a blank
                 if labeling and labeling[-1] == c:
-                    pr_non_blank = last.entries[labeling].pr_blank + pr_char
+                    pr_non_blank = last.entries[labeling].pr_blank + pr_dist[c]
                 else:
-                    pr_non_blank = last.entries[labeling].pr_total + pr_char
+                    pr_non_blank = last.entries[labeling].pr_total + pr_dist[c]
 
                 # fill in data TODO: Refactor
                 curr.entries[new_labeling].labeling = new_labeling

@@ -64,10 +64,10 @@ def main():
     # Decode global softmax with RNA model
 
     classes = 'ACGT'
-    beam_width = 30
+    beam_width = 6
     lm_factor = 0.5
     s_threshold = 0.6
-    r_threshold = 0.6
+    r_threshold = 10
     len_context = 8
     cache = {}
 
@@ -80,18 +80,18 @@ def main():
             print(gt)
 
             # Predict without model
-            pred_a, _ = beam_search(softmax,
-                                    classes,
-                                    beam_width,
-                                    None,
-                                    None,
-                                    s_threshold,
-                                    r_threshold,
-                                    len_context,
-                                    cache)
-            ed_a = levenshtein.normalized_distance(gt, pred_a)
-            print(pred_a)
-            print(ed_a)
+            # pred_a, _ = beam_search(softmax,
+            #                         classes,
+            #                         beam_width,
+            #                         None,
+            #                         None,
+            #                         s_threshold,
+            #                         r_threshold,
+            #                         len_context,
+            #                         cache)
+            # ed_a = levenshtein.normalized_distance(gt, pred_a)
+            # print(pred_a)
+            # print(ed_a)
 
             # Predict with model & with thresholds
             pred_c, _ = beam_search(softmax,
@@ -137,7 +137,9 @@ def main():
                                         len_context,
                                         cache)
                 ed_c = levenshtein.normalized_distance(gt, pred_c)
+                print(pred_c)
                 print(ed_c)
+                print("\n\n")
 
 
 
