@@ -8,8 +8,6 @@ import math
 from typing import List, Tuple
 
 import numpy as np
-from scipy.stats import entropy
-from sklearn.preprocessing import normalize
 import tensorflow as tf
 
 
@@ -82,6 +80,16 @@ def combine_dists(r_dist, s_dist):
     return c_dist
 
 
+def normalise(dist):
+    # TODO: Edge cases
+    return dist / sum(dist)
+
+
+def entropy(dist):
+    # TODO: Edge cases
+    return -sum([p * math.log(p) for p in dist])
+
+
 def apply_rna_model(s_dist, context, model, cache, r_threshold, s_threshold):
     if model is None:
         return s_dist
@@ -90,7 +98,7 @@ def apply_rna_model(s_dist, context, model, cache, r_threshold, s_threshold):
 
     # combine the probability distributions from the RNA and sig2seq models
     r_entropy = entropy(r_dist)
-    s_entropy = entropy(s_dist[:-1]) # exclude blank
+    s_entropy = entropy(normalise(s_dist[:-1]))
     if r_entropy < r_threshold and s_entropy > s_threshold:
         return combine_dists(r_dist, s_dist)
     else:
