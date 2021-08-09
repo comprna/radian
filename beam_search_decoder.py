@@ -86,40 +86,46 @@ def get_context(labeling, len_context, exclude_last=False):
 
     return context
 
-def apply_rna_model(s_dist, context, model, cache, threshold):
-    if model is None:
-        return s_dist
-
-    # update the cache if needed
+def get_next_base_prob(context, model, cache):
     if context not in cache:
         # convert context into RNA model input format
         context_arr = tf.one_hot(list(context), N_BASES).numpy()
         context_arr = context_arr.reshape(1, len(context), N_BASES)
 
         # predict the distribution of the next base given the context
-        r_dist = model.predict(context_arr)[0]
-        cache[context] = r_dist
+        dist = model.predict(context_arr)[0]
+        cache[context] = dist
     else:
-        r_dist = cache[context]
+        dist = cache[context]
+    
+    return dist
 
-    r_entropy = entropy(r_dist)
-    s_entropy = entropy(s_dist[:-1]) # exclude the blank from the entropy calc
+def combine_dists(r_dist, s_dist):
+    # get the base (i.e. non-blank) distribution from the signal model
+    s_base_prob = np.sum(s_dist[:-1])
+    s_base_dist = s_dist[:-1] / s_base_prob
+
+    # average the signal and rna model probs
+    c_dist = np.add(r_dist, s_base_dist)
+    c_dist = normalize([c_dist], norm="l1")[0]
+
+    # reconstruct the signal model distribution (including blank)
+    c_dist = c_dist * s_base_prob
+    c_dist = np.append(c_dist, s_dist[-1])
+
+    return c_dist
+
+def apply_rna_model(s_dist, context, model, cache, r_threshold, s_threshold):
+    if model is None:
+        return s_dist
+
+    r_dist = get_next_base_prob(context, model, cache)
 
     # combine the probability distributions from the RNA and sig2seq models
-    if r_entropy < threshold:
-        
-        s_base_prob = np.sum(s_dist[:-1])
-        s_base_dist = s_dist[:-1] / s_base_prob
-        # alter the signal probs according to the rna model probs 
-
-        s_A = (s_base_dist[0] + r_dist[0]) / 2
-
-        s_dist_mod = np.add(r_dist, s_base_dist)
-        s_dist_mod = normalize([s_dist_mod], norm="l1")[0]
-        s_dist_mod = s_dist_mod * s_base_prob
-        s_dist_mod = np.append(s_dist_mod, s_dist[-1])
-
-        return s_dist_mod
+    r_entropy = entropy(r_dist)
+    s_entropy = entropy(s_dist[:-1]) # exclude blank
+    if r_entropy < r_threshold and s_entropy > s_threshold:
+        return combine_dists(r_dist, s_dist)
     else:
         return s_dist
 
@@ -161,47 +167,28 @@ def beam_search(
 
     # go over all time-steps
     for t in range(max_T):
-        # TODO: Remove (test to skip confusion at start of matrix)
-        if t < 30:
-            continue
-
         curr = BeamList()
 
         # get beam-labelings of best beams
         best_labelings = last.sort_labelings()[0][:beam_width]
 
-        # get the entropy of the current timestep
-        dist = mat[t]
-        t_entropy = entropy(mat[t])
-
         # go over best beams
         for labeling in best_labelings:
 
-            # apply RNA model to the posteriors
-            # TODO: test t_entropy condition inside apply_rna_model
-            if len(labeling) >= len_context and t_entropy > s_threshold:
-                context = get_context(labeling, len_context, exclude_last=False)
-                pr_dist = apply_rna_model(mat[t], context, lm, cache, r_threshold)
-            else:
-                pr_dist = mat[t]
-
-            # COPY BEAM: https://towardsdatascience.com/beam-search-decoding-in-ctc-trained-neural-networks-5a889a3d85a7
+            # COPY BEAM
 
             # probability of paths ending with a non-blank
             pr_non_blank = log(0)
             # in case of non-empty beam
             if labeling:
-                # probability of paths with repeated last char at the end
-                c = labeling[-1]
-                # TODO: Update (note that RNA model prob above was calculated using incorrect beam)
-                pr_char = log(mat[t, c])
+                # apply RNA model to the posteriors
+                if len(labeling) >= len_context + 1:
+                    context = get_context(labeling, len_context, exclude_last=True)
+                    pr_dist = apply_rna_model(mat[t], context, lm, cache, r_threshold, s_threshold)
+                else:
+                    pr_dist = mat[t]
 
-                # apply RNA model
-                # if len(labeling) >= len_context+1 and t_entropy > s_threshold:
-                #     context = get_context(labeling, len_context, exclude_last=True)
-                #     pr_char = apply_rna_model(pr_char, c, context, lm, cache, r_threshold)
-
-                pr_non_blank = last.entries[labeling].pr_non_blank + pr_char
+                pr_non_blank = last.entries[labeling].pr_non_blank + pr_dist[labeling[-1]]
 
             # probability of paths ending with a blank
             pr_blank = last.entries[labeling].pr_total + log(mat[t, blank_idx])
@@ -217,6 +204,13 @@ def beam_search(
             curr.entries[labeling].indices = last.entries[labeling].indices
 
             # EXTEND BEAM
+
+            # apply RNA model to the posteriors
+            if len(labeling) >= len_context:
+                context = get_context(labeling, len_context, exclude_last=False)
+                pr_dist = apply_rna_model(mat[t], context, lm, cache, r_threshold, s_threshold)
+            else:
+                pr_dist = mat[t]
 
             # extend current beam-labeling
             for c in range(max_C - 1):
@@ -244,7 +238,7 @@ def beam_search(
 
     # TODO: Remove, not needed with new approach
     # normalise LM scores according to beam-labeling-length
-    last.normalize()
+    # last.normalize()
 
     # sort by probability
     sorted_labels = last.sort_labelings()
