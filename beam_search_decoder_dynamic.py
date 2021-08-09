@@ -4,6 +4,7 @@ This has been adapted from https://github.com/githubharald/CTCDecoder/blob/maste
 
 from collections import defaultdict
 from dataclasses import dataclass
+import math
 from typing import List, Tuple
 
 import numpy as np
@@ -15,8 +16,7 @@ import tensorflow as tf
 N_BASES = 4
 
 def log(x: float) -> float:
-    with np.errstate(divide='ignore'):
-        return np.log(x)
+    return -math.inf if x == 0 else math.log(x)
 
 
 @dataclass

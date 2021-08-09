@@ -4,7 +4,7 @@ import json
 
 import numpy as np
 
-from beam_search_decoder_score_beams import beam_search
+from beam_search_decoder_dynamic import beam_search
 from rna_model import get_rna_prediction_model
 from utilities import get_config, setup_local
 
@@ -48,8 +48,9 @@ def callback():
     # Decode global softmax with RNA model
 
     bases = 'ACGT'
-    beam_width = 30
-    lm_factor = 0.5
+    beam_width = 6
+    s_threshold = 0.6
+    r_threshold = 10
     len_context = 8
     cache = {}
 
@@ -58,7 +59,8 @@ def callback():
                 bases,
                 beam_width,
                 r_model,
-                lm_factor,
+                s_threshold,
+                r_threshold,
                 len_context,
                 cache)
 
