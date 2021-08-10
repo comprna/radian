@@ -25,7 +25,7 @@ do
 module load cuda/10.1
 module load intel-mkl/2019.3.199
 module load tensorflow/2.3.0
-module load python3/3.7.4
+module load python3/3.8.5
 
 source /home/150/as2781/rnabasecaller/.venv/bin/activate
 
