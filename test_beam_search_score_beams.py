@@ -68,6 +68,7 @@ def main():
     lm_factor = 0.5
     len_context = 8
     cache = {}
+    normalise_after = True
 
     decode_type = 'global'
 
@@ -84,7 +85,8 @@ def main():
                                   r_model,
                                   lm_factor,
                                   len_context,
-                                  cache)
+                                  cache,
+                                  normalise_after)
             ed = levenshtein.normalized_distance(gt, pred)
             print(pred)
             print(ed)
@@ -103,7 +105,8 @@ def main():
                                       r_model,
                                       lm_factor,
                                       len_context,
-                                      cache)
+                                      cache,
+                                      normalise_after)
                 ed = levenshtein.normalized_distance(gt, pred)
                 print(pred)
                 print(ed)

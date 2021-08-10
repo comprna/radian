@@ -38,7 +38,7 @@ class BeamList:
         self.entries = defaultdict(BeamEntry)
 
     def normalize(self) -> None:
-        """Length-normalise LM score."""
+        """Length-normalize LM score."""
         for k in self.entries.keys():
             labeling_len = len(self.entries[k].labeling)
             self.entries[k].pr_text = (1.0 / (labeling_len if labeling_len else 1.0)) * self.entries[k].pr_text
@@ -86,6 +86,7 @@ def beam_search(
     factor: int,
     len_context: int,
     cache: dict,
+    normalize_after: bool
 ) -> str:
     """Beam search decoder.
 
@@ -181,8 +182,13 @@ def beam_search(
         # set new beam state
         last = curr
 
-    # normalise LM scores according to beam-labeling-length
-    last.normalize()
+        # normalize LM scores according to beam-labeling-length
+        if normalize_after == False:
+            last.normalize()
+
+    # normalize LM scores according to beam-labeling-length
+    if normalize_after == True:
+        last.normalize()
 
     # sort by probability
     sorted_labels = last.sort_labelings()
