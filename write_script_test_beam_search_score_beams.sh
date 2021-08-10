@@ -31,8 +31,8 @@ source /home/150/as2781/rnabasecaller/.venv/bin/activate
 
 SCRIPT='/home/150/as2781/rnabasecaller/test_beam_search_score_beams_gadi.py'
 MODEL_DIR='/g/data/xc17/Eyras/alex/working/with-rna-model/global/all_val/copied_files/models'
-R_CONFIG='\$MODEL_DIR/r-config-37.yaml'
-R_MODEL='\$MODEL_DIR/r-train-37-model-03.h5'
+R_CONFIG="\$MODEL_DIR/r-config-37.yaml"
+R_MODEL="\$MODEL_DIR/r-train-37-model-03.h5"
 CONTEXT_LEN=8
 
 python3 \$SCRIPT \$R_CONFIG \$R_MODEL \$CONTEXT_LEN $beam_width $lm_factor $normalise_after
