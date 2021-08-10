@@ -37,7 +37,7 @@ CONTEXT_LEN = 8
 
 python3 \$SCRIPT \$R_CONFIG \$R_MODEL \$CONTEXT_LEN $beam_width $lm_factor $normalise_after
 
-            " > train-$i.sh
+            " > decode-$i.sh
 
             let "i += 1"
         done
