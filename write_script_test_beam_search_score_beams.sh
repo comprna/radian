@@ -2,7 +2,7 @@
 
 i=7
 
-for normalise_after in TRUE FALSE
+for normalise_after in 0 1
 do
     for lm_factor in 0.2 0.6
     do

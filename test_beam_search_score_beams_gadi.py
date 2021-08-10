@@ -46,7 +46,7 @@ def main():
     len_context = int(sys.argv[3])
     beam_width = int(sys.argv[4])
     lm_factor = float(sys.argv[5])
-    normalise_after = bool(sys.argv[6])
+    normalise_after = True if int(sys.argv[6]) == 0 else False
 
     print(f"{len_context}\t{type(len_context)}")
     print(f"{beam_width}\t{type(beam_width)}")
