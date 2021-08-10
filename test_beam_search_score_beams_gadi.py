@@ -13,16 +13,13 @@ def main():
     # Run locally or on gadi
 
     base_dir = '/g/data/xc17/Eyras/alex/working/with-rna-model/global/all_val/copied_files'
-
-    # Load config
-
     dataset = "heart"
 
     # Load RNA model
 
-    r_config_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/local/train-3-37/r-config-37.yaml'
+    r_config_file = sys.argv[1]
     r_config = get_config(r_config_file)
-    r_model_file = '/mnt/sda/rna-basecaller/experiments/with-rna-model/local/train-3-37/r-train-37-model-03.h5'
+    r_model_file = sys.argv[2]
     r_model = get_rna_prediction_model(r_model_file, r_config)
 
     # Load read IDs
@@ -46,14 +43,20 @@ def main():
     # Decode global softmax with RNA model
 
     bases = 'ACGT'
-    beam_width = 100
-    lm_factor = 0.5
-    len_context = 8
+    len_context = int(sys.argv[3])
+    beam_width = int(sys.argv[4])
+    lm_factor = float(sys.argv[5])
+    normalise_after = bool(sys.argv[6])
+
+    print(f"{len_context}\t{type(len_context)}")
+    print(f"{beam_width}\t{type(beam_width)}")
+    print(f"{lm_factor}\t{type(lm_factor)}")
+    print(f"{normalise_after}\t{type(normalise_after)}")
+
     cache = {}
-    normalise_after = True
 
     for i, softmax in enumerate(global_softmaxes):
-        if i % 3 != 0:
+        if i % 4 != 0:
             continue
 
         # Ground truth
