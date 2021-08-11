@@ -74,7 +74,7 @@ def main():
                               normalise_after)
         ed = levenshtein.normalized_distance(gt, pred)
 
-        print(f"{read_ids[i]}\t{gt}\t{pred}\t{ed}")
+        print(f"{i}\t{read_ids[i]}\t{gt}\t{pred}\t{ed}")
 
 
 if __name__ == "__main__":
