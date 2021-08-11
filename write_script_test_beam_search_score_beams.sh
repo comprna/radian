@@ -1,6 +1,6 @@
 #!/bin/bash
 
-i=7
+i=9
 
 for normalise_after in 0 1
 do
@@ -22,8 +22,6 @@ do
 #PBS -j oe
 #PBS -l storage=scratch/xc17+gdata/xc17
 
-module load cuda/10.1
-module load intel-mkl/2019.3.199
 module load tensorflow/2.3.0
 module load python3/3.8.5
 
