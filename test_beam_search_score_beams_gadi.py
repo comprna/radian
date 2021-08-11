@@ -15,6 +15,13 @@ def main():
     base_dir = '/g/data/xc17/Eyras/alex/working/with-rna-model/global/all_val/copied_files'
     dataset = "heart"
 
+    # Load config
+
+    len_context = int(sys.argv[3])
+    beam_width = int(sys.argv[4])
+    lm_factor = float(sys.argv[5])
+    normalise_after = True if int(sys.argv[6]) == 0 else False
+
     # Load RNA model
 
     r_model_file = sys.argv[2]
@@ -23,7 +30,13 @@ def main():
     else:
         r_config_file = sys.argv[1]
         r_config = get_config(r_config_file)
-        r_model = get_rna_prediction_model(r_model_file, r_config)
+        r_model = get_rna_prediction_model(r_model_file, r_config, len_context)
+
+    print(f"{r_model}\t{type(r_model)}")
+    print(f"{len_context}\t{type(len_context)}")
+    print(f"{beam_width}\t{type(beam_width)}")
+    print(f"{lm_factor}\t{type(lm_factor)}")
+    print(f"{normalise_after}\t{type(normalise_after)}")
 
     # Load read IDs
 
@@ -46,17 +59,6 @@ def main():
     # Decode global softmax with RNA model
 
     bases = 'ACGT'
-    len_context = int(sys.argv[3])
-    beam_width = int(sys.argv[4])
-    lm_factor = float(sys.argv[5])
-    normalise_after = True if int(sys.argv[6]) == 0 else False
-
-    print(f"{r_model}\t{type(r_model)}")
-    print(f"{len_context}\t{type(len_context)}")
-    print(f"{beam_width}\t{type(beam_width)}")
-    print(f"{lm_factor}\t{type(lm_factor)}")
-    print(f"{normalise_after}\t{type(normalise_after)}")
-
     cache = {}
 
     for i, softmax in enumerate(global_softmaxes):

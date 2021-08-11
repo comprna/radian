@@ -2,14 +2,13 @@ from tensorflow.keras.layers import Dense, LSTM, GRU
 from tensorflow.keras.models import Sequential
 
 N_BASES = 4
-WINDOW_LENGTH = 8 ##### TODO: Remove hardcoding
 
-def get_rna_prediction_model(checkpoint, config):
-    model = build_model(config)
+def get_rna_prediction_model(checkpoint, config, window_len):
+    model = build_model(config, window_len)
     model.load_weights(checkpoint)
     return model
 
-def build_model(config):
+def build_model(config, window_len):
     model = Sequential()
 
     if config.model.type == "lstm":
@@ -32,13 +31,13 @@ def build_model(config):
         # Initial layers in stack should return sequences
         for i in range(config.model.lstm.layers-1):
             model.add(LSTM(config.model.lstm.units,
-                        batch_input_shape=(1, WINDOW_LENGTH, N_BASES),
+                        batch_input_shape=(1, window_len, N_BASES),
                         return_sequences=True,
                         **params))
 
         # Final layer should only return last value
         model.add(LSTM(config.model.lstm.units,
-                    batch_input_shape=(1, WINDOW_LENGTH, N_BASES),
+                    batch_input_shape=(1, window_len, N_BASES),
                     return_sequences=False,
                     **params))
         model.add(Dense(N_BASES, activation="softmax"))
@@ -47,12 +46,12 @@ def build_model(config):
         # Initial layers in stack should return sequences
         for i in range(config.model.gru.layers-1):
             model.add(GRU(config.model.gru.units,
-                        batch_input_shape=(1, WINDOW_LENGTH, N_BASES),
+                        batch_input_shape=(1, window_len, N_BASES),
                         return_sequences=True))
 
         # Final layer should only return last value
         model.add(GRU(config.model.gru.units,
-                    batch_input_shape=(1, WINDOW_LENGTH, N_BASES),
+                    batch_input_shape=(1, window_len, N_BASES),
                     return_sequences=False))
         model.add(Dense(N_BASES, activation="softmax"))
 
