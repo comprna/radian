@@ -17,12 +17,12 @@ def main():
 
     # Load RNA model
 
-    r_config_file = sys.argv[1]
-    r_config = get_config(r_config_file)
     r_model_file = sys.argv[2]
     if r_model_file == "None":
         r_model = None
     else:
+        r_config_file = sys.argv[1]
+        r_config = get_config(r_config_file)
         r_model = get_rna_prediction_model(r_model_file, r_config)
 
     # Load read IDs
