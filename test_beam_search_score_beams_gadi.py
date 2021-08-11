@@ -20,7 +20,10 @@ def main():
     r_config_file = sys.argv[1]
     r_config = get_config(r_config_file)
     r_model_file = sys.argv[2]
-    r_model = get_rna_prediction_model(r_model_file, r_config)
+    if r_model_file == "None":
+        r_model = None
+    else:
+        r_model = get_rna_prediction_model(r_model_file, r_config)
 
     # Load read IDs
 
@@ -48,6 +51,7 @@ def main():
     lm_factor = float(sys.argv[5])
     normalise_after = True if int(sys.argv[6]) == 0 else False
 
+    print(f"{r_model}\t{type(r_model)}")
     print(f"{len_context}\t{type(len_context)}")
     print(f"{beam_width}\t{type(beam_width)}")
     print(f"{lm_factor}\t{type(lm_factor)}")
