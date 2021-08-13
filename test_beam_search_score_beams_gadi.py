@@ -21,6 +21,7 @@ def main():
     beam_width = int(sys.argv[4])
     lm_factor = float(sys.argv[5])
     normalise_after = True if int(sys.argv[6]) == 0 else False
+    last_read = int(sys.argv[7])
 
     # Load RNA model
 
@@ -37,6 +38,7 @@ def main():
     print(f"{beam_width}\t{type(beam_width)}")
     print(f"{lm_factor}\t{type(lm_factor)}")
     print(f"{normalise_after}\t{type(normalise_after)}")
+    print(f"{last_read}\t{type(last_read)}")
 
     # Load read IDs
 
@@ -62,6 +64,9 @@ def main():
     cache = {}
 
     for i, softmax in enumerate(global_softmaxes):
+        if i < last_read:
+            continue
+
         if i % 4 != 0:
             continue
 
