@@ -81,15 +81,13 @@ def combine_dists(r_dist, s_dist):
 
 
 def normalise(dist):
-    # TODO: Edge cases
+    if sum(dist) == 0:
+        return dist
     return dist / sum(dist)
 
 
 def entropy(dist):
-    # TODO: Edge cases
-
-    # Remove events with probability 0 since they do not contribute to
-    # the entropy
+    # Events with probability 0 do not contribute to the entropy
     dist = dist[dist > 0]
     return -sum([p * math.log(p) for p in dist])
 
