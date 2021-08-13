@@ -87,6 +87,10 @@ def normalise(dist):
 
 def entropy(dist):
     # TODO: Edge cases
+
+    # Remove events with probability 0 since they do not contribute to
+    # the entropy
+    dist = dist[dist > 0]
     return -sum([p * math.log(p) for p in dist])
 
 
