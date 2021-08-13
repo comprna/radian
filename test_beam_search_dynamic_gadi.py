@@ -67,7 +67,6 @@ def main():
 
         # Ground truth
         gt = global_gts[read_ids[i]]
-        print(gt)
 
         # Predict with model & with thresholds
         pred, _ = beam_search(softmax,
