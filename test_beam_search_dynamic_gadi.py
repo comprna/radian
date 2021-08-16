@@ -21,6 +21,7 @@ def main():
     beam_width = int(sys.argv[4])
     r_threshold = float(sys.argv[5])
     s_threshold = float(sys.argv[6])
+    last_read = int(sys.argv[7])
 
     # Load RNA model
 
@@ -37,6 +38,7 @@ def main():
     print(f"{beam_width}\t{type(beam_width)}")
     print(f"{r_threshold}\t{type(r_threshold)}")
     print(f"{s_threshold}\t{type(s_threshold)}")
+    print(f"{last_read}\t{type(last_read)}")
 
     # Load read IDs
 
@@ -62,6 +64,9 @@ def main():
     cache = {}
 
     for i, softmax in enumerate(global_softmaxes):
+        if i < last_read:
+            continue
+
         if i % 4 != 0:
             continue
 
