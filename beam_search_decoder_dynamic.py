@@ -99,7 +99,7 @@ def apply_rna_model(s_dist, context, model, cache, r_threshold, s_threshold):
     r_dist = get_next_base_prob(context, model, cache)
 
     # combine the probability distributions from the RNA and sig2seq models
-    r_entropy = entropy(r_dist)
+    r_entropy = entropy(r_dist) # TODO use cache for improved efficiency (key: context, value: entropy of pred)
     s_entropy = entropy(normalise(s_dist[:-1]))
     if r_entropy < r_threshold and s_entropy > s_threshold:
         return combine_dists(r_dist, s_dist)
