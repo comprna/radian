@@ -45,6 +45,8 @@ def main():
         # Add better / worse / same results
 
         def get_change(row):
+            ed_m = row['ed_m']
+            ed_b = row['ed_b']
             if row['ed_m'] < row['ed_b']:
                 return "better"
             elif row['ed_m'] > row['ed_b']:

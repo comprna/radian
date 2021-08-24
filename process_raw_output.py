@@ -13,7 +13,7 @@ def main():
                 lines = raw.readlines()
 
                 # Exclude gadi output at start and end of file
-                lines = lines[32:-13]
+                lines = lines[36:-13]
 
                 # # Exclude extra print statements on odd lines
                 # lines = lines[::2]
