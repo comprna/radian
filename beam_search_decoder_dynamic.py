@@ -50,17 +50,17 @@ def get_context(labeling, len_context, exclude_last=False):
     return context
 
 
-def get_next_base_prob(context, model, cache):
-    if context not in cache:
+def get_next_base_prob(context, model, pred_cache):
+    if context not in pred_cache:
         # convert context into RNA model input format
         context_arr = tf.one_hot(list(context), N_BASES).numpy()
         context_arr = context_arr.reshape(1, len(context), N_BASES)
 
         # predict the distribution of the next base given the context
         dist = model.predict(context_arr)[0]
-        cache[context] = dist
+        pred_cache[context] = dist
     else:
-        dist = cache[context]
+        dist = pred_cache[context]
     
     return dist
 
@@ -92,15 +92,23 @@ def entropy(dist):
     return -sum([p * math.log(p) for p in dist])
 
 
-def apply_rna_model(s_dist, context, model, cache, r_threshold, s_threshold):
+def apply_rna_model(s_dist, context, model, pred_cache, entr_cache, r_threshold, s_threshold):
     if model is None:
         return s_dist
 
-    r_dist = get_next_base_prob(context, model, cache)
+    r_dist = get_next_base_prob(context, model, pred_cache)
 
-    # combine the probability distributions from the RNA and sig2seq models
-    r_entropy = entropy(r_dist) # TODO use cache for improved efficiency (key: context, value: entropy of pred)
+    # compute the entropy of the RNA model distribution (speed up with cache)
+    if context not in entr_cache:
+        r_entropy = entropy(r_dist)
+        entr_cache[context] = r_entropy
+    else:
+        r_entropy = entr_cache[context]
+
+    # compute the entropy of the softmax distribution    
     s_entropy = entropy(normalise(s_dist[:-1]))
+    
+    # combine the probability distributions from the RNA and sig2seq models
     if r_entropy < r_threshold and s_entropy > s_threshold:
         return combine_dists(r_dist, s_dist)
     else:
@@ -116,7 +124,8 @@ def beam_search(
     s_threshold: int,
     r_threshold: int,
     len_context: int,
-    cache: dict,
+    pred_cache: dict,
+    entr_cache: dict
 ) -> str:
     """Beam search decoder.
 
@@ -164,7 +173,7 @@ def beam_search(
                 # apply RNA model to the posteriors
                 if len(labeling) >= len_context + 1:
                     context = get_context(labeling, len_context, exclude_last=True)
-                    pr_dist = apply_rna_model(mat[t], context, lm, cache, r_threshold, s_threshold)
+                    pr_dist = apply_rna_model(mat[t], context, lm, pred_cache, entr_cache, r_threshold, s_threshold)
                 else:
                     pr_dist = mat[t]
 
@@ -186,7 +195,7 @@ def beam_search(
             # apply RNA model to the posteriors
             if len(labeling) >= len_context:
                 context = get_context(labeling, len_context, exclude_last=False)
-                pr_dist = apply_rna_model(mat[t], context, lm, cache, r_threshold, s_threshold)
+                pr_dist = apply_rna_model(mat[t], context, lm, pred_cache, entr_cache, r_threshold, s_threshold)
             else:
                 pr_dist = mat[t]
 
