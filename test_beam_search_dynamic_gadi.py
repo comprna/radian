@@ -61,7 +61,8 @@ def main():
     # Decode global softmax with RNA model
 
     bases = 'ACGT'
-    cache = {}
+    pred_cache = {}
+    entr_cache = {}
 
     for i, softmax in enumerate(global_softmaxes):
         if i < last_read:
@@ -81,7 +82,8 @@ def main():
                               s_threshold,
                               r_threshold,
                               len_context,
-                              cache)
+                              pred_cache,
+                              entr_cache)
         ed = levenshtein.normalized_distance(gt, pred)
         
         print(f"{i}\t{read_ids[i]}\t{gt}\t{pred}\t{ed}")
