@@ -92,7 +92,7 @@ def entropy(dist):
     return -sum([p * math.log(p) for p in dist])
 
 
-def apply_rna_model(s_dist, context, model, pred_cache, entr_cache, r_threshold, s_threshold):
+def apply_rna_model(s_dist, context, model, pred_cache, entr_cache, s_entropy, r_threshold, s_threshold):
     if model is None:
         return s_dist
 
@@ -105,9 +105,6 @@ def apply_rna_model(s_dist, context, model, pred_cache, entr_cache, r_threshold,
     else:
         r_entropy = entr_cache[context]
 
-    # compute the entropy of the softmax distribution    
-    s_entropy = entropy(normalise(s_dist[:-1]))
-    
     # combine the probability distributions from the RNA and sig2seq models
     if r_entropy < r_threshold and s_entropy > s_threshold:
         return combine_dists(r_dist, s_dist)
@@ -151,6 +148,12 @@ def beam_search(
     last.entries[labeling].pr_blank = log(1)
     last.entries[labeling].pr_total = log(1)
 
+    # pre-compute entropy for each timestep in the softmax matrix
+    s_entropies = []
+    for t in range(max_T):
+        # don't include the blank symbol, so we need to first normalise
+        s_entropies.append(entropy(normalise(mat[t][:-1])))
+
     # go over all time-steps
     for t in range(max_T):
         # TODO: Remove (test to skip confusion at start of matrix)
@@ -173,7 +176,7 @@ def beam_search(
                 # apply RNA model to the posteriors
                 if len(labeling) >= len_context + 1:
                     context = get_context(labeling, len_context, exclude_last=True)
-                    pr_dist = apply_rna_model(mat[t], context, lm, pred_cache, entr_cache, r_threshold, s_threshold)
+                    pr_dist = apply_rna_model(mat[t], context, lm, pred_cache, entr_cache, s_entropies[t], r_threshold, s_threshold)
                 else:
                     pr_dist = mat[t]
 
@@ -195,7 +198,7 @@ def beam_search(
             # apply RNA model to the posteriors
             if len(labeling) >= len_context:
                 context = get_context(labeling, len_context, exclude_last=False)
-                pr_dist = apply_rna_model(mat[t], context, lm, pred_cache, entr_cache, r_threshold, s_threshold)
+                pr_dist = apply_rna_model(mat[t], context, lm, pred_cache, entr_cache, s_entropies[t], r_threshold, s_threshold)
             else:
                 pr_dist = mat[t]
 
