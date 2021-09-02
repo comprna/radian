@@ -13,7 +13,7 @@ def main():
     # Run locally or on gadi
 
     base_dir = '/g/data/xc17/Eyras/alex/working/with-rna-model/global/all_val/copied_files'
-    dataset = "heart"
+    dataset = sys.argv[8]
 
     # Load config
 
@@ -65,9 +65,6 @@ def main():
 
     for i, softmax in enumerate(global_softmaxes):
         if i < last_read:
-            continue
-
-        if i % 4 != 0:
             continue
 
         # Ground truth
