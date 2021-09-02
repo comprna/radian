@@ -1,0 +1,41 @@
+r$> print(mean(ds[['n_alignments']]))                                                                                                                         
+[1] 973.0804
+
+r$> print(mean(ds[['pcent_id']]))                                                                                                                             
+[1] 93.51385
+
+r$> print(mean(ds[['tot_pcent']]))                                                                                                                            
+[1] 28.87218
+
+r$> print(mean(ds[['sub_pcent']]))                                                                                                                            
+[1] 2.172089
+
+r$> print(mean(ds[['ins_pcent']]))                                                                                                                            
+[1] 22.38603
+
+r$> print(mean(ds[['ins_pcent2']]))                                                                                                                           
+[1] 11.45514
+
+r$> print(mean(ds[['del_pcent']]))                                                                                                                            
+[1] 4.314061
+
+r$> print(mean(ds[['hdel_pcent']], na.rm=TRUE))                                                                                                               
+[1] 31.98869
+
+r$> print(mean(ds[['ctsub_pcent']], na.rm=TRUE))                                                                                                              
+[1] 36.98769
+
+r$> print(mean(ds[['cgsub_pcent']], na.rm=TRUE))                                                                                                              
+[1] 2.588456
+
+r$> print(mean(ds[['casub_pcent']], na.rm=TRUE))                                                                                                              
+[1] 7.374881
+
+r$> print(mean(ds[['gasub_pcent']], na.rm=TRUE))                                                                                                              
+[1] 22.75265
+
+r$> print(mean(ds[['gtsub_pcent']], na.rm=TRUE))                                                                                                              
+[1] 4.691471
+
+r$> print(mean(ds[['atsub_pcent']], na.rm=TRUE))                                                                                                              
+[1] 25.60486

@@ -9,6 +9,7 @@ import pandas as pd
 from textdistance import levenshtein
 
 
+
 def homopolymer_at(start, end, gt, alignment, candidate):
     # We consider the deletion to be in a homopolymer if the deleted
     # position in the ground truth is at the start, middle or end of a
@@ -50,6 +51,7 @@ def analyse_alignment(formatted_alignment):
 
     # Metrics of interest
 
+    n_mat   = 0  # Number of matches
     n_sub   = 0  # Total number of substitutions
     n_ins   = 0  # Total number of insertions
     n_del   = 0  # Total number of deletions
@@ -76,10 +78,10 @@ def analyse_alignment(formatted_alignment):
 
     for i in range(len(alignment)):
 
-        # Correct alignment
+        # Match
 
         if alignment[i] == "|":
-            continue
+            n_mat += 1
         
         # Substitution
 
@@ -116,7 +118,8 @@ def analyse_alignment(formatted_alignment):
             elif pred[i] in bases:
                 n_ins += 1
     
-    return { 'n_sub':   n_sub,
+    return { 'n_mat':   n_mat,
+             'n_sub':   n_sub,
              'n_ins':   n_ins,
              'n_del':   n_del,
              'n_hdel':  n_hdel,
@@ -125,33 +128,55 @@ def analyse_alignment(formatted_alignment):
              'n_casub': n_casub, 
              'n_gasub': n_gasub,
              'n_gtsub': n_gtsub,
-             'n_atsub': n_atsub }
+             'n_atsub': n_atsub,
+             'aln_len': len(alignment) }
 
 
 def main():
 
+    # Load guppy predictions
+
+    preds_file = '/mnt/sda/rna-basecaller/experiments/decode/without-rna-model/benchmark/4_ParseFastqToTsv/hek293_all_preds.tsv'
+    preds_df   = pd.read_csv(preds_file, sep='\t')
+    preds_df   = preds_df[preds_df.read != 'read']  # Remove erroneous header rows included in concatenation of fastq files
+
+    # Replace all Us with Ts so sequences are comparable to GT
+
+    preds_df.pred = preds_df.pred.astype('string')
+    preds_df.pred = preds_df.pred.str.replace('U', 'T')
+
+    # Reverse the Guppy sequences
+
+    preds_df.pred = preds_df.pred.str[::-1]
+
+    # Load ground truth sequences
+
+    gt_file = "/mnt/sda/rna-basecaller/experiments/decode/global-vs-local/train-3-37/val_test/4_Construct_GT_Label_Per_Read/hek293_read_gt_labels.json"
+    with open(gt_file, "r") as f:
+        gts   = json.load(f)
+
+    # Load read IDs
+
+    read_ids_file = "/mnt/sda/rna-basecaller/experiments/decode/global-vs-local/train-3-37/val_test/5_WriteToNumpy/hek293/hek293_read_ids.npy"
+    with open(read_ids_file, "rb") as f:
+        read_ids = np.load(f)
+
     # Write read errors to tsv file
 
-    print("read\tgt_length\tn_alignments\tn_sub\tn_ins\tn_del\tn_hdel\tn_ctsub\tn_cgsub\tn_casub\tn_gasub\tn_gtsub\tn_atsub")
-    
-    results_file = './decode_out/dynamic/30/decode-51-out.txt'
-    with open(results_file, "r") as f:
+    print("read\tgt_length\taln_length\tn_alignments\tn_mat\tn_sub\tn_ins\tn_del\tn_hdel\tn_ctsub\tn_cgsub\tn_casub\tn_gasub\tn_gtsub\tn_atsub")
+    for read in read_ids:
+        gt   = gts[read]
+        pred = preds_df[preds_df['read']==read]['pred'].values[0]
 
-        for line in f:
-            results = line.split('\t')
-            read    = results[1]
-            gt      = results[2]
-            pred    = results[3]
-    
-            # Pick a random alignment to analyse
+        # Pick a random alignment to analyse
 
-            alignments = pairwise2.align.globalms(gt, pred, 2, -4, -4, -2)
-            alignment = random.choice(alignments)
+        alignments = pairwise2.align.globalms(gt, pred, 2, -4, -4, -2)
+        alignment  = random.choice(alignments)
 
-            # Analyse errors in alignment
+        # Analyse errors in alignment
 
-            errors = analyse_alignment(format_alignment(*alignment))
-            print(f"{read}\t{len(gt)}\t{len(alignments)}\t{errors['n_sub']}\t{errors['n_ins']}\t{errors['n_del']}\t{errors['n_hdel']}\t{errors['n_ctsub']}\t{errors['n_cgsub']}\t{errors['n_casub']}\t{errors['n_gasub']}\t{errors['n_gtsub']}\t{errors['n_atsub']}")
+        errors = analyse_alignment(format_alignment(*alignment))
+        print(f"{read}\t{len(gt)}\t{errors['aln_len']}\t{len(alignments)}\t{errors['n_mat']}\t{errors['n_sub']}\t{errors['n_ins']}\t{errors['n_del']}\t{errors['n_hdel']}\t{errors['n_ctsub']}\t{errors['n_cgsub']}\t{errors['n_casub']}\t{errors['n_gasub']}\t{errors['n_gtsub']}\t{errors['n_atsub']}")
 
 
 if __name__ == "__main__":
