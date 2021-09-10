@@ -6,7 +6,7 @@ import pandas as pd
 def main():
     # Results directory
 
-    bw            = 100
+    bw            = 30
     approach      = "dynamic"
     results_dir   = f"./decode_out/{approach}/{bw}"
 
