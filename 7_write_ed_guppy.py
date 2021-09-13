@@ -35,12 +35,12 @@ def main():
     with open(gt_file, "r") as f:
         gts = json.load(f)
 
-    print("read\tpred\ted")
+    print("read\tgt\tpred\ted")
     for read in read_ids:
         gt = gts[read]
         pred = preds_df[preds_df['read']==read]['pred'].values[0]
         ed = levenshtein.normalized_distance(gt, pred)
-        print(f"{read}\t{pred}\t{ed}")
+        print(f"{read}\t{gt}\t{pred}\t{ed}")
 
 
 
