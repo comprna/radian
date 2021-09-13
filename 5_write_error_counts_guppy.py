@@ -136,7 +136,7 @@ def main():
 
     # Load guppy predictions
 
-    preds_file = '/mnt/sda/rna-basecaller/experiments/decode/without-rna-model/benchmark/4_ParseFastqToTsv/hek293_all_preds.tsv'
+    preds_file = '/mnt/sda/rna-basecaller/experiments/decode/without-rna-model/benchmark/4_ParseFastqToTsv/guppy4/guppy4_heart_all_preds.tsv'
     preds_df   = pd.read_csv(preds_file, sep='\t')
     preds_df   = preds_df[preds_df.read != 'read']  # Remove erroneous header rows included in concatenation of fastq files
 
@@ -151,13 +151,13 @@ def main():
 
     # Load ground truth sequences
 
-    gt_file = "/mnt/sda/rna-basecaller/experiments/decode/global-vs-local/train-3-37/val_test/4_Construct_GT_Label_Per_Read/hek293_read_gt_labels.json"
+    gt_file = "/mnt/sda/rna-basecaller/experiments/decode/global-vs-local/train-3-37/val_test/4_Construct_GT_Label_Per_Read/heart_read_gt_labels.json"
     with open(gt_file, "r") as f:
         gts   = json.load(f)
 
     # Load read IDs
 
-    read_ids_file = "/mnt/sda/rna-basecaller/experiments/decode/global-vs-local/train-3-37/val_test/5_WriteToNumpy/hek293/hek293_read_ids.npy"
+    read_ids_file = "/mnt/sda/rna-basecaller/experiments/decode/global-vs-local/train-3-37/val_test/5_WriteToNumpy/heart/heart_read_ids.npy"
     with open(read_ids_file, "rb") as f:
         read_ids = np.load(f)
 

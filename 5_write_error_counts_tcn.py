@@ -136,8 +136,8 @@ def main():
     # Write read errors to tsv file
 
     print("read\tgt_length\taln_length\tn_alignments\tn_mat\tn_sub\tn_ins\tn_del\tn_hdel\tn_ctsub\tn_cgsub\tn_casub\tn_gasub\tn_gtsub\tn_atsub")
-    
-    results_file = 'decode-7-out.txt'
+
+    results_file = '/mnt/sda/rna-basecaller/experiments/decode/without-rna-model/benchmark/3_OurTcnBasecall/decode-7-all-hek293-out.tsv'
     with open(results_file, "r") as f:
 
         for line in f:

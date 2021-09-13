@@ -5,7 +5,7 @@ library(readr)
 
 # Load results into tibble
 
-filepath <- 'error_counts_guppy_heart.tsv'
+filepath <- 'error_counts_tcn_hek293.tsv'
 
 filepath %>%
   read_tsv() %>%
@@ -31,20 +31,17 @@ ds %<>%
          atsub_pcent = n_atsub / n_sub * 100,
          )
 
-print(mean(ds[['n_alignments']]))
-print(mean(ds[['pcent_id']]))
-print(mean(ds[['tot_pcent']]))
-print(mean(ds[['sub_pcent']]))
-print(mean(ds[['ins_pcent']]))
-print(mean(ds[['ins_pcent2']]))
-print(mean(ds[['del_pcent']]))
-print(mean(ds[['hdel_pcent']], na.rm=TRUE))
-print(mean(ds[['ctsub_pcent']], na.rm=TRUE))
-print(mean(ds[['cgsub_pcent']], na.rm=TRUE))
-print(mean(ds[['casub_pcent']], na.rm=TRUE))
-print(mean(ds[['gasub_pcent']], na.rm=TRUE))
-print(mean(ds[['gtsub_pcent']], na.rm=TRUE))
-print(mean(ds[['atsub_pcent']], na.rm=TRUE))
-
-
-
+print(glue("Mean number of alignments: {mean(ds[['n_alignments']])}"))
+print(glue("Mean % identity: {mean(ds[['pcent_id']])}"))
+print(glue("Mean total error %: {mean(ds[['tot_pcent']])}"))
+print(glue("Mean sub %: {mean(ds[['sub_pcent']])}"))
+print(glue("Mean ins % (denom=GT length): {mean(ds[['ins_pcent']])}"))
+print(glue("Mean ins % (denom=Aln length): {mean(ds[['ins_pcent2']])}"))
+print(glue("Mean del %: {mean(ds[['del_pcent']])}"))
+print(glue("Mean homopolymer del % (as % of del): {mean(ds[['hdel_pcent']], na.rm=TRUE)}"))
+print(glue("Mean CT sub % (as % of sub): {mean(ds[['ctsub_pcent']], na.rm=TRUE)}"))
+print(glue("Mean CG sub % (as % of sub): {mean(ds[['cgsub_pcent']], na.rm=TRUE)}"))
+print(glue("Mean CA sub % (as % of sub): {mean(ds[['casub_pcent']], na.rm=TRUE)}"))
+print(glue("Mean GA sub % (as % of sub): {mean(ds[['gasub_pcent']], na.rm=TRUE)}"))
+print(glue("Mean GT sub % (as % of sub): {mean(ds[['gtsub_pcent']], na.rm=TRUE)}"))
+print(glue("Mean AT sub % (as % of sub): {mean(ds[['atsub_pcent']], na.rm=TRUE)}"))

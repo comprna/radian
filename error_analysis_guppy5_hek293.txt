@@ -1,0 +1,29 @@
+# A tibble: 1,467 x 15
+   read  gt_length aln_length n_alignments n_mat n_sub n_ins n_del n_hdel
+   <chr>     <dbl>      <dbl>        <dbl> <dbl> <dbl> <dbl> <dbl>  <dbl>
+ 1 71d7…       635        667         1000   543    32    32    60     14
+ 2 71e8…       480        593         1000   446    14   113    20      3
+ 3 71eb…       469        496         1000   428     8    27    33      8
+ 4 71ee…       497        525         1000   471    14    28    12      4
+ 5 71f4…       368        392         1000   333     5    24    30     13
+ 6 71fc…       687        703         1000   649    11    16    27     11
+ 7 71fd…       434        469         1000   413    12    35     9      2
+ 8 71ff…       670        699         1000   648     9    29    13      4
+ 9 720e…       359        375         1000   343     5    16    11      2
+10 7210…       356        366         1000   330    10    10    16      6
+# … with 1,457 more rows, and 6 more variables: n_ctsub <dbl>, n_cgsub <dbl>,
+#   n_casub <dbl>, n_gasub <dbl>, n_gtsub <dbl>, n_atsub <dbl>
+Mean number of alignments: 973.080436264485
+Mean % identity: 93.5138498165319
+Mean total error %: 28.8721846165063
+Mean sub %: 2.17208876856071
+Mean ins % (denom=GT length): 22.3860344330382
+Mean ins % (denom=Aln length): 11.4551375640271
+Mean del %: 4.31406141490737
+Mean homopolymer del % (as % of del): 31.9886854024644
+Mean CT sub % (as % of sub): 36.9876867998807
+Mean CG sub % (as % of sub): 2.58845631501508
+Mean CA sub % (as % of sub): 7.3748808370757
+Mean GA sub % (as % of sub): 22.7526463764662
+Mean GT sub % (as % of sub): 4.69147081878147
+Mean AT sub % (as % of sub): 25.6048588527808
