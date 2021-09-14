@@ -1,6 +1,0 @@
-(.venv) (base) alex@MHS-053958:~/Documents/rnabasecaller$  cd /home/alex/Documents/rnabasecaller ; /usr/bin/env /home/alex/Documents/rnabasecaller/.venv/bin/python /home/alex/.vscode/extensions/ms-python.python-2021.8.1159798656/pythonFiles/lib/python/debugpy/launcher 36435 -- /home/alex/Documents/rnabasecaller/5_compare_guppy_ed.py 
-n_better: 1633
-n_worse: 3791
-n_same: 7
-our ED mean: 0.25064247571216425
-guppy ED mean: 0.18649508224642256

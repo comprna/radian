@@ -1,0 +1,8 @@
+TCN ED mean: 0.32217638751750377
+Gup ED mean: 0.17612263052717722
+N better: 139
+% better: 9.475119291070211
+N worse: 1328
+% worse: 90.52488070892979
+N same: 0
+% same: 0.0
