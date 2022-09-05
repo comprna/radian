@@ -5,7 +5,7 @@ import json
 import numpy as np
 
 from decode_beam_scoring import beam_search
-from rna_model import get_rna_prediction_model
+from rna_model_lstm import get_rna_prediction_model
 from utilities import get_config, setup_local
 
 def main():

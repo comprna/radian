@@ -6,7 +6,7 @@ import numpy as np
 from textdistance import levenshtein
 
 from beam_search_decoder import ctcBeamSearch
-from rna_model import get_rna_prediction_model
+from rna_model_lstm import get_rna_prediction_model
 from utilities import get_config, setup_local
 
 def main():
