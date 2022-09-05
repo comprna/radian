@@ -5,6 +5,7 @@ import numpy as np
 from ont_fast5_api.fast5_interface import get_fast5_file
 
 from assembly import assemble_matrices, plot_assembly
+from decode_dynamic import beam_search
 from model import get_prediction_model
 from preprocess import mad_normalise, get_windows
 from utilities import get_config, setup_local
@@ -51,20 +52,11 @@ def main():
                 if decode == "global":
                     matrix = assemble_matrices(read_matrices, step_size)
                     # plot_assembly(read_matrices, matrix, window_size, step_size) # Debugging
-                    # ctc_decode(matrix)
+                    sequence = beam_search(matrix, 'ACGT', 6, )
                 # else:
                 #     for each window:
                 #         ctc_decode(window)
                 #     assemble_read_fragments
-
-                # read_matrix = combine_matrices(all_matrices, step_size)
-
-                # matrix_stack = stack_matrices(all_matrices, step_size)
-
-
-                # Now that we have the stack, collapse it to get the final
-                # global softmax so that there is only one distribution per
-                # timestep.
 
                 # Write to fastq
 
