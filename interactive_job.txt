@@ -1,0 +1,35 @@
+1) Open terminal window for local rnabasecaller repo
+
+2) Open terminal window for interactive job and run:
+
+qsub -I -qgpuvolta -Pxc17 -lwalltime=2:00:00 -lmem=200GB,ngpus=4,ncpus=48,jobfs=200GB,wd,storage=scratch/xc17+gdata/xc17
+
+module load cuda/10.1
+module load intel-mkl/2019.3.199
+module load tensorflow/2.3.0
+module load python3/3.7.4
+module load hdf5/1.8.21
+
+TRAIN_SCRIPT='/home/150/as2781/rnabasecaller/train.py'
+CONFIG_FILE='/home/150/as2781/rnabasecaller/config.yaml'
+SHARDS_DIR='/g/data/xc17/Eyras/alex/working/2_0_8_WriteTFRecords/3/512_128'
+
+For testing:
+SHARDS_DIR='/g/data/xc17/Eyras/alex/working/test_shards'
+
+3) Open terminal window for gadi rnabasecaller repo and pull latest changes
+
+4) cd in interactive job to train-x directory and run training
+
+python3 $TRAIN_SCRIPT -s $SHARDS_DIR -g $CONFIG_FILE
+
+5) Update config.yaml on local repo, push to remote, pull and then run in interactive session:
+
+CHECKPOINT='/g/data/xc17/Eyras/alex/rna-basecaller/train-35/model-69.h5'
+python3 $TRAIN_SCRIPT -s $SHARDS_DIR -g $CONFIG_FILE -c $CHECKPOINT -e 69
+
+6) Test
+
+TEST_SCRIPT='/home/150/as2781/rnabasecaller/test.py'
+python3 $TEST_SCRIPT > test_out.txt
+

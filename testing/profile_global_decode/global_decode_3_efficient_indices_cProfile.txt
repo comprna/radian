@@ -1,0 +1,122 @@
+         2970102 function calls (2969148 primitive calls) in 9.176 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    9.204    9.204 {built-in method builtins.exec}
+        1    0.000    0.000    9.204    9.204 <string>:1(<module>)
+        1    0.000    0.000    9.204    9.204 decode_global_softmax_hek293.py:42(callback)
+        1    7.084    7.084    9.176    9.176 beam_search_decoder.py:102(ctcBeamSearch)
+   744930    1.456    0.000    1.652    0.000 beam_search_decoder.py:97(addBeam)
+    24833    0.033    0.000    0.399    0.000 beam_search_decoder.py:37(sort)
+    24833    0.122    0.000    0.282    0.000 {built-in method builtins.sorted}
+   733322    0.196    0.000    0.196    0.000 beam_search_decoder.py:16(__init__)
+   733322    0.159    0.000    0.159    0.000 beam_search_decoder.py:40(<lambda>)
+   595944    0.035    0.000    0.035    0.000 beam_search_decoder.py:56(applyRNAModel)
+    24833    0.030    0.000    0.030    0.000 beam_search_decoder.py:41(<listcomp>)
+        1    0.000    0.000    0.028    0.028 npyio.py:284(load)
+        1    0.000    0.000    0.028    0.028 format.py:699(read_array)
+    24833    0.024    0.000    0.024    0.000 beam_search_decoder.py:39(<listcomp>)
+        1    0.024    0.024    0.024    0.024 {built-in method _pickle.load}
+    24833    0.004    0.000    0.004    0.000 beam_search_decoder.py:28(__init__)
+        1    0.000    0.000    0.004    0.004 format.py:570(_read_array_header)
+        1    0.000    0.000    0.004    0.004 format.py:535(_filter_header)
+       20    0.000    0.000    0.004    0.000 tokenize.py:487(_tokenize)
+       18    0.000    0.000    0.004    0.000 tokenize.py:147(_compile)
+       18    0.000    0.000    0.004    0.000 re.py:232(compile)
+       18    0.000    0.000    0.004    0.000 re.py:271(_compile)
+        1    0.000    0.000    0.004    0.004 sre_compile.py:759(compile)
+        1    0.000    0.000    0.003    0.003 sre_parse.py:913(parse)
+     46/1    0.000    0.000    0.003    0.003 sre_parse.py:411(_parse_sub)
+    175/1    0.001    0.000    0.003    0.003 sre_parse.py:469(_parse)
+    24835    0.002    0.000    0.002    0.000 {method 'items' of 'dict' objects}
+        1    0.000    0.000    0.001    0.001 sre_compile.py:598(_code)
+    235/1    0.000    0.000    0.001    0.001 sre_compile.py:71(_compile)
+       22    0.000    0.000    0.000    0.000 sre_parse.py:96(closegroup)
+   257/23    0.000    0.000    0.000    0.000 sre_parse.py:174(getwidth)
+     1315    0.000    0.000    0.000    0.000 sre_parse.py:164(__getitem__)
+      604    0.000    0.000    0.000    0.000 sre_parse.py:254(get)
+      839    0.000    0.000    0.000    0.000 sre_parse.py:233(__next)
+       54    0.000    0.000    0.000    0.000 sre_compile.py:276(_optimize_charset)
+2136/1876    0.000    0.000    0.000    0.000 {built-in method builtins.len}
+      480    0.000    0.000    0.000    0.000 sre_parse.py:249(match)
+        1    0.000    0.000    0.000    0.000 beam_search_decoder.py:31(norm)
+     2680    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}
+     1376    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+      258    0.000    0.000    0.000    0.000 sre_parse.py:111(__init__)
+      621    0.000    0.000    0.000    0.000 {built-in method builtins.min}
+      425    0.000    0.000    0.000    0.000 sre_parse.py:160(__len__)
+      355    0.000    0.000    0.000    0.000 sre_parse.py:172(append)
+       62    0.000    0.000    0.000    0.000 sre_compile.py:423(_simple)
+      206    0.000    0.000    0.000    0.000 sre_parse.py:286(tell)
+       53    0.000    0.000    0.000    0.000 sre_parse.py:408(_uniq)
+       54    0.000    0.000    0.000    0.000 sre_compile.py:249(_compile_charset)
+        1    0.000    0.000    0.000    0.000 utils.py:959(safe_eval)
+        1    0.000    0.000    0.000    0.000 ast.py:38(literal_eval)
+        9    0.000    0.000    0.000    0.000 sre_compile.py:411(_mk_bitmap)
+        1    0.000    0.000    0.000    0.000 tokenize.py:312(untokenize)
+        1    0.000    0.000    0.000    0.000 ast.py:30(parse)
+       22    0.000    0.000    0.000    0.000 sre_parse.py:84(opengroup)
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.compile}
+        1    0.000    0.000    0.000    0.000 tokenize.py:238(untokenize)
+        1    0.000    0.000    0.000    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+       24    0.000    0.000    0.000    0.000 sre_parse.py:343(_escape)
+      150    0.000    0.000    0.000    0.000 {built-in method builtins.max}
+      206    0.000    0.000    0.000    0.000 {method 'find' of 'bytearray' objects}
+       18    0.000    0.000    0.000    0.000 {method 'match' of 're.Pattern' objects}
+      339    0.000    0.000    0.000    0.000 {built-in method builtins.ord}
+       53    0.000    0.000    0.000    0.000 {built-in method fromkeys}
+        9    0.000    0.000    0.000    0.000 sre_compile.py:413(<listcomp>)
+       46    0.000    0.000    0.000    0.000 sre_parse.py:81(groups)
+        1    0.000    0.000    0.000    0.000 {built-in method io.open}
+       63    0.000    0.000    0.000    0.000 sre_parse.py:168(__setitem__)
+        1    0.000    0.000    0.000    0.000 contextlib.py:481(__exit__)
+       62    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}
+      8/1    0.000    0.000    0.000    0.000 ast.py:64(_convert)
+        1    0.000    0.000    0.000    0.000 {built-in method _sre.compile}
+       19    0.000    0.000    0.000    0.000 <string>:1(__new__)
+       18    0.000    0.000    0.000    0.000 types.py:164(__get__)
+        1    0.000    0.000    0.000    0.000 enum.py:836(__and__)
+       18    0.000    0.000    0.000    0.000 tokenize.py:225(add_whitespace)
+        3    0.000    0.000    0.000    0.000 format.py:893(_read_bytes)
+       13    0.000    0.000    0.000    0.000 sre_parse.py:295(_class_escape)
+        1    0.000    0.000    0.000    0.000 sre_compile.py:536(_compile_info)
+        4    0.000    0.000    0.000    0.000 {method 'read' of '_io.BufferedReader' objects}
+        1    0.000    0.000    0.000    0.000 format.py:218(read_magic)
+       22    0.000    0.000    0.000    0.000 sre_compile.py:65(_combine_flags)
+       18    0.000    0.000    0.000    0.000 {method 'span' of 're.Match' objects}
+       19    0.000    0.000    0.000    0.000 {built-in method __new__ of type object at 0x55eb00a27240}
+        1    0.000    0.000    0.000    0.000 format.py:283(descr_to_dtype)
+        1    0.000    0.000    0.000    0.000 sre_parse.py:224(__init__)
+        1    0.000    0.000    0.000    0.000 {built-in method sys.exc_info}
+       12    0.000    0.000    0.000    0.000 {method 'isidentifier' of 'str' objects}
+        5    0.000    0.000    0.000    0.000 {method 'insert' of 'list' objects}
+        2    0.000    0.000    0.000    0.000 enum.py:284(__call__)
+        1    0.000    0.000    0.000    0.000 {built-in method _struct.calcsize}
+        1    0.000    0.000    0.000    0.000 {method 'seek' of '_io.BufferedReader' objects}
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.all}
+        2    0.000    0.000    0.000    0.000 {built-in method builtins.hasattr}
+        1    0.000    0.000    0.000    0.000 {method 'join' of 'str' objects}
+        9    0.000    0.000    0.000    0.000 {method 'translate' of 'bytearray' objects}
+        1    0.000    0.000    0.000    0.000 {method 'decode' of 'bytes' objects}
+        1    0.000    0.000    0.000    0.000 tokenize.py:219(__init__)
+        1    0.000    0.000    0.000    0.000 tokenize.py:672(generate_tokens)
+        1    0.000    0.000    0.000    0.000 format.py:191(_check_version)
+        1    0.000    0.000    0.000    0.000 sre_parse.py:76(__init__)
+        1    0.000    0.000    0.000    0.000 sre_parse.py:897(fix_flags)
+        2    0.000    0.000    0.000    0.000 enum.py:526(__new__)
+       18    0.000    0.000    0.000    0.000 enum.py:628(value)
+        2    0.000    0.000    0.000    0.000 sre_compile.py:595(isstring)
+        1    0.000    0.000    0.000    0.000 contextlib.py:387(__init__)
+        1    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:1009(_handle_fromlist)
+        2    0.000    0.000    0.000    0.000 {method 'readline' of '_io.StringIO' objects}
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.iter}
+        1    0.000    0.000    0.000    0.000 {method 'keys' of 'dict' objects}
+       10    0.000    0.000    0.000    0.000 {method 'extend' of 'list' objects}
+        2    0.000    0.000    0.000    0.000 {method 'startswith' of 'bytes' objects}
+        2    0.000    0.000    0.000    0.000 format.py:613(<genexpr>)
+        1    0.000    0.000    0.000    0.000 contextlib.py:478(__enter__)
+        1    0.000    0.000    0.000    0.000 {built-in method _struct.unpack}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+

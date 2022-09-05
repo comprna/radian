@@ -4,18 +4,19 @@ This has been adapted from https://github.com/githubharald/CTCDecoder/blob/maste
 
 from collections import defaultdict
 from dataclasses import dataclass
+import math
 from typing import List, Tuple
 
 import numpy as np
 from scipy.stats import entropy
+from sklearn.preprocessing import normalize
 import tensorflow as tf
 
 
 N_BASES = 4
 
 def log(x: float) -> float:
-    with np.errstate(divide='ignore'):
-        return np.log(x)
+    return -math.inf if x == 0 else math.log(x)
 
 
 @dataclass
@@ -37,7 +38,7 @@ class BeamList:
         self.entries = defaultdict(BeamEntry)
 
     def normalize(self) -> None:
-        """Length-normalise LM score."""
+        """Length-normalize LM score."""
         for k in self.entries.keys():
             labeling_len = len(self.entries[k].labeling)
             self.entries[k].pr_text = (1.0 / (labeling_len if labeling_len else 1.0)) * self.entries[k].pr_text
@@ -65,9 +66,9 @@ def apply_rna_model(
 
     context = parent_beam.labeling[-len_context:]
     if context not in cache:
-        context = tf.one_hot(list(parent_beam.labeling[-len_context:]), N_BASES).numpy()
-        context = context.reshape(1, len_context, N_BASES)
-        probs = lm.predict(context)
+        context_arr = tf.one_hot(list(context), N_BASES).numpy()
+        context_arr = context_arr.reshape(1, len_context, N_BASES)
+        probs = lm.predict(context_arr)
         cache[context] = probs
     else:
         probs = cache[context]
@@ -76,15 +77,16 @@ def apply_rna_model(
     child_beam.pr_text = parent_beam.pr_text + factor * log(probs[0][new_char])  # probability of sequence
     child_beam.lm_applied = True  # only apply LM once per beam entry
 
-
+# TODO: Define class for decoding params
 def beam_search(
     mat: np.ndarray,
     bases: str,
     beam_width: int,
     lm: tf.keras.Model,
     factor: int,
-    threshold: int,
-    len_context: int
+    len_context: int,
+    cache: dict,
+    normalize_after: bool
 ) -> str:
     """Beam search decoder.
 
@@ -99,8 +101,6 @@ def beam_search(
     Returns:
         The decoded text.
     """
-
-    cache = {}
 
     blank_idx = len(bases)
     max_T, max_C = mat.shape
@@ -126,7 +126,7 @@ def beam_search(
         # go over best beams
         for labeling in best_labelings:
 
-            # COPY BEAM: https://towardsdatascience.com/beam-search-decoding-in-ctc-trained-neural-networks-5a889a3d85a7
+            # COPY BEAM
 
             # probability of paths ending with a non-blank
             pr_non_blank = log(0)
@@ -160,18 +160,11 @@ def beam_search(
 
                 # if new labeling contains duplicate char at the end, only consider paths ending with a blank
                 if labeling and labeling[-1] == c:
-                    # we can only extend a beam with the same char and it result
-					# in a beam with duplicated char at the end if the previous
-					# char was a blank (otherwise the repeated char would get
-					# merged, as above), so we multiply by the blank probability
                     pr_non_blank = last.entries[labeling].pr_blank + log(mat[t, c])
                 else:
-                    # we can extend a beam with a different char regardless of
-					# whether the previous char was a blank, so we multiply
-					# by the total probability
                     pr_non_blank = last.entries[labeling].pr_total + log(mat[t, c])
 
-                # fill in data
+                # fill in data TODO: Refactor
                 curr.entries[new_labeling].labeling = new_labeling
                 curr.entries[new_labeling].pr_non_blank = np.logaddexp(curr.entries[new_labeling].pr_non_blank,
                                                                        pr_non_blank)
@@ -179,30 +172,23 @@ def beam_search(
                 curr.entries[new_labeling].indices = new_indices
 
                 # apply LM
-                t_entropy = entropy(mat[t])
-                if t_entropy > threshold:
-                    apply_rna_model(curr.entries[labeling],
-                                    curr.entries[new_labeling],
-                                    lm,
-                                    cache,
-                                    factor,
-                                    len_context)
+                apply_rna_model(curr.entries[labeling],
+                                curr.entries[new_labeling],
+                                lm,
+                                cache,
+                                factor,
+                                len_context)
 
         # set new beam state
         last = curr
 
-    # normalise LM scores according to beam-labeling-length
-    last.normalize()
+        # normalize LM scores according to beam-labeling-length
+        if normalize_after == False:
+            last.normalize()
 
-    # for testing
-    best_labelings = last.sort_labelings()[0]
-    for i, beam in enumerate(best_labelings):
-            print(beam)
-            print(np.exp(last.entries[beam].pr_total))
-            print(last.entries[beam].pr_total)
-
-            if i == 6:
-                break
+    # normalize LM scores according to beam-labeling-length
+    if normalize_after == True:
+        last.normalize()
 
     # sort by probability
     sorted_labels = last.sort_labelings()
@@ -212,5 +198,4 @@ def beam_search(
     # map label string to sequence of bases
     best_seq = ''.join([bases[label] for label in best_labeling])
 
-    # return best_seq, indices
-    return sorted_labels[0][:beam_width]
+    return best_seq, indices
