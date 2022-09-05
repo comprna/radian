@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from ont_fast5_api.fast5_interface import get_fast5_file
 
-from assembly import assemble_matrices
+from assembly import assemble_matrices, plot_assembly
 from model import get_prediction_model
 from preprocess import mad_normalise, get_windows
 from utilities import get_config, setup_local
@@ -13,7 +13,8 @@ from utilities import get_config, setup_local
 def main():
     setup_local()
 
-    fast5_dir = "/mnt/sda/rna-basecaller/benchmarking/0_TestData/human-dataset"
+    # This can contain single or multi fast5
+    fast5_dir = "/mnt/sda/rna-basecaller/benchmarking/0_TestData/heart"
 
     # Parameters
     outlier_z_score = 4
@@ -31,7 +32,7 @@ def main():
     # Basecall each read in fast5 directory
     for fast5_filepath in Path(fast5_dir).rglob('*.fast5'):
         with get_fast5_file(fast5_filepath, 'r') as fast5:
-            for read in fast5.get_reads():             
+            for read in fast5.get_reads():   
                 # Preprocess read
                 raw_signal = read.get_raw_data()
                 norm_signal = mad_normalise(raw_signal, outlier_z_score)
@@ -48,7 +49,8 @@ def main():
                 # Decode CTC output (with/without RNA model, global/local)
 
                 if decode == "global":
-                    matrix = assemble_matrices(read_matrices)
+                    matrix = assemble_matrices(read_matrices, step_size)
+                    # plot_assembly(read_matrices, matrix, window_size, step_size) # Debugging
                     # ctc_decode(matrix)
                 # else:
                 #     for each window:
