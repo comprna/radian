@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from matplotlib import pyplot as plt
@@ -13,6 +14,10 @@ from utilities import get_config, setup_local
 
 def main():
     setup_local()
+
+    # Load RNA model
+    with open("kmer_model/transcripts-12mer-model.json", "r") as f:
+        rna_model = json.load(f)
 
     # This can contain single or multi fast5
     fast5_dir = "/mnt/sda/rna-basecaller/benchmarking/0_TestData/heart"
