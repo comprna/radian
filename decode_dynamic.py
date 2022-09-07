@@ -92,11 +92,11 @@ def entropy(dist):
     return -sum([p * math.log(p) for p in dist])
 
 
-def apply_rna_model(s_dist, context, model, pred_cache, entr_cache, s_entropy, r_threshold, s_threshold):
+def apply_rna_model(s_dist, context, model, entr_cache, s_entropy, r_threshold, s_threshold):
     if model is None:
         return s_dist
 
-    r_dist = get_next_base_prob(context, model, pred_cache)
+    r_dist = get_next_base_prob(context, model)
 
     # compute the entropy of the RNA model distribution (speed up with cache)
     if context not in entr_cache:
@@ -121,7 +121,6 @@ def beam_search(
     s_threshold: int,
     r_threshold: int,
     len_context: int,
-    pred_cache: dict,
     entr_cache: dict
 ) -> str:
     """Beam search decoder.
@@ -176,7 +175,7 @@ def beam_search(
                 # apply RNA model to the posteriors
                 if len(labeling) >= len_context + 1:
                     context = get_context(labeling, len_context, exclude_last=True)
-                    pr_dist = apply_rna_model(mat[t], context, lm, pred_cache, entr_cache, s_entropies[t], r_threshold, s_threshold)
+                    pr_dist = apply_rna_model(mat[t], context, lm, entr_cache, s_entropies[t], r_threshold, s_threshold)
                 else:
                     pr_dist = mat[t]
 
@@ -198,7 +197,7 @@ def beam_search(
             # apply RNA model to the posteriors
             if len(labeling) >= len_context:
                 context = get_context(labeling, len_context, exclude_last=False)
-                pr_dist = apply_rna_model(mat[t], context, lm, pred_cache, entr_cache, s_entropies[t], r_threshold, s_threshold)
+                pr_dist = apply_rna_model(mat[t], context, lm, entr_cache, s_entropies[t], r_threshold, s_threshold)
             else:
                 pr_dist = mat[t]
 
