@@ -138,7 +138,7 @@ def beam_search(
     """
 
     blank_idx = len(bases)
-    max_T, max_C = mat.shape
+    timesteps, chars = mat.shape
 
     # initialise beam state
     last = BeamList()
@@ -149,12 +149,12 @@ def beam_search(
 
     # pre-compute entropy for each timestep in the softmax matrix
     s_entropies = []
-    for t in range(max_T):
+    for t in range(timesteps):
         # don't include the blank symbol, so we need to first normalise
         s_entropies.append(entropy(normalise(mat[t][:-1])))
 
     # go over all time-steps
-    for t in range(max_T):
+    for t in range(timesteps):
         # TODO: Remove (test to skip confusion at start of matrix)
         if t < 30:
             continue
@@ -202,7 +202,7 @@ def beam_search(
                 pr_dist = mat[t]
 
             # extend current beam-labeling
-            for c in range(max_C - 1):
+            for c in range(chars - 1):
                 # add new char to current beam-labeling
                 new_labeling = labeling + (c,)
 
