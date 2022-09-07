@@ -155,9 +155,6 @@ def beam_search(
 
     # go over all time-steps
     for t in range(timesteps):
-        # TODO: Remove (test to skip confusion at start of matrix)
-        if t < 30:
-            continue
         curr = BeamList()
 
         # get beam-labelings of best beams
