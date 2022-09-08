@@ -24,7 +24,6 @@ class BeamEntry:
     pr_non_blank: float = log(0)  # non-blank
     pr_blank: float = log(0)  # blank
     labeling: tuple = ()  # beam-labeling
-    indices: tuple = ()  # indices of each character in beam
 
 
 class BeamList:
@@ -37,7 +36,7 @@ class BeamList:
         """Return beam-labelings, sorted by probability."""
         beams = self.entries.values()
         sorted_beams = sorted(beams, reverse=True, key=lambda x: x.pr_total)
-        return [x.labeling for x in sorted_beams], [x.indices for x in sorted_beams]
+        return [x.labeling for x in sorted_beams]
 
 
 def get_context(labeling, len_context, exclude_last=False):
@@ -143,7 +142,7 @@ def beam_search(
         curr = BeamList()
 
         # get beam-labelings of best beams
-        best_labelings = last.sort_labelings()[0][:beam_width]
+        best_labelings = last.sort_labelings()[:beam_width]
 
         # go over best beams
         for labeling in best_labelings:
@@ -174,7 +173,6 @@ def beam_search(
             curr.entries[labeling].pr_blank = np.logaddexp(curr.entries[labeling].pr_blank, pr_blank)
             curr.entries[labeling].pr_total = np.logaddexp(curr.entries[labeling].pr_total,
                                                            np.logaddexp(pr_blank, pr_non_blank))
-            curr.entries[labeling].indices = last.entries[labeling].indices
 
             # EXTEND BEAM
 
@@ -190,9 +188,6 @@ def beam_search(
                 # add new char to current beam-labeling
                 new_labeling = labeling + (c,)
 
-                # keep track of matrix index that new char is located at
-                new_indices = curr.entries[labeling].indices + (t,)
-
                 # if new labeling contains duplicate char at the end, only consider paths ending with a blank
                 if labeling and labeling[-1] == c:
                     pr_non_blank = last.entries[labeling].pr_blank + log(pr_dist[c])
@@ -204,17 +199,14 @@ def beam_search(
                 curr.entries[new_labeling].pr_non_blank = np.logaddexp(curr.entries[new_labeling].pr_non_blank,
                                                                        pr_non_blank)
                 curr.entries[new_labeling].pr_total = np.logaddexp(curr.entries[new_labeling].pr_total, pr_non_blank)
-                curr.entries[new_labeling].indices = new_indices
 
         # set new beam state
         last = curr
 
     # sort by probability
-    sorted_labels = last.sort_labelings()
-    best_labeling = sorted_labels[0][0]  # get most probable labeling
-    indices = sorted_labels[1][0]
+    best_labeling = last.sort_labelings()[0]
 
     # map label string to sequence of bases
     best_seq = ''.join([bases[label] for label in best_labeling])
 
-    return best_seq, indices
+    return best_seq
