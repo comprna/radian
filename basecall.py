@@ -42,10 +42,15 @@ def main():
     sig_model_file = '/mnt/sda/rna-basecaller/benchmarking/2_SigModel/s-model-3-10.h5'
     sig_model = get_prediction_model(sig_model_file, sig_config)
 
+    # Output to fastq
+    fastq_n = 0
+    fastq_i = 0
+    fastq = open(f"reads-{fastq_n}.fastq", "w")
+
     # Basecall each read in fast5 directory
     for fast5_filepath in Path(fast5_dir).rglob('*.fast5'):
         with get_fast5_file(fast5_filepath, 'r') as fast5:
-            for read in fast5.get_reads():   
+            for read in fast5.get_reads(): 
                 # Preprocess read
                 raw_signal = read.get_raw_data()
                 norm_signal = mad_normalise(raw_signal, outlier_z_score)
@@ -71,7 +76,19 @@ def main():
                 #         ctc_decode(window)
                 #     assemble_read_fragments
 
-                # Write to fastq
+                # Write read to fastq file
+                fastq.write(f"@{read.read_id}\n{sequence}\n+\nTODO: Phred")
+                fastq_i += 1
+
+                # Only write 4,000 reads per fastq file
+                if fastq_i == 4000:
+                    fastq.close()
+                    fastq_n += 1
+                    fastq = open(f"reads-{fastq_n}.fastq", "w")
+                    fastq_i = 0
+
+    # Make sure last fastq file is closed
+    fastq.close()
 
 
 if __name__ == "__main__":
