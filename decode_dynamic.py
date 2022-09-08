@@ -50,21 +50,6 @@ def get_context(labeling, len_context, exclude_last=False):
     return context
 
 
-def get_next_base_prob(context, model, pred_cache):
-    if context not in pred_cache:
-        # convert context into RNA model input format
-        context_arr = tf.one_hot(list(context), N_BASES).numpy()
-        context_arr = context_arr.reshape(1, len(context), N_BASES)
-
-        # predict the distribution of the next base given the context
-        dist = model.predict(context_arr)[0]
-        pred_cache[context] = dist
-    else:
-        dist = pred_cache[context]
-    
-    return dist
-
-
 def combine_dists(r_dist, s_dist):
     # get the base (i.e. non-blank) distribution from the signal model
     s_base_prob = np.sum(s_dist[:-1])
@@ -96,7 +81,7 @@ def apply_rna_model(s_dist, context, model, entr_cache, s_entropy, r_threshold, 
     if model is None:
         return s_dist
 
-    r_dist = get_next_base_prob(context, model)
+    r_dist = np.asarray(model[context])
 
     # compute the entropy of the RNA model distribution (speed up with cache)
     if context not in entr_cache:
@@ -171,7 +156,9 @@ def beam_search(
             if labeling:
                 # apply RNA model to the posteriors
                 if len(labeling) >= len_context + 1:
+                    # TODO: Add comment on why we exclude last
                     context = get_context(labeling, len_context, exclude_last=True)
+                    # TODO: Reconsider if RNA model should be applied here
                     pr_dist = apply_rna_model(mat[t], context, lm, entr_cache, s_entropies[t], r_threshold, s_threshold)
                 else:
                     pr_dist = mat[t]
