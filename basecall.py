@@ -5,9 +5,9 @@ from matplotlib import pyplot as plt
 import numpy as np
 from ont_fast5_api.fast5_interface import get_fast5_file
 
-from assembly import assemble_matrices, plot_assembly
+from matrix_assembly import assemble_matrices, plot_assembly
 from decode_dynamic import beam_search
-from easy_assembler import simple_assembly, index2base # TODO: Rename assembly files
+from sequence_assembly import simple_assembly, index2base # TODO: Rename assembly files
 from model import get_prediction_model
 from preprocess import mad_normalise, get_windows
 from utilities import get_config, setup_local

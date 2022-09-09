@@ -7,7 +7,7 @@ from scipy.stats import entropy
 from textdistance import levenshtein
 
 from beam_search_decoder import ctcBeamSearch
-from easy_assembler import simple_assembly, index2base
+from sequence_assembly import simple_assembly, index2base
 
 STEP_SIZE = 128
 WINDOW_LEN = 1024

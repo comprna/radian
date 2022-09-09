@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from beam_search_decoder import ctcBeamSearch
-from easy_assembler import simple_assembly, index2base
+from sequence_assembly import simple_assembly, index2base
 from utilities import setup_local
 
 def overlay_prediction(plot, prediction, indices, x_min, x_max, color, offset=0):

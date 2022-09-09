@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 
-from easy_assembler import simple_assembly, index2base
+from sequence_assembly import simple_assembly, index2base
 
 def main():
     # Load local window predictions

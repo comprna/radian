@@ -48,6 +48,7 @@ def add_count(concensus, start_indx, segment):
         concensus[base_dict[base]][start_indx + i] += 1
 
 
+# TODO: Delete this????
 #########################Simple assembly method with quality score################################
 def simple_assembly_qs(bpreads, qs_list):
     concensus = np.zeros([4, 1000])
