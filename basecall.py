@@ -7,45 +7,57 @@ from ont_fast5_api.fast5_interface import get_fast5_file
 
 from assembly import assemble_matrices, plot_assembly
 from decode_dynamic import beam_search
+from easy_assembler import simple_assembly, index2base # TODO: Rename assembly files
 from model import get_prediction_model
 from preprocess import mad_normalise, get_windows
 from utilities import get_config, setup_local
 
 
 def main():
+    # Comment out if running on gadi
     setup_local()
+    
+    # Data directories
+    fast5_dir = "/mnt/sda/rna-basecaller/benchmarking/0_TestData/heart" # Single or multi fast5s
+    fastq_dir = 'fastq'
+
+    # Preprocessing parameters
+    outlier_z_score = 4
+    window_size = 1024
+    step_size = 128
+    batch_size = 32
+
+    # Model files
+    rna_model_file = "kmer_model/transcripts-6mer-rna-model.json"
+    sig_config_file = '/mnt/sda/rna-basecaller/benchmarking/2_SigModel/s-config-3.yaml'
+    sig_model_file = '/mnt/sda/rna-basecaller/benchmarking/2_SigModel/s-model-3-10.h5'
+
+    # Decoding parameters
+    decode = "local"
+    beam_width = 6
+    s_threshold = 0.5
+    r_threshold = 0.5
+    context_len = 5
 
     # Load RNA model
-    with open("kmer_model/transcripts-6mer-rna-model.json", "r") as f:
-        rna_model_init = json.load(f)
+    with open(rna_model_file, "r") as f:
+        rna_model_raw = json.load(f)
         # Format RNA model keys to format expected by beam search decoder
         rna_model = {}
-        for context, dist in rna_model_init.items():
+        for context, dist in rna_model_raw.items():
             bases = ['A', 'C', 'G', 'T']
             context_formatted = tuple(map(lambda b: bases.index(b), context))
             rna_model[context_formatted] = dist
         entropy_cache = {}
 
-    # This can contain single or multi fast5
-    fast5_dir = "/mnt/sda/rna-basecaller/benchmarking/0_TestData/heart"
-
-    # Parameters
-    outlier_z_score = 4
-    window_size = 1024
-    step_size = 128
-    batch_size = 32
-    decode = "global"
-
     # Load signal-to-sequence model
-    sig_config_file = '/mnt/sda/rna-basecaller/benchmarking/2_SigModel/s-config-3.yaml'
     sig_config = get_config(sig_config_file)
-    sig_model_file = '/mnt/sda/rna-basecaller/benchmarking/2_SigModel/s-model-3-10.h5'
     sig_model = get_prediction_model(sig_model_file, sig_config)
 
     # Output to fastq
     fastq_n = 0
     fastq_i = 0
-    fastq = open(f"reads-{fastq_n}.fastq", "w")
+    fastq = open(f"{fastq_dir}/reads-{fastq_n}.fastq", "w")
 
     # Basecall each read in fast5 directory
     for fast5_filepath in Path(fast5_dir).rglob('*.fast5'):
@@ -65,16 +77,34 @@ def main():
                     read_matrices.append(sig_model.predict(batch))
                 
                 # Decode CTC output (with/without RNA model, global/local)
-
                 if decode == "global":
                     matrix = assemble_matrices(read_matrices, step_size)
                     # plot_assembly(read_matrices, matrix, window_size, step_size) # Debugging
-                    sequence = beam_search(matrix, 'ACGT', 6, rna_model, 0.5, 0.5, 5, entropy_cache)
-                    print(sequence)
-                # else:
-                #     for each window:
-                #         ctc_decode(window)
-                #     assemble_read_fragments
+                    sequence = beam_search(matrix,
+                                           'ACGT',
+                                           beam_width, 
+                                           rna_model,
+                                           s_threshold,
+                                           r_threshold,
+                                           context_len,
+                                           entropy_cache)
+                elif decode == "local":
+                    read_fragments = []
+                    for batch_matrices in read_matrices:
+                        for matrix in batch_matrices:
+                            sequence = beam_search(matrix,
+                                                   'ACGT',
+                                                   beam_width,
+                                                   None,
+                                                   None,
+                                                   None,
+                                                   None,
+                                                   None)
+                            read_fragments.append(sequence)
+                    consensus = simple_assembly(read_fragments)
+                    sequence = index2base(np.argmax(consensus, axis=0))
+                else:
+                    raise ValueError("Decoding type invalid")
 
                 # Write read to fastq file
                 fastq.write(f"@{read.read_id}\n{sequence}\n+\nTODO: Phred")
