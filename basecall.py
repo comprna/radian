@@ -122,7 +122,7 @@ def main():
                     raise ValueError("Decoding type invalid")
 
                 # Write read to fastq file
-                fastq.write(f"@{read.read_id}\n{sequence}\n+\nTODO: Phred")
+                fastq.write(f"@{read.read_id}\n{sequence}\n+\nTODO: Phred\n")
                 fastq_i += 1
 
                 # Only write 4,000 reads per fastq file
