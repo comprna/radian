@@ -154,7 +154,7 @@ def beam_search(
             # in case of non-empty beam
             if labeling:
                 # apply RNA model to the posteriors
-                if len(labeling) >= len_context + 1:
+                if lm and len(labeling) >= len_context + 1:
                     # TODO: Add comment on why we exclude last
                     context = get_context(labeling, len_context, exclude_last=True)
                     # TODO: Reconsider if RNA model should be applied here
@@ -177,7 +177,7 @@ def beam_search(
             # EXTEND BEAM
 
             # apply RNA model to the posteriors
-            if len(labeling) >= len_context:
+            if lm and len(labeling) >= len_context:
                 context = get_context(labeling, len_context, exclude_last=False)
                 pr_dist = apply_rna_model(mat[t], context, lm, entr_cache, s_entropies[t], r_threshold, s_threshold)
             else:
