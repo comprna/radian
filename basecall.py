@@ -50,15 +50,19 @@ def main():
     context_len = int(sys.argv[9])
 
     # Load RNA model
-    with open(rna_model_file, "r") as f:
-        rna_model_raw = json.load(f)
-        # Format RNA model keys to format expected by beam search decoder
-        rna_model = {}
-        for context, dist in rna_model_raw.items():
-            bases = ['A', 'C', 'G', 'T']
-            context_formatted = tuple(map(lambda b: bases.index(b), context))
-            rna_model[context_formatted] = dist
-        entropy_cache = {}
+    if rna_model_file != "None":
+        with open(rna_model_file, "r") as f:
+            rna_model_raw = json.load(f)
+            # Format RNA model keys to format expected by beam search decoder
+            rna_model = {}
+            for context, dist in rna_model_raw.items():
+                bases = ['A', 'C', 'G', 'T']
+                context_formatted = tuple(map(lambda b: bases.index(b), context))
+                rna_model[context_formatted] = dist
+    else:
+        print("No RNA model provided!")
+        rna_model = None
+    entropy_cache = {}
 
     # Load signal-to-sequence model
     sig_config = get_config(sig_config_file)
