@@ -7,8 +7,8 @@ import pysam
 
 def main():
     # SAM file to parse
-    sam_file = sys.argv[1]
-    # sam_file = "/home/alex/Documents/tmp/ngram-1-aln.sam"
+    # sam_file = sys.argv[1]
+    sam_file = "/home/alex/Documents/tmp/ngram-1-aln.sam"
     out_file = sam_file.replace(".sam", ".tsv")
 
     # Store stats for all reads
@@ -20,9 +20,21 @@ def main():
         out.write("read_id\tref_name\tn_match\tn_ins\tn_del\tn_sub\n")
         
         n_unmapped = 0
+        n_secondary = 0
+        n_reverse = 0
+        n_supplementary = 0
         for read in sam_file:
             if read.is_unmapped:
                 n_unmapped += 1
+                continue
+            if read.is_secondary:
+                n_secondary += 1    # This should stay at 0 due to minimap2 flag
+                continue
+            if read.is_reverse:
+                n_reverse += 1      # This should stay at 0 due to minimap2 flag
+                continue
+            if read.is_supplementary:
+                n_supplementary += 1
                 continue
 
             if not read.seq:
@@ -67,6 +79,9 @@ def main():
     # Print metrics
     stats = np.asarray(stats)
     print(f"N unmapped reads: {n_unmapped}")
+    print(f"N reverse strand reads: {n_reverse}")
+    print(f"N secondary reads: {n_secondary}")
+    print(f"N supplementary reads: {n_supplementary}")
     print(f"N mapped reads: {len(stats)}")
     print(f"Accuracy\tMEDIAN: {np.median(stats[:,0]):.2f}\tMEAN: {np.mean(stats[:,0]):.2f}")
     print(f"Insertions\tMEDIAN: {np.median(stats[:,1]):.2f}\tMEAN: {np.mean(stats[:,1]):.2f}")
