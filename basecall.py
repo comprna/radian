@@ -121,8 +121,11 @@ def main():
                 else:
                     raise ValueError("Decoding type invalid")
 
+                # Create dummy Phred score
+                dummy_phred = "+" * len(sequence)
+
                 # Write read to fastq file
-                fastq.write(f"@{read.read_id}\n{sequence}\n+\nTODO: Phred\n")
+                fastq.write(f"@{read.read_id}\n{sequence}\n+\n{dummy_phred}\n")
                 fastq_i += 1
 
                 # Only write 4,000 reads per fastq file
