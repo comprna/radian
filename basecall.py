@@ -121,6 +121,8 @@ def main():
                 else:
                     raise ValueError("Decoding type invalid")
 
+                # TODO: Can we omit quality scores altogether without affecting
+                # minimap2???
                 # Create dummy Phred score
                 dummy_phred = "+" * len(sequence)
 
