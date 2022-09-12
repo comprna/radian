@@ -70,14 +70,9 @@ def main():
     fastq = open(f"{fastq_dir}/reads-{fastq_n}.fastq", "w")
 
     # Basecall each read in fast5 directory
-    n = 0
     for fast5_filepath in Path(fast5_dir).rglob('*.fast5'):
         with get_fast5_file(fast5_filepath, 'r') as fast5:
             for read in fast5.get_reads(): 
-                if n >= 5:
-                    break
-                n += 1
-
                 # Preprocess read
                 raw_signal = read.get_raw_data()
                 norm_signal = mad_normalise(raw_signal, outlier_z_score)
