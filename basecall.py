@@ -130,8 +130,8 @@ def main():
                 fastq.write(f"@{read.read_id}\n{sequence[::-1]}\n+\n{dummy_phred}\n")
                 fastq_i += 1
 
-                # Only write 4,000 reads per fastq file
-                if fastq_i == 4000:
+                # Only write 1,000 reads per fastq file
+                if fastq_i == 1000:
                     fastq.close()
                     fastq_n += 1
                     fastq = open(f"reads-{fastq_n}.fastq", "w")
