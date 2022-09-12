@@ -124,8 +124,8 @@ def main():
                 # Create dummy Phred score
                 dummy_phred = "+" * len(sequence)
 
-                # Write read to fastq file
-                fastq.write(f"@{read.read_id}\n{sequence}\n+\n{dummy_phred}\n")
+                # Write read to fastq file (reverse sequence to be 5' to 3')
+                fastq.write(f"@{read.read_id}\n{sequence[::-1]}\n+\n{dummy_phred}\n")
                 fastq_i += 1
 
                 # Only write 4,000 reads per fastq file
