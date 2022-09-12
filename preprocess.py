@@ -15,11 +15,11 @@ def get_windows(signal, window_size, step_size):
 
     # Pad last window
     last = signal[start:]
-    pad_end = window_size - len(last)
-    last = np.pad(last, (0, pad_end))
+    pad_len = window_size - len(last)
+    last = np.pad(last, (0, pad_len))
     windows.append(last)
 
-    return np.asarray(windows), pad_end
+    return np.asarray(windows), pad_len
 
 def mad_normalise(signal, outlier_z_score):
     if signal.shape[0] == 0:
