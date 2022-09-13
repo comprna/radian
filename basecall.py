@@ -40,7 +40,7 @@ def main():
 
     # Decoding parameters
     beam_width = 6
-    decode = "local"
+    decode = "global"
     s_threshold = 0.5
     r_threshold = 0.5
     context_len = 5
@@ -84,16 +84,16 @@ def main():
 
                 # Pass through signal-to-sequence model
                 i = 0
-                read_matrices = []
+                matrices = []
                 while i + batch_size <= len(windows):
                     batch = windows[i:i+batch_size]
                     i += batch_size
-                    read_matrices.append(sig_model.predict(batch))
+                    matrices.extend(sig_model.predict(batch))
                 
                 # Decode CTC output (with/without RNA model, global/local)
                 if decode == "global":
-                    matrix = assemble_matrices(read_matrices, step_size)
-                    # plot_assembly(read_matrices, matrix, window_size, step_size) # Debugging
+                    matrix = assemble_matrices(matrices, step_size)
+                    # plot_assembly(matrices, matrix, window_size, step_size) # Debugging
                     sequence = beam_search(matrix,
                                            'ACGT',
                                            beam_width, 
@@ -104,17 +104,16 @@ def main():
                                            entropy_cache)
                 elif decode == "local":
                     read_fragments = []
-                    for batch_matrices in read_matrices:
-                        for matrix in batch_matrices:
-                            sequence = beam_search(matrix,
-                                                   'ACGT',
-                                                   beam_width,
-                                                   None,
-                                                   None,
-                                                   None,
-                                                   None,
-                                                   None)
-                            read_fragments.append(sequence)
+                    for matrix in matrices:
+                        sequence = beam_search(matrix,
+                                                'ACGT',
+                                                beam_width,
+                                                None,
+                                                None,
+                                                None,
+                                                None,
+                                                None)
+                        read_fragments.append(sequence)
                     consensus = simple_assembly(read_fragments)
                     sequence = index2base(np.argmax(consensus, axis=0))
                 else:
@@ -124,6 +123,9 @@ def main():
                 # minimap2???
                 # Create dummy Phred score
                 dummy_phred = "+" * len(sequence)
+
+                print(f"@{read.read_id}\n{sequence[::-1]}\n+\n{dummy_phred}\n")
+                exit()
 
                 # Write read to fastq file (reverse sequence to be 5' to 3')
                 fastq.write(f"@{read.read_id}\n{sequence[::-1]}\n+\n{dummy_phred}\n")

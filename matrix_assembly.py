@@ -8,29 +8,28 @@ def assemble_matrices(matrices, step_size):
     # Collapse the stack into a single matrix for the entire read
     return collapse_vstack(vstack)
 
-def create_vstack(read_matrices, step_size):
+def create_vstack(matrices, step_size):
     # Vertically stack matrices by their position in the original read
     # The result is a list of matrices per timestep in the original read
     vstack = []
     t_start = 0
-    for batch_matrices in read_matrices:
-        for matrix in batch_matrices:
-            # Start at the appropriate timestep
-            t_curr = t_start
+    for matrix in matrices:
+        # Start at the appropriate timestep
+        t_curr = t_start
 
-            for dist in matrix:
-                # Extend stack with current timestep
-                if t_curr >= len(vstack):
-                    vstack.append([])
-                
-                # Add distribution to current timestep in stack
-                vstack[t_curr].append(dist)
+        for dist in matrix:
+            # Extend stack with current timestep
+            if t_curr >= len(vstack):
+                vstack.append([])
 
-                # Increment current time
-                t_curr += 1
+            # Add distribution to current timestep in stack
+            vstack[t_curr].append(dist)
 
-            # Once all distributions added, increment t_start by step_size
-            t_start += step_size
+            # Increment current time
+            t_curr += 1
+
+        # Once all distributions added, increment t_start by step_size
+        t_start += step_size
     return vstack
 
 def collapse_vstack(vstack):
@@ -54,7 +53,7 @@ def average_dist(dists):
 
 def plot_assembly(matrices, global_matrix, window_size, step_size):
     display_windows = 5 # Only show a few windows for ease of display
-    matrices = matrices[0][:display_windows]
+    matrices = matrices[:display_windows]
     len_global = window_size + (display_windows - 1) * step_size
     global_matrix = global_matrix[:len_global]
     pad_size_before = 0
