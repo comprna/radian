@@ -89,7 +89,8 @@ def main():
                     batch = windows[i:i+batch_size]
                     i += batch_size
                     matrices.extend(sig_model.predict(batch))
-                matrices.extend(sig_model.predict(windows[i:]))
+                if i < len(windows):
+                    matrices.extend(sig_model.predict(windows[i:]))
 
                 # Trim padding from last matrix before decoding
                 matrices[-1] = matrices[-1][:-pad]
