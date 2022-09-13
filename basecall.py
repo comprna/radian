@@ -80,16 +80,20 @@ def main():
                 # Preprocess read
                 raw_signal = read.get_raw_data()
                 norm_signal = mad_normalise(raw_signal, outlier_z_score)
-                windows = get_windows(norm_signal, window_size, step_size)
+                windows, last = get_windows(norm_signal, window_size, step_size)
 
-                # Pass through signal-to-sequence model
+                # Pass windows through signal model in batches
                 i = 0
                 matrices = []
                 while i + batch_size <= len(windows):
                     batch = windows[i:i+batch_size]
                     i += batch_size
                     matrices.extend(sig_model.predict(batch))
-                
+                # Last batch
+                matrices.extend(sig_model.predict(windows[i:]))
+                # Last window
+                matrices.append(sig_model.predict(last)) # TODO: Dimensions stuff up here
+
                 # Decode CTC output (with/without RNA model, global/local)
                 if decode == "global":
                     matrix = assemble_matrices(matrices, step_size)

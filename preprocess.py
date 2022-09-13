@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def get_windows(signal, window_size, step_size):        
+def get_windows(signal, window_size, step_size):
     if step_size <= 0:
         raise ValueError("Step size must be > 0")
     if step_size > window_size:
@@ -12,7 +12,11 @@ def get_windows(signal, window_size, step_size):
         window = signal[start:start + window_size]
         windows.append(window)
         start += step_size
-    return np.asarray(windows)
+    last = signal[start:]
+    # Do not store last_window in array as it will mess up the array
+    # dimensions. We could pad instead, but this would then require
+    # trimming the model output corresponding to the pad.
+    return np.asarray(windows), last
 
 def mad_normalise(signal, outlier_z_score):
     if signal.shape[0] == 0:
