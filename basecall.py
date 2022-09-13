@@ -89,9 +89,19 @@ def main():
                     batch = windows[i:i+batch_size]
                     i += batch_size
                     read_matrices.append(sig_model.predict(batch))
-                read_matrices.append(sig_model.predict(windows[i:]))
 
-                # Decode CTC output
+                # Pad last batch
+                last_batch = windows[i:]
+                length = len(last_batch)
+                batch_pad = batch_size - length
+                last_batch = np.pad(last_batch, ((0, batch_pad), (0, 0)))
+                read_matrices.append(sig_model.predict(last_batch)[:length])
+
+                # TODO: Remove padding from last window
+                print(pad)
+                np.set_printoptions(threshold=sys.maxsize)
+
+                # Decode CTC output (with/without RNA model, global/local)
                 if decode == "global":
                     matrix = assemble_matrices(read_matrices, step_size)
                     # plot_assembly(read_matrices, matrix, window_size, step_size) # Debugging
