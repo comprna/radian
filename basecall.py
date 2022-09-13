@@ -80,16 +80,19 @@ def main():
                 # Preprocess read
                 raw_signal = read.get_raw_data()
                 norm_signal = mad_normalise(raw_signal, outlier_z_score)
-                windows, pad = get_windows(norm_signal, window_size, step_size)
+                windows = get_windows(norm_signal, window_size, step_size)
 
-                # Pass through signal-to-sequence model
+                # Pass windows through signal-to-sequence model in batches
                 i = 0
                 read_matrices = []
-                while i + batch_size <= len(windows):
+                while i + batch_size <= len(windows) - 1:
                     batch = windows[i:i+batch_size]
-                    i += batch_size
                     read_matrices.append(sig_model.predict(batch))
-                read_matrices.append(sig_model.predict(windows[i:]))
+                    i += batch_size
+                # Remainder of windows
+                # read_matrices.append(sig_model.predict(windows[i:-1]))
+                # # Last window may be shorter so predict separately
+                # read_matrices.append(sig_model.predict(windows[-1]))
 
                 # Decode CTC output
                 if decode == "global":
