@@ -137,9 +137,10 @@ def main():
                 # Write read to fastq file (reverse sequence to be 5' to 3')
                 fastq.write(f"@{read.read_id}\n{sequence[::-1]}\n+\n{dummy_phred}\n")
                 fastq_i += 1
+                print(f"Basecalled read {read.read_id}")
 
-                # Only write 1,000 reads per fastq file
-                if fastq_i == 1000:
+                # Only write 100 reads per fastq file
+                if fastq_i == 100:
                     fastq.close()
                     fastq_n += 1
                     fastq = open(f"reads-{fastq_n}.fastq", "w")
