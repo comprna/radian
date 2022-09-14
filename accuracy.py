@@ -66,7 +66,7 @@ def main():
             n_match -= n_sub
 
             # Write raw stats for downstream analysis
-            out.write(f"{read_id}\t{transcript}\t{n_match}\t{n_ins}\t{n_del}\t{n_sub}")
+            out.write(f"{read_id}\t{transcript}\t{n_match}\t{n_ins}\t{n_del}\t{n_sub}\n")
 
             # Compute accuracy and error percentages
             acc = n_match / (n_match + nm) * 100
