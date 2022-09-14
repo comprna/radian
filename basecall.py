@@ -145,7 +145,7 @@ def main():
                 if fastq_i == 100:
                     fastq.close()
                     fastq_n += 1
-                    fastq = open(f"reads-{fastq_n}.fastq", "w")
+                    fastq = open(f"{fastq_dir}/reads-{fastq_n}.fastq", "w")
                     fastq_i = 0
 
     # Make sure last fastq file is closed
