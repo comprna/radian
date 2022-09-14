@@ -79,7 +79,12 @@ def main():
             for read in fast5.get_reads():
                 # Preprocess read
                 raw_signal = read.get_raw_data()
-                norm_signal = mad_normalise(raw_signal, outlier_z_score)
+                try:
+                    norm_signal = mad_normalise(raw_signal, outlier_z_score)
+                except ValueError as e:
+                    print(e.args)
+                    print(f"Signal preprocessing issue for {read.read_id}, skipping this read.")
+                    continue
                 windows, pad = get_windows(norm_signal, window_size, step_size)
 
                 # Pass windows through signal model in batches

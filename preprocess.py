@@ -44,4 +44,6 @@ def _normalise_value(x, median, mad, outlier_z_score):
         return modified_z_score
 
 def _calculate_modified_z_score(x, median, mad):
+    if mad == 0:
+        raise ValueError("MAD is zero, issue with signal.")
     return (x - median) / (1.4826 * mad)
