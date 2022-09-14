@@ -74,6 +74,7 @@ def main():
     fastq = open(f"{fastq_dir}/reads-{fastq_n}.fastq", "w")
 
     # Basecall each read in fast5 directory
+    r = 0
     for fast5_filepath in Path(fast5_dir).rglob('*.fast5'):
         with get_fast5_file(fast5_filepath, 'r') as fast5:
             for read in fast5.get_reads():
@@ -137,7 +138,8 @@ def main():
                 # Write read to fastq file (reverse sequence to be 5' to 3')
                 fastq.write(f"@{read.read_id}\n{sequence[::-1]}\n+\n{dummy_phred}\n")
                 fastq_i += 1
-                print(f"Basecalled read {read.read_id}")
+                print(f"[{r}] Basecalled read {read.read_id}")
+                r += 1
 
                 # Only write 100 reads per fastq file
                 if fastq_i == 100:
