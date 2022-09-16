@@ -7,8 +7,8 @@ import pysam
 
 def main():
     # SAM file to parse
-    sam_file = sys.argv[1]
-    # sam_file = "/home/alex/Documents/tmp/ngram-1-aln.sam"
+    # sam_file = sys.argv[1]
+    sam_file = "/home/alex/Documents/tmp/ngram-2-aln.sam"
     out_file = sam_file.replace(".sam", ".tsv")
 
     # Store stats for all reads
@@ -47,7 +47,7 @@ def main():
             transcript = ref_name[0]
 
             # Only count protein-coding
-            if ref_name[7] != "protein-coding":
+            if ref_name[7] != "protein_coding":
                 continue
 
             # Calculate metrics
