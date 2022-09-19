@@ -33,15 +33,14 @@ def analyse_alignment(formatted_alignment):
                 n_del += 1
             elif pred[i] in bases:    # Insertion
                 n_ins += 1
-    assert(len(alignment) == n_mat + n_sub + n_ins + n_del)
 
     return n_mat, n_sub, n_ins, n_del
 
 def main():
-    # fastq = "/home/alex/Documents/tmp/ngram-3.fastq"
-    fastq = sys.argv[1]
-    # ref = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/4_Align/read_ref_seq.tsv"
-    ref = sys.argv[2]
+    fastq = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/4_Align/ngram-3.fastq"
+    # fastq = sys.argv[1]
+    ref = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/4_Align/read_ref_seq.tsv"
+    # ref = sys.argv[2]
     out_file = fastq.replace(".fastq", ".tsv")
 
     # Load reads + ref seqs
@@ -55,6 +54,7 @@ def main():
 
     # Parse fastq file and align
     stats = []
+    i = 0
     with open(out_file, "w") as out:
         out.write("read_id\tref_name\tn_match\tn_ins\tn_del\tn_sub\n")
         for seq_record in SeqIO.parse(fastq,  "fastq"):
@@ -62,12 +62,32 @@ def main():
             seq = seq_record.seq
             ref = read_ref[read]
 
+            i += 1
+            if i < 4593:
+                continue
+
+            if read != "97702ce1-8ceb-4c76-a3a5-4bd5bb6348c2":
+                continue
+
             # Align using same parameters as minimap2
             alignments = pairwise2.align.globalms(ref, seq, 2, -4, -4, -2)
+            for alignment in alignments:
+                n_match, n_sub, n_ins, n_del = analyse_alignment(format_alignment(*alignment))
+                acc = n_match / (n_match + n_sub + n_ins + n_del) * 100
+                p_ins = n_ins / (n_match + n_sub + n_ins + n_del) * 100
+                p_del = n_del / (n_match + n_sub + n_ins + n_del) * 100
+                p_sub = n_sub / (n_match + n_sub + n_ins + n_del) * 100
+                p_err = (n_ins + n_del + n_sub) / (n_match + n_sub + n_ins + n_del) * 100 
+                if n_ins == 0 or n_sub == 0:
+                    print("error")
+
             alignment = random.choice(alignments)
+            formatted = format_alignment(*alignment)
+            print(read)
+            print(formatted)
 
             # Compute accuracy, errors
-            n_match, n_sub, n_ins, n_del = analyse_alignment(format_alignment(*alignment))
+            n_match, n_sub, n_ins, n_del = analyse_alignment(formatted)
             acc = n_match / (n_match + n_sub + n_ins + n_del) * 100
             p_ins = n_ins / (n_match + n_sub + n_ins + n_del) * 100
             p_del = n_del / (n_match + n_sub + n_ins + n_del) * 100
