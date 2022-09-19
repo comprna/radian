@@ -8,8 +8,8 @@ import pysam
 def main():
     # SAM file to parse
     # sam_file = sys.argv[1]
-    sam_file = "/home/alex/Documents/tmp/guppy-aln.sam"
-    out_file = sam_file.replace(".sam", ".tsv")
+    sam_file = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/3_Experiments/local_results/ngram-2-aln.sam"
+    out_file = sam_file.replace(".sam", "-pc.tsv")
 
     # Store stats for all reads
     stats = []

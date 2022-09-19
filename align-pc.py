@@ -41,7 +41,7 @@ def main():
     # fastq = sys.argv[1]
     ref = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/4_Align/read_ref_seq.tsv"
     # ref = sys.argv[2]
-    out_file = fastq.replace(".fastq", ".tsv")
+    out_file = fastq.replace(".fastq", "-pc.tsv")
 
     # Load reads + ref seqs
     read_ref = {}
