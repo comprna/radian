@@ -8,7 +8,7 @@ import pysam
 def main():
     # SAM file to parse
     # sam_file = sys.argv[1]
-    sam_file = "/home/alex/Documents/tmp/ngram-2-aln.sam"
+    sam_file = "/home/alex/Documents/tmp/guppy-aln.sam"
     out_file = sam_file.replace(".sam", ".tsv")
 
     # Store stats for all reads
