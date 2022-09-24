@@ -82,6 +82,7 @@ def main():
             for read in fast5.get_reads():
                 # Resume interrupted run
                 if r < read_to_resume:
+                    r += 1
                     continue
 
                 # Preprocess read
