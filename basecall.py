@@ -49,6 +49,8 @@ def main():
     r_threshold = float(sys.argv[8])
     context_len = int(sys.argv[9])
 
+    read_to_resume = int(sys.argv[10])
+
     # Load RNA model
     if rna_model_file != "None":
         with open(rna_model_file, "r") as f:
@@ -78,6 +80,10 @@ def main():
     for fast5_filepath in Path(fast5_dir).rglob('*.fast5'):
         with get_fast5_file(fast5_filepath, 'r') as fast5:
             for read in fast5.get_reads():
+                # Resume interrupted run
+                if r < read_to_resume:
+                    continue
+
                 # Preprocess read
                 raw_signal = read.get_raw_data()
                 try:
