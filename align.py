@@ -22,6 +22,26 @@ def analyse_alignment(formatted_alignment):
     assert(len(gt)   == len(alignment))
     assert(len(pred) == len(alignment))
 
+    # Simple implementation of soft clipping to remove remove garbage from 
+    # start and end of query sequence.  Considers real sequence to start once
+    # there are > 2 non-insertions in a row.
+    # Determine clipping at start of query sequence
+    clip_start = 0
+    for i in range(len(gt)):
+        clip_start = i
+        if gt[i] != '-' and gt[i+1] != '-' and gt[i+2] != '-': # Index error will alert us to erroneous alignment
+            break
+    # Determine clipping at end of query sequence
+    clip_end = len(alignment) - 1
+    for i in range(len(gt)-1, -1, -1):
+        clip_end = i
+        if gt[i] != '-' and gt[i-1] != '-' and gt[i-2] != '-': # Index error will alert us to erroneous alignment
+            break
+
+    alignment = alignment[clip_start:clip_end+1]
+    gt = gt[clip_start:clip_end+1]
+    pred = pred[clip_start:clip_end+1]
+
     # Parse alignment string to determine error types
     for i in range(len(alignment)):
         if alignment[i] == "|":       # Match
@@ -37,9 +57,9 @@ def analyse_alignment(formatted_alignment):
     return n_mat, n_sub, n_ins, n_del
 
 def main():
-    # fastq = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/4_Align/ngram-3.fastq"
+    # fastq = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/5_IndepTest/fastq/guppy-gm12878.fastq"
     fastq = sys.argv[1]
-    # ref = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/4_Align/read_ref_seq.tsv"
+    # ref = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/4_Align/read_ref_seq_gm12878.tsv"
     ref = sys.argv[2]
     out_file = fastq.replace(".fastq", ".tsv")
 
@@ -58,8 +78,11 @@ def main():
         out.write("read_id\tref_name\tn_match\tn_ins\tn_del\tn_sub\n")
         for seq_record in SeqIO.parse(fastq,  "fastq"):
             read = seq_record.id
-            seq = seq_record.seq
+            seq = str(seq_record.seq)
             ref = read_ref[read]
+
+            # Since ref contains Ts, make sure basecaller calls T instead of U
+            seq = seq.replace("U", "T")
 
             # Align using same parameters as minimap2
             alignments = pairwise2.align.globalms(ref, seq, 2, -4, -4, -2)
