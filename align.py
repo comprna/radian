@@ -75,7 +75,7 @@ def main():
     # Parse fastq file and align
     stats = []
     with open(out_file, "w") as out:
-        out.write("read_id\tref_name\tn_match\tn_ins\tn_del\tn_sub\n")
+        out.write("read_id\tn_match\tn_ins\tn_del\tn_sub\n")
         for seq_record in SeqIO.parse(fastq,  "fastq"):
             read = seq_record.id
             seq = str(seq_record.seq)
