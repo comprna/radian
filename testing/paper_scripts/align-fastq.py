@@ -57,11 +57,11 @@ def analyse_alignment(formatted_alignment):
     return n_mat, n_sub, n_ins, n_del
 
 def main():
-    # fasta = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/5_IndepTest/fasta/guppy-gm12878.fastq"
-    fasta = sys.argv[1]
+    # fastq = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/5_IndepTest/fastq/guppy-gm12878.fastq"
+    fastq = sys.argv[1]
     # ref = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/4_Align/read_ref_seq_gm12878.tsv"
     ref = sys.argv[2]
-    out_file = fasta.replace(".fasta", ".tsv")
+    out_file = fastq.replace(".fastq", ".tsv")
 
     # Load reads + ref seqs
     read_ref = {}
@@ -72,11 +72,11 @@ def main():
             read, txt, seq = line.strip('\n').split('\t')
             read_ref[read] = seq
 
-    # Parse fasta file and align
+    # Parse fastq file and align
     stats = []
     with open(out_file, "w") as out:
         out.write("read_id\tn_match\tn_ins\tn_del\tn_sub\n")
-        for seq_record in SeqIO.parse(fasta,  "fasta"):
+        for seq_record in SeqIO.parse(fastq,  "fastq"):
             read = seq_record.id
             seq = str(seq_record.seq)
             ref = read_ref[read]

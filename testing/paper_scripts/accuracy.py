@@ -7,9 +7,9 @@ import pysam
 
 def main():
     # SAM file to parse
-    # sam_file = sys.argv[1]
-    sam_file = "/mnt/sda/rna-basecaller/experiments/decode/global-n-gram/3_Experiments/local_results/ngram-2-aln.sam"
-    out_file = sam_file.replace(".sam", "-pc.tsv")
+    sam_file = sys.argv[1]
+    # sam_file = "/home/alex/Documents/tmp/ngram-1-aln.sam"
+    out_file = sam_file.replace(".sam", ".tsv")
 
     # Store stats for all reads
     stats = []
@@ -45,10 +45,6 @@ def main():
             read_id = read.qname
             ref_name = read.reference_name.split("|")
             transcript = ref_name[0]
-
-            # Only count protein-coding
-            if ref_name[7] != "protein_coding":
-                continue
 
             # Calculate metrics
             n_match = 0

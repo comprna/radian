@@ -3,7 +3,7 @@ import cProfile
 import numpy as np
 
 from beam_search_decoder import ctcBeamSearch
-from rna_model_lstm import get_rna_prediction_model
+from testing.obsolete.rna_model_lstm import get_rna_prediction_model
 from utilities import get_config, setup_local
 
 def main():

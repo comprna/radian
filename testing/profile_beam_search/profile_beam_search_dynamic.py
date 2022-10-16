@@ -4,8 +4,8 @@ import json
 
 import numpy as np
 
-from decode_dynamic import beam_search
-from rna_model_lstm import get_rna_prediction_model
+from decode import beam_search
+from testing.obsolete.rna_model_lstm import get_rna_prediction_model
 from utilities import get_config, setup_local
 
 def main():

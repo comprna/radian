@@ -7,7 +7,7 @@ import numpy as np
 from ont_fast5_api.fast5_interface import get_fast5_file
 
 from matrix_assembly import assemble_matrices, plot_assembly
-from decode_dynamic import beam_search
+from decode import beam_search
 from sequence_assembly import simple_assembly, index2base # TODO: Rename assembly files
 from model import get_prediction_model
 from preprocess import mad_normalise, get_windows
