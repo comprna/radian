@@ -16,13 +16,13 @@ from utilities import get_config, setup_local
 
 def main():
     # Comment out if running on gadi
-    # setup_local()
+    setup_local()
 
     # Data directories
-    # fast5_dir = "/home/alex/Documents/tmp/fast5" # Single or multi fast5s
-    # fastq_dir = 'fastq'
-    fast5_dir = sys.argv[1]
-    fastq_dir = sys.argv[2]
+    fast5_dir = "data" # Single or multi fast5s
+    fastq_dir = "data"
+    # fast5_dir = sys.argv[1]
+    # fastq_dir = sys.argv[2]
 
     # Preprocessing parameters
     outlier_z_score = 4
@@ -31,25 +31,26 @@ def main():
     batch_size = 32
 
     # Model files
-    # rna_model_file = "kmer_model/transcripts-6mer-rna-model.json"
-    # sig_config_file = '/mnt/sda/rna-basecaller/benchmarking/2_SigModel/s-config-3.yaml'
-    # sig_model_file = '/mnt/sda/rna-basecaller/benchmarking/2_SigModel/s-model-3-10.h5'
-    rna_model_file = sys.argv[3]
-    sig_config_file = sys.argv[4]
-    sig_model_file = sys.argv[5]
+    rna_model_file = "models/rnamodel_12mer_pc.json"
+    sig_config_file = "models/sig2seq.yaml"
+    sig_model_file = "models/sig2seq.h5"
+    # rna_model_file = sys.argv[3]
+    # sig_config_file = sys.argv[4]
+    # sig_model_file = sys.argv[5]
 
     # Decoding parameters
     beam_width = 6
-    # decode = "global"
-    # s_threshold = 0.5
-    # r_threshold = 0.5
-    # context_len = 5
-    decode = sys.argv[6]
-    s_threshold = float(sys.argv[7])
-    r_threshold = float(sys.argv[8])
-    context_len = int(sys.argv[9])
+    decode = "global"
+    s_threshold = 0.5
+    r_threshold = 0.5
+    context_len = 11
+    # decode = sys.argv[6]
+    # s_threshold = float(sys.argv[7])
+    # r_threshold = float(sys.argv[8])
+    # context_len = int(sys.argv[9])
 
-    read_to_resume = int(sys.argv[10])
+    # read_to_resume = int(sys.argv[10])
+    read_to_resume = 0
 
     # Load RNA model
     if rna_model_file != "None":

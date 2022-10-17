@@ -1,0 +1,49 @@
+data:
+  n_classes: 5 # (A, C, G, U, blank)
+  window_size: 1024 # UPDATE DEPENDENCY IN DATA.PY IF THIS IS UPDATED
+
+train:
+  batch_size: 32 # UPDATE DEPENDENCY IN DATA.PY IF THIS IS UPDATED
+  n_epochs: 1000
+  n_folds: 10
+  val_freq: 1
+  opt:
+    type: adam
+    cc_opt:
+      max_steps: 200000
+      boundaries: [0.03,0.07,0.25,0.5,0.7]
+      init_rate: 0.004
+      decays: [0.4,0.2,0.1,0.06,0.03,0.01]
+    adam:
+      lr: 0.0001
+      beta_1: 0.9
+      beta_2: 0.999
+      epsilon: 0.0000001
+      amsgrad: False
+      clipnorm: False
+      clipvalue: False
+    sgd:
+      lr: 0.01
+      momentum: 0.0
+      nesterov: False
+      clipnorm: False
+      clipvalue: False
+    adagrad:
+      lr: 0.001
+
+model:
+  relu_units: 128
+  softmax_units: 5
+  timesteps: 1024 # UPDATE DEPENDENCY IN DATA.PY IF THIS IS UPDATED
+  tcn:
+    nb_filters: 256
+    kernel_size: 3
+    nb_stacks: 1
+    dilations: [1,2,4,8,16,32]
+    padding: 'causal'
+    use_skip_connections: False
+    dropout_rate: 0.0
+    return_sequences: True
+    activation: 'relu'
+    kernel_initializer: 'he_normal'
+    use_batch_norm: False
