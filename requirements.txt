@@ -1,0 +1,9 @@
+numpy~=1.21.6
+pysam~=0.19.1
+biopython~=1.79
+matplotlib~=3.5.3
+ont-fast5-api~=4.1.0
+tensorflow~=2.10.0
+textdistance~=4.5.0
+scikit-learn~=1.0.2
+keras-tcn~=3.5.0
