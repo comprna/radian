@@ -111,7 +111,7 @@ def main():
                                            args.rna_threshold,
                                            args.context_len,
                                            entropy_cache)
-                elif args.decode_type == "local":
+                else:
                     read_fragments = []
                     for matrix in matrices:
                         sequence = beam_search(matrix,
@@ -125,8 +125,6 @@ def main():
                         read_fragments.append(sequence)
                     consensus = simple_assembly(read_fragments)
                     sequence = index2base(np.argmax(consensus, axis=0))
-                else:
-                    raise ValueError("Decoding type invalid")
 
                 end_t = time()
                 dur = end_t - start_t
