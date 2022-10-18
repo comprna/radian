@@ -65,10 +65,10 @@ def main():
     sig_config = get_config(args.sig_config)
     sig_model = get_prediction_model(args.sig_model, sig_config)
 
-    # Output to fastq
-    fastq_n = 0
-    fastq_i = 0
-    fastq = open(f"{args.fasta_dir}/reads-{fastq_n}.fastq", "w")
+    # Output to fasta
+    fasta_n = 0
+    fasta_i = 0
+    fasta = open(f"{args.fasta_dir}/reads-{fasta_n}.fasta", "w")
 
     # Basecall each read in fast5 directory
     for fast5_filepath in Path(args.fast5_dir).rglob('*.fast5'):
@@ -128,28 +128,23 @@ def main():
                 else:
                     raise ValueError("Decoding type invalid")
 
-                # TODO: Can we omit quality scores altogether without affecting
-                # minimap2???
-                # Create dummy Phred score
-                dummy_phred = "+" * len(sequence)
-
                 end_t = time()
                 dur = end_t - start_t
 
-                # Write read to fastq file (reverse sequence to be 5' to 3')
-                fastq.write(f"@{read.read_id}\n{sequence[::-1]}\n+\n{dummy_phred}\n")
-                fastq_i += 1
+                # Write read to fasta file (reverse sequence to be 5' to 3')
+                fasta.write(f"@{read.read_id}\n{sequence[::-1]}\n")
+                fasta_i += 1
                 print(f"Basecalled read {read.read_id} in {dur:.2f} sec.")
 
-                # Only write 100 reads per fastq file
-                if fastq_i == 100:
-                    fastq.close()
-                    fastq_n += 1
-                    fastq = open(f"{args.fasta_dir}/reads-{fastq_n}.fastq", "w")
-                    fastq_i = 0
+                # Only write 100 reads per fasta file
+                if fasta_i == 100:
+                    fasta.close()
+                    fasta_n += 1
+                    fasta = open(f"{args.fasta_dir}/reads-{fasta_n}.fasta", "w")
+                    fasta_i = 0
 
-    # Make sure last fastq file is closed
-    fastq.close()
+    # Make sure last fasta file is closed
+    fasta.close()
 
 
 if __name__ == "__main__":
