@@ -46,9 +46,6 @@ def main():
     if args.local:
         setup_local()
 
-    # read_to_resume = int(sys.argv[10])
-    read_to_resume = 0
-
     # Load RNA model
     if args.rna_model != "None":
         with open(args.rna_model, "r") as f:
@@ -74,17 +71,11 @@ def main():
     fastq = open(f"{args.fasta_dir}/reads-{fastq_n}.fastq", "w")
 
     # Basecall each read in fast5 directory
-    r = 0
     for fast5_filepath in Path(args.fast5_dir).rglob('*.fast5'):
         with get_fast5_file(fast5_filepath, 'r') as fast5:
             for read in fast5.get_reads():
                 start_t = time()
-
-                # Resume interrupted run
-                if r < read_to_resume:
-                    r += 1
-                    continue
-
+                
                 # Preprocess read
                 raw_signal = read.get_raw_data()
                 try:
@@ -148,8 +139,7 @@ def main():
                 # Write read to fastq file (reverse sequence to be 5' to 3')
                 fastq.write(f"@{read.read_id}\n{sequence[::-1]}\n+\n{dummy_phred}\n")
                 fastq_i += 1
-                print(f"[{r}] Basecalled read {read.read_id} in {dur:.2f} seconds")
-                r += 1
+                print(f"Basecalled read {read.read_id} in {dur:.2f} sec.")
 
                 # Only write 100 reads per fastq file
                 if fastq_i == 100:
