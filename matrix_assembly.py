@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import normalize
 
+
 def assemble_matrices(matrices, step_size):
     # Vertically stack the overlapping matrices together
     vstack = create_vstack(matrices, step_size)

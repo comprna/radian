@@ -1,13 +1,11 @@
 from tcn import TCN
-
-import tensorflow as tf
 from tensorflow import Variable
-from tensorflow.keras import Input, Model, backend
+from tensorflow.keras import Input, Model
 from tensorflow.keras.backend import ctc_batch_cost, get_value, set_value
-from tensorflow.keras.layers import Dense, Activation, Lambda, LSTM
-from tensorflow.keras.models import load_model
+from tensorflow.keras.layers import Dense, Activation, Lambda
 from tensorflow.keras.optimizers import Adam, SGD, Adagrad
 from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
+
 
 MAX_LABEL_LEN = 25 # 3 / 256 / 32
 # MAX_LABEL_LEN = 24 # 3 / 256 / 64

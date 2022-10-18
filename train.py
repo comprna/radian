@@ -2,7 +2,6 @@ import argparse
 from datetime import datetime
 import json
 import os
-import sys
 
 import tensorflow as tf
 from tensorflow.distribute.experimental import MultiWorkerMirroredStrategy
@@ -13,6 +12,7 @@ from data import get_dataset
 from evaluate import compute_mean_ed_greedy
 from model import get_training_model, get_evaluation_model
 from utilities import setup_local, get_config
+
 
 # Computed in utilities.py : count_n_steps_per_epoch()
 

@@ -1,17 +1,17 @@
 import ast
-import csv
 import json
 import sys
 import time
+
 import yaml
 from attrdict import AttrDict
 from matplotlib import pyplot as plt
-
 import tensorflow as tf
 from tensorflow.io.gfile import glob
 from tensorflow.keras import backend as K
 
 from data import get_dataset
+
 
 def get_config(filepath):
     with open(filepath) as config_file:

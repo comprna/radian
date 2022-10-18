@@ -1,8 +1,8 @@
 import random
 import sys
 
-from Bio import SeqIO
 from Bio import pairwise2
+from Bio import SeqIO
 from Bio.pairwise2 import format_alignment
 import numpy as np
 
