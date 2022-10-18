@@ -47,7 +47,8 @@ def main():
         setup_local()
 
     # Load RNA model
-    if args.rna_model != "None":
+    rna_model = args.rna_model
+    if rna_model != "None":
         with open(args.rna_model, "r") as f:
             rna_model_raw = json.load(f)
             # Format RNA model keys to format expected by beam search decoder
@@ -56,9 +57,6 @@ def main():
                 bases = ['A', 'C', 'G', 'T']
                 context_formatted = tuple(map(lambda b: bases.index(b), context))
                 rna_model[context_formatted] = dist
-    else:
-        print("No RNA model provided!")
-        rna_model = None
     entropy_cache = {}
 
     # Load signal-to-sequence model
