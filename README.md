@@ -53,7 +53,7 @@ optional arguments:
 
 We provide a fast5 file containing 5 reads for testing in data/reads.fast5.
 
-To basecall the provided fast5 file and output fasta to out_dir:
+To basecall the single or multi-fast5 file(s) in <data> and output fasta to <out_dir>:
 ```
 cd radian
 mkdir out_dir
