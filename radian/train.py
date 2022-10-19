@@ -9,7 +9,6 @@ from tensorflow.io.gfile import glob
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, Callback
 
 from data import get_dataset
-from evaluate import compute_mean_ed_greedy
 from model import get_training_model, get_evaluation_model
 from utilities import setup_local, get_config
 
@@ -40,11 +39,11 @@ class EditDistanceCallback(Callback):
         if epoch % self.interval == 0 and epoch != 0:
             eval_model = get_evaluation_model(self.config, self.model.get_weights())
             # train_ed = compute_mean_ed_greedy(eval_model, self.train_dataset, verbose=True)
-            val_ed = compute_mean_ed_greedy(eval_model, self.val_dataset, verbose=True)
+            # val_ed = compute_mean_ed_greedy(eval_model, self.val_dataset, verbose=True)
             # print("Mean ED (train) greedy: {0}".format(train_ed))
-            print("Mean ED (val) greedy: {0}".format(val_ed))
+            # print("Mean ED (val) greedy: {0}".format(val_ed))
             # tf.summary.scalar('edit distance (train) greedy', data=train_ed, step=epoch)
-            tf.summary.scalar('edit distance (val) greedy', data=val_ed, step=epoch)
+            # tf.summary.scalar('edit distance (val) greedy', data=val_ed, step=epoch)
 
 def train(shards_dir, checkpoint, epoch_to_resume, config_file, strategy):
     config = get_config(config_file)
