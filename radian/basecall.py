@@ -34,13 +34,11 @@ def main():
     parser.add_argument("--rna-threshold", default=0.5, type=float)
     parser.add_argument("--context-len", default=11, type=int)
 
-    # args = parser.parse_args()
+    args = parser.parse_args()
     # Local testing
-    args = parser.parse_args(["data",
-                              "data",
-                              "--local",
-                              "--rna-model=kmer_model/pc-transcripts-6mer-rna-model.json",
-                              "--context-len=5"])
+    # args = parser.parse_args(["data",
+    #                           "data",
+    #                           "--local"])
 
     # Local setup to avoid cuDNN error when running locally
     if args.local:

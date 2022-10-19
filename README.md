@@ -53,8 +53,9 @@ optional arguments:
 
 We provide a fast5 file containing 5 reads for testing in data/reads.fast5.
 
-To basecall the provided fast5 file and output fasta to the same directory:
+To basecall the provided fast5 file and output fasta to out_dir:
 ```
-mkdir fasta
-python3 basecall.py data data
+cd radian
+mkdir out_dir
+python3 basecall.py data out_dir
 ```
