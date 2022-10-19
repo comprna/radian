@@ -80,7 +80,7 @@ def main():
                     norm_signal = mad_normalise(raw_signal, args.outlier_clip)
                 except ValueError as e:
                     print(e.args)
-                    print(f"Signal preprocessing issue for {read.read_id}, skipping this read.")
+                    print(f"{read.read_id} signal issue, skipping this read.")
                     continue
                 windows, pad = get_windows(norm_signal, args.chunk_len, args.step_size)
 
@@ -100,7 +100,7 @@ def main():
                 # Decode CTC output (with/without RNA model, global/local)
                 if args.decode_type == "global":
                     matrix = assemble_matrices(matrices, args.step_size)
-                    # plot_assembly(matrices, matrix, args.chunk_len, args.step_size) # Debugging
+                    # plot_assembly(matrices, matrix, args.chunk_len, args.step_size)
                     sequence = beam_search(matrix,
                                            'ACGT',
                                            args.beam_width,
@@ -132,8 +132,8 @@ def main():
                 fasta_i += 1
                 print(f"Basecalled read {read.read_id} in {dur:.2f} sec.")
 
-                # Only write 100 reads per fasta file
-                if fasta_i == 100:
+                # Only write 1000 reads per fasta file
+                if fasta_i == 1000:
                     fasta.close()
                     fasta_n += 1
                     fasta = open(f"{args.fasta_dir}/reads-{fasta_n}.fasta", "w")
