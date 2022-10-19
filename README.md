@@ -51,10 +51,10 @@ optional arguments:
 
 # Example usage
 
-We provide a fast5 file containing 5 reads for testing in fast5/reads.fast5.
+We provide a fast5 file containing 5 reads for testing in data/reads.fast5.
 
-To basecall the provided fast5 file:
+To basecall the provided fast5 file and output fasta to the same directory:
 ```
 mkdir fasta
-python3 basecall.py fast5 fasta
+python3 basecall.py data data
 ```
