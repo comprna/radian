@@ -8,7 +8,7 @@ Nanopore direct RNA basecaller that utilises a model of mRNA language.
 
 Since RNA is always sequenced from the 3' to 5' direction, nanopore signals implicitly encode the nucleotide biases in mRNA.  This basecaller uses a probabilistic model of mRNA language to guide basecalling when the signal prediction is ambiguous.  The mRNA model is incorporated in a modified CTC beam search decoding algorithm.
 
-![RADIAN architecture](arch.png?raw=true)
+![RADIAN architecture](architecture.png?raw=true)
 
 
 # Installation
