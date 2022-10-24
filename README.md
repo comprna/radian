@@ -17,6 +17,7 @@ Since RNA is always sequenced from the 3' to 5' direction, nanopore signals impl
 cd <path/to/radian>
 pip install --upgrade pip
 pip install -r requirements.txt
+tar -xvzf models/rnamodel_12mer_pc.tar.gz
 ```
 
 # Command structure

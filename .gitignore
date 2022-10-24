@@ -1,4 +1,4 @@
 *.vscode
 *__pycache__
-radian/models/rnamodel*
+radian/models/rnamodel*.json
 *.fasta
