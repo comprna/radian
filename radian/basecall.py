@@ -126,7 +126,7 @@ def main():
                 dur = end_t - start_t
 
                 # Write read to fasta file (reverse sequence to be 5' to 3')
-                fasta.write(f"@{read.read_id}\n{sequence[::-1]}\n")
+                fasta.write(f">{read.read_id}\n{sequence[::-1]}\n")
                 fasta_i += 1
                 print(f"Basecalled read {read.read_id} in {dur:.2f} sec.")
 
