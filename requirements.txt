@@ -9,3 +9,4 @@ PyYAML~=6.0
 scikit-learn~=1.1.2
 tensorflow~=2.4.4 # Requires cuDNN 8.1, CUDA 11.2
 textdistance~=4.5.0
+pyslow5

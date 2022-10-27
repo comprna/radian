@@ -5,6 +5,7 @@ from time import time
 
 import numpy as np
 from ont_fast5_api.fast5_interface import get_fast5_file
+import pyslow5
 
 from decode import beam_search
 from matrix_assembly import assemble_matrices, plot_assembly
@@ -67,75 +68,151 @@ def main():
     fasta = open(f"{args.fasta_dir}/reads-{fasta_n}.fasta", "w")
 
     # Basecall each read in fast5 directory
-    for fast5_filepath in Path(args.fast5_dir).rglob('*.fast5'):
-        with get_fast5_file(fast5_filepath, 'r') as fast5:
-            for read in fast5.get_reads():
-                start_t = time()
-                
-                # Preprocess read
-                raw_signal = read.get_raw_data()
-                try:
-                    norm_signal = mad_normalise(raw_signal, args.outlier_clip)
-                except ValueError as e:
-                    print(e.args)
-                    print(f"{read.read_id} signal issue, skipping this read.")
-                    continue
-                windows, pad = get_windows(norm_signal, args.chunk_len, args.step_size)
+    # this is a hack, just detecting the .blow5 extention to hijack the arg
+    # should do something better than this
+    if args.fast5_dir.split(".")[-1] == "blow5":
+        SLOW5 = True
+        s5 = pyslow5.Open(args.fast5_dir, 'r')
+        # this can be multithreaded with s5.seq_reads_multi(), see docs for flags
+        reads = s5.seq_reads()
+        # this is copy/paste of below but using read_id set first rather than accessing it
+        for read in reads:
+            start_t = time()
+            read_id = read["read_id"]
+            # Preprocess read
+            raw_signal = read["signal"]
+            try:
+                norm_signal = mad_normalise(raw_signal, args.outlier_clip)
+            except ValueError as e:
+                print(e.args)
+                print(f"{read_id} signal issue, skipping this read.")
+                continue
+            windows, pad = get_windows(norm_signal, args.chunk_len, args.step_size)
 
-                # Pass windows through signal model in batches
-                i = 0
-                matrices = []
-                while i + args.batch_size <= len(windows):
-                    batch = windows[i:i+args.batch_size]
-                    i += args.batch_size
-                    matrices.extend(sig_model.predict(batch))
-                if i < len(windows):
-                    matrices.extend(sig_model.predict(windows[i:]))
+            # Pass windows through signal model in batches
+            i = 0
+            matrices = []
+            while i + args.batch_size <= len(windows):
+                batch = windows[i:i+args.batch_size]
+                i += args.batch_size
+                matrices.extend(sig_model.predict(batch))
+            if i < len(windows):
+                matrices.extend(sig_model.predict(windows[i:]))
 
-                # Trim padding from last matrix before decoding
-                matrices[-1] = matrices[-1][:-pad]
+            # Trim padding from last matrix before decoding
+            matrices[-1] = matrices[-1][:-pad]
 
-                # Decode CTC output (with/without RNA model, global/local)
-                if args.decode_type == "global":
-                    matrix = assemble_matrices(matrices, args.step_size)
-                    # plot_assembly(matrices, matrix, args.chunk_len, args.step_size)
+            # Decode CTC output (with/without RNA model, global/local)
+            if args.decode_type == "global":
+                matrix = assemble_matrices(matrices, args.step_size)
+                # plot_assembly(matrices, matrix, args.chunk_len, args.step_size)
+                sequence = beam_search(matrix,
+                                        'ACGT',
+                                        args.beam_width,
+                                        rna_model,
+                                        args.sig_threshold,
+                                        args.rna_threshold,
+                                        args.context_len,
+                                        entropy_cache)
+            else:
+                read_fragments = []
+                for matrix in matrices:
                     sequence = beam_search(matrix,
-                                           'ACGT',
-                                           args.beam_width,
-                                           rna_model,
-                                           args.sig_threshold,
-                                           args.rna_threshold,
-                                           args.context_len,
-                                           entropy_cache)
-                else:
-                    read_fragments = []
-                    for matrix in matrices:
+                                            'ACGT',
+                                            args.beam_width,
+                                            None,
+                                            None,
+                                            None,
+                                            None,
+                                            None)
+                    read_fragments.append(sequence)
+                consensus = simple_assembly(read_fragments)
+                sequence = index2base(np.argmax(consensus, axis=0))
+
+            end_t = time()
+            dur = end_t - start_t
+
+            # Write read to fasta file (reverse sequence to be 5' to 3')
+            fasta.write(f">{read_id}\n{sequence[::-1]}\n")
+            fasta_i += 1
+            print(f"Basecalled read {read_id} in {dur:.2f} sec.")
+
+            # Only write 1000 reads per fasta file
+            if fasta_i == 1000:
+                fasta.close()
+                fasta_n += 1
+                fasta = open(f"{args.fasta_dir}/reads-{fasta_n}.fasta", "w")
+                fasta_i = 0
+    else:
+        for fast5_filepath in Path(args.fast5_dir).rglob('*.fast5'):
+            with get_fast5_file(fast5_filepath, 'r') as fast5:
+                for read in fast5.get_reads():
+                    start_t = time()
+                    
+                    # Preprocess read
+                    raw_signal = read.get_raw_data()
+                    try:
+                        norm_signal = mad_normalise(raw_signal, args.outlier_clip)
+                    except ValueError as e:
+                        print(e.args)
+                        print(f"{read.read_id} signal issue, skipping this read.")
+                        continue
+                    windows, pad = get_windows(norm_signal, args.chunk_len, args.step_size)
+
+                    # Pass windows through signal model in batches
+                    i = 0
+                    matrices = []
+                    while i + args.batch_size <= len(windows):
+                        batch = windows[i:i+args.batch_size]
+                        i += args.batch_size
+                        matrices.extend(sig_model.predict(batch))
+                    if i < len(windows):
+                        matrices.extend(sig_model.predict(windows[i:]))
+
+                    # Trim padding from last matrix before decoding
+                    matrices[-1] = matrices[-1][:-pad]
+
+                    # Decode CTC output (with/without RNA model, global/local)
+                    if args.decode_type == "global":
+                        matrix = assemble_matrices(matrices, args.step_size)
+                        # plot_assembly(matrices, matrix, args.chunk_len, args.step_size)
                         sequence = beam_search(matrix,
-                                                'ACGT',
-                                                args.beam_width,
-                                                None,
-                                                None,
-                                                None,
-                                                None,
-                                                None)
-                        read_fragments.append(sequence)
-                    consensus = simple_assembly(read_fragments)
-                    sequence = index2base(np.argmax(consensus, axis=0))
+                                            'ACGT',
+                                            args.beam_width,
+                                            rna_model,
+                                            args.sig_threshold,
+                                            args.rna_threshold,
+                                            args.context_len,
+                                            entropy_cache)
+                    else:
+                        read_fragments = []
+                        for matrix in matrices:
+                            sequence = beam_search(matrix,
+                                                    'ACGT',
+                                                    args.beam_width,
+                                                    None,
+                                                    None,
+                                                    None,
+                                                    None,
+                                                    None)
+                            read_fragments.append(sequence)
+                        consensus = simple_assembly(read_fragments)
+                        sequence = index2base(np.argmax(consensus, axis=0))
 
-                end_t = time()
-                dur = end_t - start_t
+                    end_t = time()
+                    dur = end_t - start_t
 
-                # Write read to fasta file (reverse sequence to be 5' to 3')
-                fasta.write(f">{read.read_id}\n{sequence[::-1]}\n")
-                fasta_i += 1
-                print(f"Basecalled read {read.read_id} in {dur:.2f} sec.")
+                    # Write read to fasta file (reverse sequence to be 5' to 3')
+                    fasta.write(f">{read.read_id}\n{sequence[::-1]}\n")
+                    fasta_i += 1
+                    print(f"Basecalled read {read.read_id} in {dur:.2f} sec.")
 
-                # Only write 1000 reads per fasta file
-                if fasta_i == 1000:
-                    fasta.close()
-                    fasta_n += 1
-                    fasta = open(f"{args.fasta_dir}/reads-{fasta_n}.fasta", "w")
-                    fasta_i = 0
+                    # Only write 1000 reads per fasta file
+                    if fasta_i == 1000:
+                        fasta.close()
+                        fasta_n += 1
+                        fasta = open(f"{args.fasta_dir}/reads-{fasta_n}.fasta", "w")
+                        fasta_i = 0
 
     # Make sure last fasta file is closed
     fasta.close()
